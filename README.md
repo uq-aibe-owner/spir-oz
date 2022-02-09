@@ -4,7 +4,7 @@ A Simple, Powerful, Intersectoral and Regional model of Australia (SPIR-Oz: pron
 ## Purpose
 With this model we aim to help policy makers sow the seeds of future growth and prosperity in Australia. We aim to answer questions such as: what is the present value of an Australia-wide net-zero emissions target for 2050? What carbon price/tax will achieve it? And, on a regional and sectoral basis, what is the additional value of a Queensland-specific net-zero target for 2050?
 
-## Model description in brief
+## Model in brief
 SPIR-Oz is a modern intersectoral and inter-regional model with a supply-chain network. It is an adaptation of the simple but powerful solution method of Cai and Judd (2021), the python code of Scheidegger and Bilionis (2019) and the  a intersectoral framework similar to Atalay (2017). We estimate and calibrate economic parameters for Australia, Queensland and regions within Queensland in particular. 
 
 ## Model in more detail
