@@ -1,7 +1,5 @@
 # SPIR-Oz
-A Simple, Powerful, Intersectoral and Regional model of Australia (SPIR-Oz: pronounced as in the name Spyros). Spyros is an abbreviation of Spyridon (Σπυρίδων), which, in ancient Greek, means "basket used to carry seeds". In this case, the seeds of future growth and prosperity in Australia.
-
-With this model we aim to answer questions such as: what is the present value of a Queensland 2050 net-zero carbon emissions target beyond an Australia-wide target?
+A Simple, Powerful, Intersectoral and Regional model of Australia (SPIR-Oz: pronounced as in the name Spyros). Spyros is an abbreviation of Spyridon (Σπυρίδων), which, in ancient Greek, means "basket used to carry seeds". With this model we aim to help policy makers sow the seeds of future growth and prosperity in Australia. We aim to answer questions such as: what is the present value of an Australia-wide net-zero emissions target for 2050? What carbon price/tax will achieve it? And what is the additional value of a Queensland-specific net-zero target for 2050?
 
 SPIR-Oz is a modern intersectoral macroeconomic model with production networks similar to the Australian Treasury's Intersectoral Model (TIM). It is an adaptation of the simple but powerful solution method of Cai and Judd (2021), the python code of Scheidegger and Bilionis (2019) and the  a intersectoral framework similar to Atalay (2017). We estimate and calibrate economic parameters for Australia, Queensland and regions within Queensland in particular. 
 
