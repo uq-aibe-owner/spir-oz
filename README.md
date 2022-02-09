@@ -1,5 +1,5 @@
 # SPIR-Oz
-A Simple, Powerful, Intersectoral and Regional model of Australia (SPIR-Oz: pronounced as in the Greek name Spyros). Spyros is an abbreviation of Spyridon (Σπυρίδων), which, in ancient Greek, means "basket used to carry seeds". In this case, the seeds of future growth and prosperity in Australia.
+A Simple, Powerful, Intersectoral and Regional model of Australia (SPIR-Oz: pronounced as in the name Spyros). Spyros is an abbreviation of Spyridon (Σπυρίδων), which, in ancient Greek, means "basket used to carry seeds". In this case, the seeds of future growth and prosperity in Australia.
 
 With this model we aim to answer questions such as: what is the present value of a Queensland 2050 net-zero carbon emissions target beyond an Australia-wide target?
 
