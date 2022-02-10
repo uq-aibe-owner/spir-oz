@@ -19,7 +19,7 @@ d_pol = {
 #    "val": 0,
     }
 
-# dimensions of the dual variable
+# dimensions of the dual variables (i.e. number of constraints)
 d_ctt = {
     "mclt": 1,
     "knxt": 1,
@@ -111,7 +111,9 @@ if not len(d_ctt) == len(ctt_U) == len(ctt_L):
 
 # ======================================================================
 # Automated stuff, for indexing etc, shouldnt need to be altered if we are just altering economics
-
+# =========================
+# Slicing the ipopt vector for the policy variables
+# =========================
 # creating list of the dict keys
 pol_key = list(d_pol.keys())
 # number of policy variables in total, to be used for lengths of X/x vectors
@@ -126,6 +128,10 @@ for iter in pol_key:
     I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter] * Delta_s)
     prv_ind += n_agt ** d_pol[iter] * Delta_s
 
+
+# =========================
+# Slicing the ipopt vector for the policy variables
+# =========================
 # for use in running through loops
 ctt_key = list(d_ctt.keys())
 # number of constraints
