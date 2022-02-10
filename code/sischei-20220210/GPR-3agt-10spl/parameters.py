@@ -26,6 +26,7 @@ filename = "restart/restart_file_step_"  #folder with the restart/result files
 #====================================================================== 
 
 # Model Paramters
+Delta_s = 30
 Tstar = 20
 beta=0.8
 rho=0.95

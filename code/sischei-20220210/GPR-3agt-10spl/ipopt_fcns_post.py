@@ -39,7 +39,7 @@ def EV_F_post(X, k_init, n_agents, gp_old):
     
     ### value function needs to have the full sum over Dt=30 periods: for each s
     ### thus create a vector of utilities
-    u = np.zeros(Tstar)
+    u = np.zeros(Delta_s)
     u = utility(cons=[], lab=[])
     ### the objective fcn itself
     VT_sum = sum(u) + beta**30 * V_tail_post
