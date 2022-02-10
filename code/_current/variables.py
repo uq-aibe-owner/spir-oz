@@ -1,13 +1,5 @@
 # ======================================================================
-#
-#     sets the parameters and economic functions for the model
-#     "Growth Model"
-#
-#     The model is described in Scheidegger & Bilionis (2017)
-#     https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2927400
-#
-#     Simon Scheidegger, 01/19
-#     edited by Patrick O'Callaghan, with Cameron Gordon and Josh Aberdeen, 11/2021
+#     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
 # ======================================================================
 
 import numpy as np
@@ -16,62 +8,72 @@ from parameters import *
 # dimensions of each policy variable: 0 for a scalar; 1 for a vector; 2 for a matrix
 d_pol = {
     "con": 1,
-    #    "lab": 1,
-    "sav": 1,
+    "lab": 1,
     "knx": 1,
-    "ITM": 2,
-    "SAV": 2,
-    "itm": 1,
-    "val": 0,
-    "utl": 0,
     "out": 1,
-}
+#    "sav": 1,
+#    "itm": 1,
+#    "ITM": 2,
+#    "SAV": 2,
+    "utl": 0
+#    "val": 0,
+    }
 
 # dimensions of each constraint variable
-d_ctt = {"mclt": 1, "knxt": 1, "savt": 1, "itmt": 1, "valt": 0, "utlt": 0, "outt": 1}
+d_ctt = {
+    "mclt": 1,
+    "knxt": 1,
+    "outt": 1,
+#         "savt": 1,
+#        "itmt": 1,
+    "utlt": 0,
+#         "valt": 0,
+    }
 # ======================================================================
 
 # Ranges for Controls
 pL = 1e-1
 pU = 1e3
+uL = -1e3
+uU = 1e3
 # Lower policy variables bounds
 pol_L = {
-    "con": 1.1,
-    #    "lab": pL,
-    "sav": pL,
+    "con": pL,
+    "lab": pL,
     "knx": pL,
-    "ITM": pL,
-    "SAV": pL,
-    "itm": pL,
-    "val": -pU,
-    "utl": pL,
+#    "sav": pL,
+#    "ITM": pL,
+#    "SAV": pL,
+#    "itm": pL,
     "out": pL,
+    "utl": uL,
+#    "val": -pU,
 }
 # Upper policy variables bounds
 pol_U = {
     "con": pU,
-    #    "lab": pU,
-    "sav": pU,
+    "lab": pU,
     "knx": pU,
-    "ITM": pU,
-    "SAV": pU,
-    "itm": pU,
-    "val": pU,
-    "utl": pU,
+#    "sav": pU,
+#    "ITM": pU,
+#    "SAV": pU,
+#    "itm": pU,
     "out": pU,
+    "utl": uU,
+#    "val": pU,
 }
 # Warm start
 pol_S = {
     "con": 10,
-    #    "lab": 10,
-    "sav": 10,
+    "lab": 10,
     "knx": 10,
-    "ITM": 10,
-    "SAV": 10,
-    "itm": 10,
-    "val": -300,
-    "utl": 10,
+#    "sav": 10,
+#    "itm": 10,
+#    "ITM": 10,
+#    "SAV": 10,
     "out": 10,
+    "utl": 10,
+#    "val": -300,
 }
 
 if not len(d_pol) == len(pol_U) == len(pol_L) == len(pol_S):
@@ -85,20 +87,20 @@ cU = 0 * 1e-5
 ctt_L = {
     "mclt": cL,
     "knxt": cL,
-    "savt": cL,
-    "itmt": cL,
-    "valt": cL,
+#    "savt": cL,
+#    "itmt": cL,
     "utlt": cL,
     "outt": cL,
+#    "valt": cL,
 }
 ctt_U = {
     "mclt": cU,
     "knxt": cU,
-    "savt": cU,
-    "itmt": cU,
-    "valt": cU,
+#    "savt": cU,
+#    "itmt": cU,
     "utlt": cU,
     "outt": cU,
+#    "valt": cU,
 }
 
 # Check dicts are all same length
@@ -119,10 +121,10 @@ prv_ind = 0
 # dict for indices of each policy variable in X/x
 I = dict()
 for iter in pol_key:
-    n_pol += n_agt ** d_pol[iter]
+    n_pol += n_agt ** d_pol[iter] * Delta_s
     # allocating slices of indices to each policy variable as a key
-    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter])
-    prv_ind += n_agt ** d_pol[iter]
+    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter] * Delta_s)
+    prv_ind += n_agt ** d_pol[iter] * Delta_s
 
 # for use in running through loops
 ctt_key = list(d_ctt.keys())
@@ -134,7 +136,7 @@ I_ctt = dict()
 prv_ind = 0
 for iter in ctt_key:
     # add to number of total constraint values
-    n_ctt += n_agt ** d_ctt[iter]
+    n_ctt += n_agt ** d_ctt[iter] * Delta_s
     # allocating slicess of indices to each constraint variable as a key
-    I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter])
-    prv_ind += n_agt ** d_ctt[iter]
+    I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter] * Delta_s)
+    prv_ind += n_agt ** d_ctt[iter] * Delta_s
