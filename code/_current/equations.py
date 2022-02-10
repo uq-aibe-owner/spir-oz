@@ -10,7 +10,7 @@ from variables import *
 # utility function u(c,l)
 def utility(con):
     return sum(np.log(con))  # + sum(lab) # -J could make cobb-douglas, may fix /0 issue
-
+### CJ has power with gamma similar to Scheidegger
 
 # ======================================================================
 # initial guess of the value function v(k)
@@ -67,11 +67,11 @@ def f_ctt(X, gp_old, Kap2, init, kap):
     e_ctt["mclt"] = X[I["con"]] + SAV_add - X[I["out"]]  ###
     # capital next period constraint
     e_ctt["knxt"] = (1 - delta) * kap + X[I["sav"]] - X[I["knx"]]  ### Gamma to go here
-    # intermediate sum constraints
+#    # intermediate sum constraints
     e_ctt["savt"] = SAV_com - X[I["sav"]]
     # e_ctt["itmt"] = ITM_com - X[I["itm"]] ## for Cai-Judd rep
     # value function constraint
-    e_ctt["valt"] = X[I["val"]] - sum(value_f(init, gp_old, Kap2))
+ #   e_ctt["valt"] = X[I["val"]] - sum(value_f(init, gp_old, Kap2))
     # output constraint
     e_ctt["outt"] = X[I["out"]] - output_f(kap, X[I["itm"]])  # *np.power(lab, phil)
     # utility constraint
