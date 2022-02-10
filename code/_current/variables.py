@@ -19,7 +19,7 @@ d_pol = {
 #    "val": 0,
     }
 
-# dimensions of each constraint variable
+# dimensions of the dual variable
 d_ctt = {
     "mclt": 1,
     "knxt": 1,

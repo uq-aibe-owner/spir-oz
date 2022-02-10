@@ -23,8 +23,15 @@ def EV_F_post(X, kap, n_agt, gp_old):
     val = X[I["val"]]
     
     VT_sum = X[I["utl"]] + beta*val """
-    
-    return X[I["utl"]] + beta*X[I["val"]]
+       ### value function needs to have the full sum over Dt=30 periods: for each s
+    ### thus create a vector of utilities
+    u = np.zeros(Delta_s)
+    #u = utility(cons=[], lab=[])
+    ### the objective fcn itself
+    #VT_sum = sum(u) + beta**Delta_s * V_tail_post
+    V_tail_post = function(K, )
+
+    return sum(X[I["utl"]]) + beta**Delta_s * V_tail_post
     
 #=======================================================================
 
