@@ -38,7 +38,7 @@ def value_f(init, gp_old, Kap2):
 
 # ======================================================================
 # adjustment costs for investment 
-def Gamma_adjust(kap=[], inv=[])
+def Gamma_adjust(kap=[], inv=[]):
     fun_val = 0.5*phi*kap*((inv/kap - delta)**2.0) #CJ change zeta to phi
     return fun_val
 
