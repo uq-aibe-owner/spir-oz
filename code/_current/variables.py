@@ -30,10 +30,6 @@ d_pol = {
 # dimensions of each constraint variable
 d_ctt = {"mclt": 1, "knxt": 1, "savt": 1, "itmt": 1, "valt": 0, "utlt": 0, "outt": 1}
 # ======================================================================
-# Ranges For States
-kap_L = 2
-kap_U = 5
-range_cube = kap_U - kap_L  # range of [0..1]^d in 1D
 
 # Ranges for Controls
 pL = 1e-1
