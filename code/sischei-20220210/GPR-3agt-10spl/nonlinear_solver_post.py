@@ -2,38 +2,31 @@
 #
 #     This routine interfaces with IPOPT
 #     It sets the optimization problem for every training point
-#     at the beginning of the VFI.
+#     during the VFI.
 #
-#     Simon Scheidegger, 11/16 ; 07/17; 01/19 
-#     Cameron Gordon, updates to Python3 11/21
+#     Simon Scheidegger, 11/16 ; 07/17; 01/19
+
+#     Cameron Gordon, updates to Python3 11/21 
 #     Main difference is the shift from pyipopt to cyipopt 
 #     Involves a class to pass the optimisation problem to ipopt 
 #======================================================================
 
 from parameters import *
-from ipopt_wrapper_A import EV_F, EV_GRAD_F, EV_G, EV_JAC_G
+from ipopt_wrapper_A import EV_F_ITER, EV_GRAD_F_ITER, EV_G_ITER, EV_JAC_G_ITER
 import numpy as np
 #import pyipopt 
 import cyipopt 
-from HS071_initial import * 
-
-#======================================================================
+from HS071_post import * 
 
 
-def initial(k_init, n_agents):
-    # IPOPT PARAMETERS below 
+def iterate(k_init, n_agents, gp_old):
     
-    nvars=3*n_agents
-    N=nvars         # number of vars
+    # IPOPT PARAMETERS below "
+    N=3*n_agents    # number of vars
     M=3*n_agents+1  # number of constraints
     NELE_JAC=N*M
     NELE_HESS=(N**2-N)/2 + N    # number of non-zero entries of Hess matrix
-
-    # check that number of nonlinear equations is consistent 
-    if (N!=3*n_agents):
-        print("there is an error with the number of non-lin eqs!")
-        quit
-
+    
     # Vector of variables -> solution of non-linear equation system 
     X=np.empty(N)
 
@@ -50,8 +43,9 @@ def initial(k_init, n_agents):
     Z_L=np.empty(N)
     Z_U=np.empty(N)
 
-    # get coords of an individual grid points 
+    # get coords of an individual points 
     grid_pt_box=k_init
+    
     X_L[:n_agents]=c_bar
     X_U[:n_agents]=c_up
 
@@ -82,41 +76,47 @@ def initial(k_init, n_agents):
     X[:n_agents]=cons_init
     X[n_agents:2*n_agents]=lab_init
     X[2*n_agents:3*n_agents]=inv_init
-    #X=np.ones(nvars)
     
-    """
-    Superseded by cyipopt object 
+    """ 
+    Superseded by cyipopt 
     # Create ev_f, eval_f, eval_grad_f, eval_g, eval_jac_g for given k_init and n_agent 
+        
     def eval_f(X):
-        return EV_F(X, k_init, n_agents)
-    
+        return EV_F_ITER(X, k_init, n_agents, gp_old)
+        
     def eval_grad_f(X):
-        return EV_GRAD_F(X,k_init, n_agents)
-    
+        return EV_GRAD_F_ITER(X, k_init, n_agents, gp_old)
+        
     def eval_g(X):
-        return EV_G(X, k_init, n_agents)
+        return EV_G_ITER(X, k_init, n_agents)
         
     def eval_jac_g(X, flag):
-        return EV_JAC_G(X, flag, k_init, n_agents)
-    """ 
+        return EV_JAC_G_ITER(X, flag, k_init, n_agents)
+    """
 
-    # create problem object 
-    HS07 = HS071(X, n_agents, k_init, NELE_JAC, NELE_HESS)
+    HS07 = HS071(X, n_agents, k_init, NELE_JAC, NELE_HESS, gp_old) # creates an instance of the class
 
-
-
+    """
     # First create a handle for the Ipopt problem 
-    #nlp=pyipopt.create(nvars, X_L, X_U, M, G_L, G_U, NELE_JAC, NELE_HESS, eval_f, eval_grad_f, eval_g, eval_jac_g)
+    nlp=pyipopt.create(N, X_L, X_U, M, G_L, G_U, NELE_JAC, NELE_HESS, eval_f, eval_grad_f, eval_g, eval_jac_g)
+    nlp.num_option("obj_scaling_factor", -1.0)
+    nlp.num_option("tol", 1e-6)
+    nlp.num_option("acceptable_tol", 1e-5)
+    nlp.str_option("derivative_test", "first-order")
+    nlp.str_option("hessian_approximation", "limited-memory")
+    nlp.int_option("print_level", 1)
     
-    nlp=cyipopt.Problem(n=nvars, m = M, problem_obj=HS07, lb=X_L, ub=X_U, cl=G_L, cu=G_U,)
-    nlp.add_option("obj_scaling_factor", -1.00) #max function 
+    x, z_l, z_u, constraint_multipliers, obj, status=nlp.solve(X)
+
+    """
+    nlp=cyipopt.Problem(n=N, m = M, problem_obj=HS07, lb=X_L, ub=X_U, cl=G_L, cu=G_U,) 
+
+    nlp.add_option("obj_scaling_factor", -1.00) # max function 
     nlp.add_option('mu_strategy', 'adaptive')
-    nlp.add_option('tol', 1e-5)
+    nlp.add_option('tol', 1e-6)
     nlp.add_option("print_level", 0)
     nlp.add_option("hessian_approximation", "limited-memory")
 
-    
-    #x, z_l, z_u, constraint_multipliers, obj, status=nlp.solve(X)
     optimal_soln, info = nlp.solve(X)
 
     x = info['x'] # soln of the primal variables 
@@ -125,15 +125,19 @@ def initial(k_init, n_agents):
 
     nlp.close()
 
+    # x: Solution of the primal variables
+    # z_l, z_u: Solution of the bound multipliers
+    # constraint_multipliers: Solution of the constraint multipliers
+    # obj: Objective value
+    # status: Exit Status
 
-    # Unpack Consumption, Labor, and Investment 
+    # Unpack Consumption, Labor, and Investment
     c=x[:n_agents]
     l=x[n_agents:2*n_agents]
     inv=x[2*n_agents:3*n_agents]
-    
     to_print=np.hstack((obj,x))
     
-    # == debug ==
+    # === debug
     #f=open("results.txt", 'a')
     #np.savetxt(f, np.transpose(to_print) #, fmt=len(x)*'%10.10f ')
     #for num in to_print:
@@ -142,4 +146,3 @@ def initial(k_init, n_agents):
     #f.close()
     
     return obj, c, l, inv
-    

@@ -3,9 +3,9 @@ This class is used to pass the optimization problem to cyipopt.
 """
 
 from parameters import *
-from ipopt_wrapper_A import EV_F_ITER, EV_GRAD_F_ITER, EV_G_ITER, EV_JAC_G_ITER
+from ipopt_fcns_post import EV_F_post, EV_GRAD_F_post, EV_G_post, EV_JAC_G_post
 
-class HS071(): 
+class HS071_post(): 
     """
     Class for the optimization problem to be passed to cyipopt 
     Further optimisations may be possible here by including a hessian (optional param) 
@@ -22,16 +22,16 @@ class HS071():
 
     # Create ev_f, eval_f, eval_grad_f, eval_g, eval_jac_g for given k_init and n_agent 
     def eval_f(self, x): 
-        return EV_F_ITER(x, self.k_init, self.n_agents, self.gp_old) 
+        return EV_F_post(x, self.k_init, self.n_agents, self.gp_old) 
 
     def eval_grad_f(self, x): 
-        return EV_GRAD_F_ITER(x, self.k_init, self.n_agents, self.gp_old) 
+        return EV_GRAD_F_post(x, self.k_init, self.n_agents, self.gp_old) 
 
     def eval_g(self, x): 
-        return EV_G_ITER(x, self.k_init, self.n_agents) 
+        return EV_G_post(x, self.k_init, self.n_agents) 
 
     def eval_jac_g(self, x, flag): 
-        return EV_JAC_G_ITER(x, flag, self.k_init, self.n_agents) 
+        return EV_JAC_G_post(x, flag, self.k_init, self.n_agents) 
 
     def objective(self, x): 
         # Returns the scalar value of the objective given x. 

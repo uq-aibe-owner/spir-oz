@@ -12,7 +12,7 @@
 
 import numpy as np
 from parameters import *
-import nonlinear_solver_initial as solver
+import nonlinear_solver_pre as solver
 #import cPickle as pickle
 import pickle
 

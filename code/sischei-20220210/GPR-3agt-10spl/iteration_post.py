@@ -16,7 +16,7 @@
 
 import numpy as np
 from parameters import *
-import nonlinear_solver_iterate as solver
+import nonlinear_solver_post as solver
 #import cPickle as pickle
 import pickle 
 

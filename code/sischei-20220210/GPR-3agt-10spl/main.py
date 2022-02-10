@@ -16,11 +16,11 @@
 #     Cameron Gordon, 11/21 - conversion to Python3    
 #======================================================================
 
-import nonlinear_solver_initial as solver     #solves opt. problems for terminal VF
-import nonlinear_solver_iterate as solviter   #solves opt. problems during VFI
+import nonlinear_solver_pre as solver     #solves opt. problems for terminal VF
+import nonlinear_solver_post as solvpost   #solves opt. problems during VFI
 from parameters import *                      #parameters of model
-import interpolation as interpol              #interface to sparse grid library/terminal VF
-import interpolation_iter as interpol_iter    #interface to sparse grid library/iteration
+import iteration_pre as iter_pre              #interface to sparse grid library/terminal VF
+import iteration_post as iter_post    #interface to sparse grid library/iteration
 import postprocessing as post                 #computes the L2 and Linfinity error of the model
 import numpy as np
 
@@ -33,11 +33,11 @@ for i in range(numstart, numits):
 # terminal value function
     if (i==1):
         print("start with Value Function Iteration")
-        interpol.GPR_init(i)
+        iter_pre.GPR_init(i)
     
     else:     
         print("Now, we are in Value Function Iteration step", i)
-        interpol_iter.GPR_iter(i)
+        iter_post.GPR_iter(i)
     
     
 #======================================================================

@@ -49,4 +49,8 @@ def box_to_cube(knext=[]):
 
     return knext_box
 
+# adjustment costs for investment 
+def Gamma_adjust(kap=[], inv=[]) 
+    fun_val = 0.5*phi*kap*((inv/kap - delta)**2.0) #CJ change zeta to phi
+    return fun_val
 #======================================================================  
