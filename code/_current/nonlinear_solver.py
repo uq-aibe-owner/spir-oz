@@ -81,7 +81,7 @@ def iterate(k_init, n_agt, gp_old=None, final=False, initial=False, verbose=Fals
     nlp.add_option("tol", ipopt_tol)
     nlp.add_option("print_level", 0)
     nlp.add_option("hessian_approximation", "limited-memory")
-    nlp.add_option("max_post", 10)
+    #nlp.add_option("max_iter", 10)
     optimal_soln, info = nlp.solve(X)
 
     x = info["x"]  # soln of the primal variables
