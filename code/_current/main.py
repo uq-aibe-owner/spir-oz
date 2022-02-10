@@ -1,16 +1,4 @@
-# ======================================================================
-#
-#     This routine solves an infinite horizon growth model
-#     with dynamic programming and sparse grids
-#
-#     The model is described in Scheidegger & Bilionis (2017)
-#     https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2927400
-#
-#     external libraries needed:
-#     - IPOPT (https://projects.coin-or.org/Ipopt)
-#     - PYIPOPT (https://github.com/xuy/pyipopt)
-#     - scikit-learn GPR (https://scikit-learn.org)
-#
+
 #     Simon Scheidegger, 01/19
 #     edited by Patrick O'Callaghan, with Cameron Gordon and Josh Aberdeen, 11/2021
 # ======================================================================

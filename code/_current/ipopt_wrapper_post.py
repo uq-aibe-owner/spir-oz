@@ -1,11 +1,6 @@
-#=======================================================================
-#
-#     ipopt_wrapper.py : an interface to IPOPT and PYIPOPT
-#
-#     Simon Scheidegger, 06/17
-#     edited by Patrick O'Callaghan, with Cameron Gordon and Josh Aberdeen, 11/2021
-#
-#=======================================================================
+# ======================================================================
+#     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
+# ======================================================================
 
 import numpy as np
 from parameters import *

@@ -1,11 +1,6 @@
-#======================================================================
-#
-#     This module contains routines to postprocess the VFI 
-#     solutions.
-#
-#     Simon Scheidegger, 01/19
-#     Cameron Gordon, 11/21 - updates to Python3 (print statements + pickle)
-#======================================================================
+# ======================================================================
+#     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
+# ======================================================================
 
 import numpy as np
 from parameters import *

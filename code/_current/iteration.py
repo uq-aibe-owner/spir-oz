@@ -1,17 +1,5 @@
 # ======================================================================
-#
-#     This routine interfaces with Gaussian Process Regression
-#     The crucial part is
-#
-#     y[iI] = solver.initial(Xtraining[iI], n_agt,gp_old)[0]
-#     => at every training point, we solve an optimization problem
-#
-#     check kernels here: https://scikit-learn.org/stable/auto_examples/gaussian_process
-#       /plot_gpr_prior_posterior.html#sphx-glr-auto-examples-gaussian-process-plot-gpr-prior-posterior-py
-#
-#
-#     Simon Scheidegger, 01/19
-#     edited by Patrick O'Callaghan, with Cameron Gordon and Josh Aberdeen, 11/2021
+#     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
 # ======================================================================
 
 import numpy as np

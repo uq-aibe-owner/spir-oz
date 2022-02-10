@@ -1,10 +1,8 @@
 # ======================================================================
 #
 #     This routine interfaces with IPOPT
-#     It sets the optimization problem for every training point
-#     during the VFI.
 #
-#     Simon Scheidegger, 11/16 ; 07/17; 01/19
+#     Based on Simon Scheidegger, 11/16 ; 07/17; 01/19
 #     edited by Patrick O'Callaghan, with Cameron Gordon and Josh Aberdeen, 11/2021
 
 #     Main difference is the shift from pyipopt to cyipopt

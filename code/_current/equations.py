@@ -1,13 +1,5 @@
 # ======================================================================
-#
-#     sets the parameters and economic functions for the model
-#     "Growth Model"
-#
-#     The model is described in Scheidegger & Bilionis (2017)
-#     https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2927400
-#
-#     Simon Scheidegger, 01/19
-#     edited by Patrick O'Callaghan, with Cameron Gordon and Josh Aberdeen, 11/2021
+#     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
 # ======================================================================
 
 import numpy as np
