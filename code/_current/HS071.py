@@ -4,9 +4,11 @@
 This class is used to pass the optimization problem to cyipopt.
 """
 
-from parameters import * 
-from ipopt_wrapper_A import EV_F, EV_GRAD_F, EV_G, EV_JAC_G
-from ipopt_wrapper_A import EV_F_ITER, EV_GRAD_F_ITER, EV_G_ITER, EV_JAC_G_ITER
+from parameters import *
+from variables import *
+from equations import * 
+from ipopt_wrapper import EV_F, EV_GRAD_F, EV_G, EV_JAC_G
+from ipopt_wrapper import EV_F_ITER, EV_GRAD_F_ITER, EV_G_ITER, EV_JAC_G_ITER
 
 class HS071(): 
     """

@@ -11,8 +11,10 @@
 #     Involves a class to pass the optimisation problem to ipopt
 # ======================================================================
 
-from parameters import * 
-from ipopt_wrapper_A import ipopt_obj
+from parameters import *
+from variables import *
+from equations import * 
+from ipopt_wrapper import ipopt_obj
 
 import numpy as np
 

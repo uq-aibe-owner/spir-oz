@@ -17,7 +17,9 @@
 
 import nonlinear_solver as solver
 from parameters import *  # parameters of model
-import interpolation as interpol_comb
+from variables import *
+from equations import *
+import iteration
 import postprocessing as post  # computes the L2 and Linfinity error of the model
 
 import numpy as np

@@ -9,6 +9,8 @@
 
 import numpy as np
 from parameters import *
+from variables import *
+from equations import *
 #import cPickle as pickle
 import pickle
 from sklearn.gaussian_process import GaussianProcessRegressor

@@ -16,6 +16,8 @@
 
 import numpy as np
 from parameters import *
+from variables import *
+from equations import *
 import nonlinear_solver as solver
 
 # import cPickle as pickle
