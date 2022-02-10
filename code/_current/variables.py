@@ -13,35 +13,6 @@
 import numpy as np
 from parameters import * 
 # ======================================================================
-## Verbosity of print output
-verbose = True
-economic_verbose = True
-# ======================================================================
-# number of goods of the model
-n_agt = 2  ## for Cai-Judd this is number of regions
-# Number of paths
-No_samples = 10 * n_agt
-# ======================================================================
-## Control of paths
-# To start from scratch, set numstart = 0.
-# Otherwise set numstart equal to previous numits. (Equivalently,
-# set numstart equal to the last path.)
-numstart = 0
-# how many iterations
-fthrits = 4
-numits = numstart + fthrits
-# ======================================================================
-# Number of test points to compute the error in postprocessing
-# No_samples_postprocess = 20 ##not needed as we use all paths generated now
-
-# ======================================================================
-# length_scale_bounds=(10e-9,10e10) ##not needed: for GP
-
-# alphaSK = 1e-1 ##not needed: for GP
-# n_restarts_optimizer=10 ##not needed: for GP
-# filename = "restart/restart_file_step_" ##not needed: for GP
-# folder with the restart/result files
-
 # dimensions of each policy variable: 0 for a scalar; 1 for a vector; 2 for a matrix
 d_pol = {
     "con": 1,
@@ -59,30 +30,6 @@ d_pol = {
 # dimensions of each constraint variable
 d_ctt = {"mclt": 1, "knxt": 1, "savt": 1, "itmt": 1, "valt": 0, "utlt": 0, "outt": 1}
 # ======================================================================
-# Model Paramters
-
-beta = 0.99
-# rho = 0.95
-# zeta = 0.0
-""" phi = {
-    "itm": 0.5,
-    "kap": 0.5
-} """
-
-phik = 0.5
-phim = 0.5
-
-gamma = 2.0
-delta = 0.1
-eta = 1
-big_A = 1 / (phim ** phim * phik ** phik)  # * (1-phik-phim)**(1-phik-phim))
-xi = np.ones(n_agt) * 1 / n_agt
-mu = np.ones(n_agt) * 1 / n_agt
-
-# Ranges For States
-kap_L = 2
-kap_U = 5
-range_cube = kap_U - kap_L  # range of [0..1]^d in 1D
 
 # Ranges for Controls
 pL = 1e-1
@@ -159,82 +106,6 @@ if not len(d_ctt) == len(ctt_U) == len(ctt_L):
     raise ValueError(
         "Constraint-related Dicts are not all the same length, check parameters.py"
     )
-
-# ======================================================================
-# utility function u(c,l)
-def utility(con):
-    return sum(np.log(con))  # + sum(lab) # -J could make cobb-douglas, may fix /0 issue
-
-
-# ======================================================================
-# initial guess of the value function v(k)
-def V_INFINITY(kap=[]):
-    e = np.ones(len(kap))
-    c = output_f(kap, kap / 3)
-    v_infinity = utility(c) / (1 - beta)
-    return v_infinity
-
-
-# ======================================================================
-# output_f
-def output_f(kap, itm):
-    fun_val = big_A * kap ** phik * itm ** phim  # *(np.power(lab, phil))
-    return fun_val
-
-
-# ======================================================================
-# output_f
-def value_f(init, gp_old, Kap2):
-    if init:
-        return V_INFINITY(Kap2)
-    else:
-        return gp_old.predict(Kap2, return_std=True)[1]
-
-
-# ======================================================================
-# Constraints
-
-
-def f_ctt(X, gp_old, Kap2, init, kap):
-    # f_prod=output_f(kap, lab, itm)
-
-    # Summing the 2d policy variables
-    SAV_com = np.ones(n_agt, float)
-    SAV_add = np.zeros(n_agt, float)
-    ITM_com = np.ones(n_agt, float)
-    ITM_add = np.zeros(n_agt, float)
-    for iter in range(n_agt):
-        for ring in range(n_agt):
-            #  SAV_com[iter] *= X[I["SAV"]][iter+n_agt*ring]**xi[ring] ## for Cai-Judd rep
-            #  ITM_com[iter] *= X[I["ITM"]][iter+n_agt*ring]**mu[ring] ## for Cai-Judd rep
-            #  SAV_add[iter] += X[I["SAV"]][iter*n_agt+ring] ## for Cai-Judd rep
-            SAV_add[iter] += X[I["SAV"]][iter * n_agt + ring]  ### to add Gamma?
-        #  ITM_add[iter] += X[I["ITM"]][iter*n_agt+ring] ## for Cai-Judd rep
-    e_ctt = dict()
-    # canonical market clearing constraint
-    # e_ctt["mclt"] = X[I["con"]] + SAV_add + ITM_add - X[I["out"]] ## for Cai-Judd rep
-    e_ctt["mclt"] = X[I["con"]] + SAV_add - X[I["out"]]  ###
-    # capital next period constraint
-    e_ctt["knxt"] = (1 - delta) * kap + X[I["sav"]] - X[I["knx"]]  ### Gamma to go here
-    # intermediate sum constraints
-    e_ctt["savt"] = SAV_com - X[I["sav"]]
-    # e_ctt["itmt"] = ITM_com - X[I["itm"]] ## for Cai-Judd rep
-    # value function constraint
-    e_ctt["valt"] = X[I["val"]] - sum(value_f(init, gp_old, Kap2))
-    # output constraint
-    e_ctt["outt"] = X[I["out"]] - output_f(kap, X[I["itm"]])  # *np.power(lab, phil)
-    # utility constraint
-    e_ctt["utlt"] = X[I["utl"]] - utility(X[I["con"]])
-    # e_ctt["blah blah blah"] = constraint rearranged into form that can be equated to zero
-
-    # Check dicts are all same length
-    if not len(d_ctt) == len(ctt_U) == len(ctt_L) == len(e_ctt):
-        raise ValueError(
-            "Constraint-related Dicts are not all the same length, check f_cct in parameters.py"
-        )
-
-    return e_ctt
-
 
 # ======================================================================
 # Automated stuff, for indexing etc, shouldnt need to be altered if we are just altering economics
