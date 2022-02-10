@@ -13,153 +13,6 @@
 import numpy as np
 from parameters import *
 from variables import * 
-# ======================================================================
-## Verbosity of print output
-verbose = True
-economic_verbose = True
-# ======================================================================
-# number of goods of the model
-n_agt = 2  ## for Cai-Judd this is number of regions
-# Number of paths
-No_samples = 10 * n_agt
-# ======================================================================
-## Control of paths
-# To start from scratch, set numstart = 0.
-# Otherwise set numstart equal to previous numits. (Equivalently,
-# set numstart equal to the last path.)
-numstart = 0
-# how many iterations
-fthrits = 4
-numits = numstart + fthrits
-# ======================================================================
-# Number of test points to compute the error in postprocessing
-# No_samples_postprocess = 20 ##not needed as we use all paths generated now
-
-# ======================================================================
-# length_scale_bounds=(10e-9,10e10) ##not needed: for GP
-
-# alphaSK = 1e-1 ##not needed: for GP
-# n_restarts_optimizer=10 ##not needed: for GP
-# filename = "restart/restart_file_step_" ##not needed: for GP
-# folder with the restart/result files
-
-# dimensions of each policy variable: 0 for a scalar; 1 for a vector; 2 for a matrix
-d_pol = {
-    "con": 1,
-    #    "lab": 1,
-    "sav": 1,
-    "knx": 1,
-    "ITM": 2,
-    "SAV": 2,
-    "itm": 1,
-    "val": 0,
-    "utl": 0,
-    "out": 1,
-}
-
-# dimensions of each constraint variable
-d_ctt = {"mclt": 1, "knxt": 1, "savt": 1, "itmt": 1, "valt": 0, "utlt": 0, "outt": 1}
-# ======================================================================
-# Model Paramters
-
-beta = 0.99
-# rho = 0.95
-# zeta = 0.0
-""" phi = {
-    "itm": 0.5,
-    "kap": 0.5
-} """
-
-phik = 0.5
-phim = 0.5
-
-gamma = 2.0
-delta = 0.1
-eta = 1
-big_A = 1 / (phim ** phim * phik ** phik)  # * (1-phik-phim)**(1-phik-phim))
-xi = np.ones(n_agt) * 1 / n_agt
-mu = np.ones(n_agt) * 1 / n_agt
-
-# Ranges For States
-kap_L = 2
-kap_U = 5
-range_cube = kap_U - kap_L  # range of [0..1]^d in 1D
-
-# Ranges for Controls
-pL = 1e-1
-pU = 1e3
-# Lower policy variables bounds
-pol_L = {
-    "con": 1.1,
-    #    "lab": pL,
-    "sav": pL,
-    "knx": pL,
-    "ITM": pL,
-    "SAV": pL,
-    "itm": pL,
-    "val": -pU,
-    "utl": pL,
-    "out": pL,
-}
-# Upper policy variables bounds
-pol_U = {
-    "con": pU,
-    #    "lab": pU,
-    "sav": pU,
-    "knx": pU,
-    "ITM": pU,
-    "SAV": pU,
-    "itm": pU,
-    "val": pU,
-    "utl": pU,
-    "out": pU,
-}
-# Warm start
-pol_S = {
-    "con": 10,
-    #    "lab": 10,
-    "sav": 10,
-    "knx": 10,
-    "ITM": 10,
-    "SAV": 10,
-    "itm": 10,
-    "val": -300,
-    "utl": 10,
-    "out": 10,
-}
-
-if not len(d_pol) == len(pol_U) == len(pol_L) == len(pol_S):
-    raise ValueError(
-        "Policy-variable-related Dicts are not all the same length, check parameters.py"
-    )
-
-# Constraint variables bounds
-cL = 0 * -1e-5
-cU = 0 * 1e-5
-ctt_L = {
-    "mclt": cL,
-    "knxt": cL,
-    "savt": cL,
-    "itmt": cL,
-    "valt": cL,
-    "utlt": cL,
-    "outt": cL,
-}
-ctt_U = {
-    "mclt": cU,
-    "knxt": cU,
-    "savt": cU,
-    "itmt": cU,
-    "valt": cU,
-    "utlt": cU,
-    "outt": cU,
-}
-
-# Check dicts are all same length
-if not len(d_ctt) == len(ctt_U) == len(ctt_L):
-    raise ValueError(
-        "Constraint-related Dicts are not all the same length, check parameters.py"
-    )
 
 # ======================================================================
 # utility function u(c,l)
@@ -191,6 +44,11 @@ def value_f(init, gp_old, Kap2):
     else:
         return gp_old.predict(Kap2, return_std=True)[1]
 
+# ======================================================================
+# adjustment costs for investment 
+def Gamma_adjust(kap=[], inv=[])
+    fun_val = 0.5*phi*kap*((inv/kap - delta)**2.0) #CJ change zeta to phi
+    return fun_val
 
 # ======================================================================
 # Constraints
@@ -235,36 +93,3 @@ def f_ctt(X, gp_old, Kap2, init, kap):
         )
 
     return e_ctt
-
-
-# ======================================================================
-# Automated stuff, for indexing etc, shouldnt need to be altered if we are just altering economics
-
-# creating list of the dict keys
-pol_key = list(d_pol.keys())
-# number of policy variables in total, to be used for lengths of X/x vectors
-n_pol = 0
-# temporary variable to keep track of previous highest index
-prv_ind = 0
-# dict for indices of each policy variable in X/x
-I = dict()
-for iter in pol_key:
-    n_pol += n_agt ** d_pol[iter]
-    # allocating slices of indices to each policy variable as a key
-    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter])
-    prv_ind += n_agt ** d_pol[iter]
-
-# for use in running through loops
-ctt_key = list(d_ctt.keys())
-# number of constraints
-n_ctt = 0
-# dict for indices of each constraint variable in G/g
-I_ctt = dict()
-# temporary variable to keep track of previous highest index
-prv_ind = 0
-for iter in ctt_key:
-    # add to number of total constraint values
-    n_ctt += n_agt ** d_ctt[iter]
-    # allocating slicess of indices to each constraint variable as a key
-    I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter])
-    prv_ind += n_agt ** d_ctt[iter]

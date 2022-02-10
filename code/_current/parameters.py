@@ -52,13 +52,13 @@ beta = 0.99
     "itm": 0.5,
     "kap": 0.5
 } """
+phi = 0.5 # adjustment cost multiplier
+phik = 0.5 # weight of capital in production
+phim = 0.5 # weight of intermediate inputs in production
 
-phik = 0.5
-phim = 0.5
-
-gamma = 2.0
-delta = 0.1
-eta = 1
+gamma = 2.0 # power utility exponent
+delta = 0.1 # discount factor
+eta = 1 # 
 big_A = 1 / (phim ** phim * phik ** phik)  # * (1-phik-phim)**(1-phik-phim))
 xi = np.ones(n_agt) * 1 / n_agt
 mu = np.ones(n_agt) * 1 / n_agt
