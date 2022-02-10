@@ -46,7 +46,7 @@ rngm = np.random.default_rng(dt)  # fix seed #move to main so it doesnt re-initi
 for iter in range(numstart, numits):
 
     # terminal value function
-    res_fin = iteration.GPR_iter(iter)
+    res_fin = iteration.GPR_post(iter)
 
 # ======================================================================
 print("===============================================================")

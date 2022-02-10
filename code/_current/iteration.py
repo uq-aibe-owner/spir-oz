@@ -31,8 +31,8 @@ import time
 # ======================================================================
 
 
-#def GPR_iter(iteration, rng, save_data=True):
-def GPR_iter(iteration, save_data=True):
+#def GPR_post(iteration, rng, save_data=True):
+def GPR_post(iteration, save_data=True):
     
     if iteration == 0: 
         gp_old = None 

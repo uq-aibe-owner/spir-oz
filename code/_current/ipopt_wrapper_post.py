@@ -17,7 +17,7 @@ from equations import *
 #=======================================================================
 #   Objective Function during VFI (note - we need to interpolate on an "old" GPR)
     
-def EV_F_ITER(X, kap, n_agt, gp_old):
+def EV_F_post(X, kap, n_agt, gp_old):
     
     """ # initialize correct data format for training point
     s = (1,n_agt)
@@ -37,7 +37,7 @@ def EV_F_ITER(X, kap, n_agt, gp_old):
 #=======================================================================
 #   Computation of gradient (first order finite difference) of the objective function 
     
-def EV_GRAD_F_ITER(X, kap, n_agt, gp_old):
+def EV_GRAD_F_post(X, kap, n_agt, gp_old):
     
     N=len(X)
     GRAD=np.zeros(N, float) # Initial Gradient of Objective Function
@@ -48,19 +48,19 @@ def EV_GRAD_F_ITER(X, kap, n_agt, gp_old):
         
         if (xAdj[ixN] - h >= 0):
             xAdj[ixN]=X[ixN] + h            
-            fx2=EV_F_ITER(xAdj, kap, n_agt, gp_old)
+            fx2=EV_F_post(xAdj, kap, n_agt, gp_old)
             
             xAdj[ixN]=X[ixN] - h
-            fx1=EV_F_ITER(xAdj, kap, n_agt, gp_old)
+            fx1=EV_F_post(xAdj, kap, n_agt, gp_old)
             
             GRAD[ixN]=(fx2-fx1)/(2.0*h)
             
         else:
             xAdj[ixN]=X[ixN] + h
-            fx2=EV_F_ITER(xAdj, kap, n_agt, gp_old)
+            fx2=EV_F_post(xAdj, kap, n_agt, gp_old)
             
             xAdj[ixN]=X[ixN]
-            fx1=EV_F_ITER(xAdj, kap, n_agt, gp_old)
+            fx1=EV_F_post(xAdj, kap, n_agt, gp_old)
             GRAD[ixN]=(fx2-fx1)/h
             
     return GRAD
@@ -69,7 +69,7 @@ def EV_GRAD_F_ITER(X, kap, n_agt, gp_old):
 
 #======================================================================
 #   Equality constraints during the VFI of the model
-def EV_G_ITER(X, kap, n_agt, gp_old):
+def EV_G_post(X, kap, n_agt, gp_old):
     
     M=n_ctt
     G=np.empty(M, float)
@@ -96,7 +96,7 @@ def EV_G_ITER(X, kap, n_agt, gp_old):
 #   Computation (finite difference) of Jacobian of equality constraints 
 #   during iteration  
   
-def EV_JAC_G_ITER(X, flag, kap, n_agt, gp_old):
+def EV_JAC_G_post(X, flag, kap, n_agt, gp_old):
     N=len(X)
     M=n_ctt
     NZ=M*N
@@ -117,13 +117,13 @@ def EV_JAC_G_ITER(X, flag, kap, n_agt, gp_old):
     else:
         # Finite Differences
         h=1e-4
-        gx1=EV_G_ITER(X, kap, n_agt, gp_old)
+        gx1=EV_G_post(X, kap, n_agt, gp_old)
 
         for ixM in range(M):
             for ixN in range(N):
                 xAdj=np.copy(X)
                 xAdj[ixN]=xAdj[ixN]+h
-                gx2=EV_G_ITER(xAdj, kap, n_agt, gp_old)
+                gx2=EV_G_post(xAdj, kap, n_agt, gp_old)
                 A[ixN + ixM*N]=(gx2[ixM] - gx1[ixM])/h
         return A
     
@@ -148,16 +148,16 @@ class ipopt_obj():
 
     # Create ev_f, eval_f, eval_grad_f, eval_g, eval_jac_g for given k_init and n_agent 
     def eval_f(self, x): 
-        return EV_F_ITER(x, self.k_init, self.n_agents, self.gp_old) 
+        return EV_F_post(x, self.k_init, self.n_agents, self.gp_old) 
 
     def eval_grad_f(self, x): 
-        return EV_GRAD_F_ITER(x, self.k_init, self.n_agents, self.gp_old) 
+        return EV_GRAD_F_post(x, self.k_init, self.n_agents, self.gp_old) 
 
     def eval_g(self, x): 
-        return EV_G_ITER(x, self.k_init, self.n_agents, self.gp_old) 
+        return EV_G_post(x, self.k_init, self.n_agents, self.gp_old) 
 
     def eval_jac_g(self, x, flag):
-        return EV_JAC_G_ITER(x, flag, self.k_init, self.n_agents, self.gp_old) 
+        return EV_JAC_G_post(x, flag, self.k_init, self.n_agents, self.gp_old) 
 
     def objective(self, x): 
         # Returns the scalar value of the objective given x. 
