@@ -19,18 +19,18 @@ import time
 # ======================================================================
 
 
-#def GPR_post(iteration, rng, save_data=True):
-def GPR_post(iteration, save_data=True):
+#def GPR_post(i_pth, rng, save_data=True):
+def GPR_post(i_pth, save_data=True):
     
-    if iteration == 0: 
-        gp_old = None 
+    if i_pth == 0:
+        gp_old = None ### change to untipped model 
 
-    elif iteration > 0: 
-        # Load the model from the previous iteration step
-        restart_data = filename + str(iteration - 1) + ".pcl"
+    elif i_pth > 0: 
+        # Load the model from the previous i_pth step
+        restart_data = filename + str(i_pth - 1) + ".pcl"
         with open(restart_data, "rb") as fd_old:
             gp_old = pickle.load(fd_old)
-            print("data from iteration step ", iteration - 1, "loaded from disk")
+            print("data from i_pth step ", i_pth - 1, "loaded from disk")
         fd_old.close()
 
     ##generate sample aPoints
@@ -44,13 +44,13 @@ def GPR_post(iteration, save_data=True):
 
     ctnr = []
     # solve bellman equations at training points
-    # Xtraining is our initial level of capital for this iteration
+    # Xtraining is our initial level of capital for this i_pth
 
     for iI in range(len(Xtraining)):
-        if iteration == 0: 
-            res = solver.iterate(Xtraining[iI], n_agt,initial=True,verbose=verbose)
+        if i_pth == 0: 
+            res = solver.ipoptSolve(Xtraining[iI], n_agt,initial=True,verbose=verbose)
         else: 
-            res = solver.iterate(Xtraining[iI], n_agt, gp_old,initial=False,verbose=verbose)
+            res = solver.ipoptSolve(Xtraining[iI], n_agt, gp_old,initial=False,verbose=verbose)
         print(res['ITM'])
         SAV_add = np.zeros(n_agt, float)
         ITM_add = np.zeros(n_agt, float)
@@ -59,7 +59,7 @@ def GPR_post(iteration, save_data=True):
             ITM_add[iter] = res["ITM"][iter*n_agt] + res["ITM"][iter*n_agt+1]
         print(ITM_add)
         res['kap'] = Xtraining[iI]
-        res['itr'] = iteration
+        res['itr'] = i_pth
         y[iI] = res['obj']
         ctt = res['ctt']
         msg = "Constraint values: " + str(ctt) + os.linesep
@@ -85,7 +85,7 @@ def GPR_post(iteration, save_data=True):
         )
         if economic_verbose:
             print("{}".format(msg))
-        if iteration == numits - 1:
+        if i_pth == numits - 1:
             ctnr.append(res)
     end_nlp = time.time()
     # print data for debugging purposes
@@ -110,15 +110,15 @@ def GPR_post(iteration, save_data=True):
     gp.fit(Xtraining, y)
 
     ##save the model to a file
-    output_file = filename + str(iteration) + ".pcl"
+    output_file = filename + str(i_pth) + ".pcl"
     print(output_file)
     with open(output_file, "wb") as fd:
         pickle.dump(gp, fd, protocol=pickle.HIGHEST_PROTOCOL)
-        print("data of step ", iteration, "  written to disk")
+        print("data of step ", i_pth, "  written to disk")
         print(" -------------------------------------------")
     fd.close()
 
-    if iteration == numits - 1:
+    if i_pth == numits - 1:
         return ctnr
 
 
