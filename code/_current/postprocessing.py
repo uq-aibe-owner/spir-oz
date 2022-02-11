@@ -35,18 +35,18 @@ def ls_error(n_agents, t1, t2, num_points):
         sum_diffs=0
         diff = 0
     
-        # Load the model from the previous iteration step
+        # Load the model from the previous i_pth step
         restart_data = filename + str(i) + ".pcl"
         with open(restart_data, 'rb') as fd_old:
             gp_old = pickle.load(fd_old)
-            print("data from iteration step ", i , "loaded from disk")
+            print("data from i_pth step ", i , "loaded from disk")
         fd_old.close()      
 
-        # Load the model from the previous iteration step
+        # Load the model from the previous i_pth step
         restart_data = filename + str(i+1) + ".pcl"
         with open(restart_data, 'rb') as fd:
             gp = pickle.load(fd)
-            print("data from iteration step ", i+1 , "loaded from disk")
+            print("data from i_pth step ", i+1 , "loaded from disk")
         fd.close()
       
         mean_old, sigma_old = gp_old.predict(k_test, return_std=True)
@@ -55,7 +55,7 @@ def ls_error(n_agents, t1, t2, num_points):
         gp_old = gp
         # solve bellman equations at test points
         for j in range(len(k_test)):
-            y_test[j] = solver.iterate(k_test[j], n_agents, gp_old)["obj"]
+            y_test[j] = solver.ipoptSolve(k_test[j], n_agents, gp_old)["obj"]
 
         targ_new = y_test
         # plot predictive mean and 95% quantiles
@@ -75,7 +75,7 @@ def ls_error(n_agents, t1, t2, num_points):
         to_print[0,2]= avg_diff_mean
         to_print[0,3]= max_diff_targ
         to_print[0,4]= avg_diff_targ
-        msg="with k_test varying across iterates:"
+        msg="with k_test varying across ipoptSolves:"
         msg+="alphaSK=" + str(alphaSK) + ",tolIpopt=" + str(alphaSK)
         msg+=",n_restarts_optimizer=" +str(n_restarts_optimizer)
         msg+=",numstart=" + str(numstart)

@@ -182,8 +182,8 @@ class ipopt_obj():
     def intermediate(self, alg_mod, iter_count, obj_value, inf_pr, inf_du, mu,
                      d_norm, regularization_size, alpha_du, alpha_pr,
                      ls_trials):
-        """Prints information at every Ipopt iteration."""
+        """Prints information at every Ipopt i_pth."""
 
         if self.verbose: 
-            msg = "Objective value at iteration #{:d} is - {:g}"
+            msg = "Objective value at i_pth #{:d} is - {:g}"
             print(msg.format(iter_count, obj_value))

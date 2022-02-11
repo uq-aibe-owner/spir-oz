@@ -19,7 +19,7 @@ import numpy as np
 # import pyipopt
 import cyipopt 
 
-def iterate(k_init, n_agt, gp_old=None, final=False, initial=False, verbose=False):
+def ipoptSolve(k_init, n_agt, gp_old=None, final=False, initial=False, verbose=False):
 
     N = n_pol  # number of vars
     M = n_ctt  # number of constraints
@@ -50,7 +50,7 @@ def iterate(k_init, n_agt, gp_old=None, final=False, initial=False, verbose=Fals
     for iter in pol_key:
         X_L[I[iter]]=pol_L[iter]
         X_U[I[iter]]=pol_U[iter]
-        # initial guesses for first iteration (aka a warm start)
+        # initial guesses for first i_pth (aka a warm start)
         if iter != "sav" and iter != "con": # no warm starts for these
             X[I[iter]] = pol_S[iter]
         else:

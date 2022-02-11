@@ -19,7 +19,7 @@ No_samples = 10 * n_agt
 # Otherwise set numstart equal to previous numits. (Equivalently,
 # set numstart equal to the last path.)
 numstart = 0
-# how many iterations
+# how many i_pths
 fthrits = 4
 numits = numstart + fthrits
 # ======================================================================

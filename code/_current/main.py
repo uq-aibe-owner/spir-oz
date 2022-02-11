@@ -7,7 +7,7 @@ import nonlinear_solver as solver
 from parameters import *  # parameters of model
 from variables import *
 from equations import *
-import iteration
+import i_pth
 import postprocessing as post  # computes the L2 and Linfinity error of the model
 
 import numpy as np
@@ -19,7 +19,7 @@ import time
 from numpy.random import PCG64
 from datetime import datetime
 # ======================================================================
-# Start with Value Function Iteration
+# Start with Value Function i_pth
 
 
 # Set up a container to save the k/obj pairs as they are sampled & optimised
@@ -34,7 +34,8 @@ rngm = np.random.default_rng(dt)  # fix seed #move to main so it doesnt re-initi
 for iter in range(numstart, numits):
 
     # terminal value function
-    res_fin = iteration.GPR_post(iter)
+    # run the model:
+    res_fin = i_pth.GPR_post(iter)
 
 # ======================================================================
 print("===============================================================")
@@ -76,13 +77,13 @@ end = time.time()
 #    ax.set_ylabel("k (sector 2)")
 #    ax.set_zlabel("Value")
 #
-#    # colormap = matplotlib.cm(sample_container['iteration'])
+#    # colormap = matplotlib.cm(sample_container['i_pth'])
 #
 #    img = ax.scatter(
 #        sample_container["kap"][:, 0],
 #        sample_container["kap"][:, 1],
 #        sample_container["value"],
-#        c=sample_container["iteration"],
+#        c=sample_container["i_pth"],
 #    )
 #    plt.colorbar(img)
 #
@@ -108,13 +109,13 @@ def solve_for_kvals(kap, n_agt, gp_old):
 
     result = np.empty((kap.shape[0]))
     for iter in range(kap.shape[0]): 
-        result[iter] = solver.iterate(k_init=kap[iter], n_agt=n_agt, gp_old=gp_old,initial=False, verbose=verbose)['obj']
+        result[iter] = solver.ipoptSolve(k_init=kap[iter], n_agt=n_agt, gp_old=gp_old,initial=False, verbose=verbose)['obj']
 
     return result
 
 def convergence_check():
     # tests for convergence by checking the predicted values at the sampled points of the final
-    # iterate and then testing on the optimized value #v_old - val_tst
+    # ipoptSolve and then testing on the optimized value #v_old - val_tst
 
     # load the final instance of Gaussian Process
 
@@ -142,7 +143,7 @@ def convergence_check():
 
     print(val_old - val_new)
 
-    print("maximum difference between value function iterates is",np.max(np.abs(val_old-val_new)))
+    print("maximum difference between value function ipoptSolves is",np.max(np.abs(val_old-val_new)))
 
     print("generated from k vals",random_k)
 
@@ -150,7 +151,7 @@ def convergence_check():
 
 
 #def extract_variables(default=True, k_vals=None):
-#    # extract the consumption, investment, labour variables (from the final iteration if default=True)
+#    # extract the consumption, investment, labour variables (from the final i_pth if default=True)
 #    # if false, specify random points and calculate
 #
 #    kap_tst = []
