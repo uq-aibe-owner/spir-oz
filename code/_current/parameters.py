@@ -50,9 +50,11 @@ phik = 0.5 # weight of capital in production
 phim = 0.5 # weight of intermediate inputs in production
 
 gamma = 2.0 # power utility exponent
+gammahat = 1 - gamma
 delta = 0.1 # discount factor
 eta = 1 # 
 big_A = 1 / (phim ** phim * phik ** phik)  # * (1-phik-phim)**(1-phik-phim))
+B = ###
 xi = np.ones(n_agt) * 1 / n_agt
 mu = np.ones(n_agt) * 1 / n_agt
 

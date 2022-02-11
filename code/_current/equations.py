@@ -8,7 +8,7 @@ from variables import *
 
 # ======================================================================
 # utility function u(c,l)
-def utility(con):
+def utility(con, lab):
     return sum(np.log(con))  # + sum(lab) # -J could make cobb-douglas, may fix /0 issue
 ### CJ has power with gamma similar to Scheidegger
 
@@ -23,8 +23,8 @@ def V_INFINITY(kap=[]):
 
 # ======================================================================
 # output_f
-def output_f(kap, itm):
-    fun_val = big_A * kap ** phik * itm ** phim  # *(np.power(lab, phil))
+def output_f(zeta, kap, lab):
+    fun_val = zeta * big_A * kap ** phik *lab**phil #* itm ** phim  # *
     return fun_val
 
 
