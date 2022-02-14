@@ -24,15 +24,15 @@ def sceq(i_pth, save_data=True):
     # for i_pth=0,  
     # iterate over periods of interest (the last extra period is for error checking only)
     #loop(tt$(ord(tt)<=Tstar+1),
-        for tt in range(0,Tstar+1):
-            s = tt
+        for s in range(0,Tstar+1):
+            
             
             for t in range(s, Delta_s + s):
                 def Pr_noTip(t):
                     return (1 - p_01)**(t-s) ###
             #now solve for that tt
-            solver.ipopt_interface(...) ###
-            pickle for each tt ###
+            res = solver.ipopt_interface(...) ###
+            pickle [:, :, 0] for each s ###
         
         """
         print(res['ITM'])
@@ -77,8 +77,8 @@ def sceq(i_pth, save_data=True):
             output_file = filename + str(i_pth) + ".pcl"
             print(output_file)
             with open(output_file, "wb") as fd:
-                pickle.dump(gp, fd, protocol=pickle.HIGHEST_PROTOCOL)
-                print("data of step ", i_pth, "  written to disk")
+                pickle.dump(res, fd, protocol=pickle.HIGHEST_PROTOCOL)
+                print("data of path ", i_pth, "  written to disk")
                 print(" -------------------------------------------")
             fd.close()
 

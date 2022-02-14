@@ -31,7 +31,7 @@ numits = numstart + fthrits
 
 ipopt_tol = 1e-1 ##not needed: for GP
 # n_restarts_optimizer=10 ##not needed: for GP
-# filename = "restart/restart_file_step_" ##not needed: for GP
+filename = "paths/path_number_" ##not needed: for GP
 # folder with the restart/result files
 
 # ======================================================================
