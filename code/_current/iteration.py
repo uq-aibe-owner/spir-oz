@@ -26,10 +26,7 @@ def sceq(i_pth, save_data=True):
     #loop(tt$(ord(tt)<=Tstar+1),
         for tt in range(0,Tstar+1):
             s = tt
-            
-            for t in range(s, Delta_s + s):
-                def Pr_noTip(t):
-                    return (1 - p_01)**(t-s) ###
+            ###
             #now solve for that tt
             solver.ipopt_interface(...) ###
             pickle for each tt ###

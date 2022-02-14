@@ -28,8 +28,7 @@ def EV_F_post(X, kap, n_agt, gp_old):
     u = np.zeros(Delta_s)
     #u = utility(cons=[], lab=[])
     ### the objective fcn itself
-    #VT_sum = sum(u) + beta**Delta_s * V_tail_post
-    V_tail = sum(tau[j] * beta**DT*((( (0.75*A*(k(j,s + Delta_s)**phik * 1))**gammahat )/gammahat - B * 1)/(1-beta)) for j in range(1:n_agts)) 
+    #VT_sum = sum(u) + beta**Delta_s * V_tail_post 
 
     return sum(X[I["utl"]]) + beta**Delta_s * V_tail
     

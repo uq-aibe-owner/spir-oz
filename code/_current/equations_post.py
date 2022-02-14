@@ -10,7 +10,7 @@ from variables import *
 # ======================================================================
 # utility function u(c,l)
 def utility(con, lab):
-    return sum(np.log(con)) - sum(lab) # -J could make cobb-douglas, may fix /0 issue
+    return sum(np.log(con))  # + sum(lab) # -J could make cobb-douglas, may fix /0 issue
 ### CJ has power with gamma similar to Scheidegger
 
 # ======================================================================
@@ -20,16 +20,12 @@ def V_INFINITY(kap=[]):
     c = output_f(kap, kap / 3)
     v_infinity = utility(c) / (1 - beta)
     return v_infinity
-    
-# ======================================================================
 
-def Pr_noTip(t):
-    return (1 - p_01)**(t)
 
 # ======================================================================
 # output_f
-def output(zeta, k, l, t):
-    return (zeta2 + Probs(t)*(zeta1-zeta2))*A*(k[:,t]**alpha) * (l[:,t]**(1-alpha))
+def output(zeta, k, l):
+    return zeta2*A*(k[:,t]**alpha) * (l[:,t]**(1-alpha))
 
 
 # ======================================================================
@@ -52,7 +48,7 @@ def budget(c,Inv,k,A,l,t, Probs, untipped):
     return sum(c[:,t] + Inv[:,t] + Gamma_adjust(k, Inv)) - sum(output(etc, untipped))
     
 # ======================================================================
-#v-tail
+# v-tail
 
 V_tail = sum(tau[j] * beta**DT*((( (0.75*A*(k(j,s + Delta_s)**phik * 1))**gammahat )/gammahat - B * 1)/(1-beta)) for j in range(1:n_agts))
 

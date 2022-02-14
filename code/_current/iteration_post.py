@@ -21,7 +21,10 @@ import time
 def sceq(i_pth, save_data=True):
     # i_pth is greater than zero
     s = i_pth - 1
-    Kap(j,s) = unpickle.Kpath(j, s, "0") 
+    # unpickle
+    infile = open(filename + "0.pcl",'rb')
+    Kap(j,s) = pickle.load(infile)[Kpath](j, i_pth, "0")
+    infile.close()
     #solve busc_tipped using nlp maximizing obj;
     solver_post.ipopt_interface(Xtraining[iI], n_agt, gp_old,verbose=verbose) 
 ###
