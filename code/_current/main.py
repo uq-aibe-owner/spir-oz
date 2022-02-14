@@ -121,50 +121,13 @@ def get_values(kap):
 def generate_random_k_vals(): 
     return rngm.uniform(kap_L+0.2, kap_U-0.2, (No_samples, n_agt)) 
 
-def solve_for_kvals(kap, n_agt): 
+def solve_for_kvals(kap, n_agt, gp_old): 
 
     result = np.empty((kap.shape[0]))
     for iter in range(kap.shape[0]): 
-        result[iter] = solver.ipopt_interface(k_init=kap[iter], n_agt=n_agt=gp_old,initial=False, verbose=verbose)['obj']
+        result[iter] = solver.ipopt_interface(k_init=kap[iter], n_agt=n_agt, gp_old=gp_old,initial=False, verbose=verbose)['obj']
 
     return result
-
-def convergence_check():
-    # tests for convergence by checking the predicted values at the sampled points of the final
-    # ipopt_interface and then testing on the optimized value #v_old - val_tst
-
-    # load the final instance of Gaussian Process
-
-    gp_old = get_gaussian_process() 
-
-    random_k = generate_random_k_vals() 
-
-    val_old = get_values(random_k) 
-
-    val_new = solve_for_kvals(random_k, n_agt)
-
-    #for iter in ctnr:
-    #    kap_tst.append(i['kap'])
-    #    val_tst.append(i['obj'])
-
-    #kap_tst = np.array(kap_tst)
-    #val_tst = np.array(val_tst)
-
-
-    print("=================== Convergence Check ===================")
-    print(" ")
-    print("Should be close to zero for all values")
-
-    np.set_printoptions(precision=2)
-
-    print(val_old - val_new)
-
-    print("maximum difference between value function ipopt_interfaces is",np.max(np.abs(val_old-val_new)))
-
-    print("generated from k vals",random_k)
-
-    return val_old - val_new
-
 
 #def extract_variables(default=True, k_vals=None):
 #    # extract the consumption, investment, labour variables (from the final i_pth if default=True)
@@ -191,6 +154,8 @@ def convergence_check():
 #    labor = np.array(labor)
 #
 #    return kap_tst, val_tst, consumption, investment, labor
+
+
 
 #kap_tst, val_tst, consumption, investment, labor = extract_variables()
 # print(consumption)
