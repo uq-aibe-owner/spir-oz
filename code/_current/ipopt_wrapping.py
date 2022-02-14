@@ -97,7 +97,7 @@ def EV_G(X, kap, n_agt):
 #   Computation (finite difference) of Jacobian of equality constraints 
 #   for first time step
     
-def EV_JAC_G(X, flag, kap, n_agt, gp_old):
+def EV_JAC_G(X, flag, kap, n_agt):
     N=n_pol
     M=n_ctt
     #print(N, "  ",M) #testing testing
@@ -119,13 +119,13 @@ def EV_JAC_G(X, flag, kap, n_agt, gp_old):
     else:
         # Finite Differences
         h=1e-4
-        gx1=EV_G(X, kap, n_agt, gp_old)
+        gx1=EV_G(X, kap, n_agt)
         
         for ixM in range(M):
             for ixN in range(N):
                 xAdj=np.copy(X)
                 xAdj[ixN]=xAdj[ixN]+h
-                gx2=EV_G(xAdj, kap, n_agt, gp_old)
+                gx2=EV_G(xAdj, kap, n_agt)
                 A[ixN + ixM*N]=(gx2[ixM] - gx1[ixM])/h
         return A
   
@@ -140,7 +140,7 @@ class ipopt_class_inst():
     Uses the existing instance of the Gaussian Process (GP OLD) 
     """
 
-    def __init__(self, X, n_agents, k_init, NELE_JAC, NELE_HESS, gp_old=None, verbose=False): 
+    def __init__(self, X, n_agents, k_init, NELE_JAC, NELE_HESS=None, verbose=False): 
         self.x = X 
         self.n_agents = n_agents 
         self.k_init = k_init 

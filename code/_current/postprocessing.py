@@ -55,7 +55,7 @@ def ls_error(n_agents, t1, t2, num_points):
         gp_old = gp
         # solve bellman equations at test points
         for j in range(len(k_test)):
-            y_test[j] = solver.ipopt_interface(k_test[j], n_agents, gp_old)["obj"]
+            y_test[j] = solver.ipopt_interface(k_test[j], n_agents)["obj"]
 
         targ_new = y_test
         # plot predictive mean and 95% quantiles

@@ -30,7 +30,7 @@ def output_f(zeta, kap, lab):
 
 # ======================================================================
 # output_f
-def value_f(init, gp_old, Kap2):
+def value_f(init, Kap2):
     if init:
         return V_INFINITY(Kap2)
     else:
@@ -46,7 +46,7 @@ def Gamma_adjust(kap=[], inv=[]):
 # Constraints
 
 
-def f_ctt(X, gp_old, Kap2, init, kap):
+def f_ctt(X, Kap2, init, kap):
     # f_prod=output_f(kap, lab, itm)
 
     # Summing the 2d policy variables
@@ -71,7 +71,7 @@ def f_ctt(X, gp_old, Kap2, init, kap):
     e_ctt["savt"] = SAV_com - X[I["sav"]]
     # e_ctt["itmt"] = ITM_com - X[I["itm"]] ## for Cai-Judd rep
     # value function constraint
- #   e_ctt["valt"] = X[I["val"]] - sum(value_f(init, gp_old, Kap2))
+ #   e_ctt["valt"] = X[I["val"]] - sum(value_f(init, Kap2))
     # output constraint
     e_ctt["outt"] = X[I["out"]] - output_f(kap, X[I["itm"]])  # *np.power(lab, phil)
     # utility constraint

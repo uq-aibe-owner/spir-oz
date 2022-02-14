@@ -23,14 +23,14 @@ def sceq(i_pth, save_data=True):
     s = i_pth - 1
     Kap(j,s) = unpickle.Kpath(j, s, "0") 
     #solve busc_tipped using nlp maximizing obj;
-    solver_post.ipopt_interface(Xtraining[iI], n_agt, gp_old,verbose=verbose) 
+    solver_post.ipopt_interface(Xtraining[iI], n_agt,verbose=verbose) 
 ###
                  
         
         if i_pth == 0: 
             res = solver.ipopt_interface(Xtraining[iI], n_agt,initial=True,verbose=verbose)
         else: 
-            res = solver_post.ipopt_interface(Xtraining[iI], n_agt, gp_old,initial=False,verbose=verbose)
+            res = solver_post.ipopt_interface(Xtraining[iI], n_agt,initial=False,verbose=verbose)
         print(res['ITM'])
         SAV_add = np.zeros(n_agt, float)
         ITM_add = np.zeros(n_agt, float)
