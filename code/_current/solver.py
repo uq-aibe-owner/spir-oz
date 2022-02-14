@@ -9,17 +9,18 @@
 #     Involves a class to pass the optimisation problem to ipopt
 # ======================================================================
 
+from pickle import TRUE
 from parameters import *
 from variables import *
 from equations import * 
-from ipopt_wrapper import ipopt_obj
+from ipopt_wrapping import ipopt_class_inst
 
 import numpy as np
 
 # import pyipopt
 import cyipopt 
 
-def ipoptSolve(k_init, n_agt, gp_old=None, final=False, initial=False, verbose=False):
+def ipopt_interface(k_init, n_agt, gp_old=None, final=False, verbose=False):
 
     N = n_pol  # number of vars
     M = n_ctt  # number of constraints
@@ -62,7 +63,7 @@ def ipoptSolve(k_init, n_agt, gp_old=None, final=False, initial=False, verbose=F
         G_L[I_ctt[iter]]=ctt_L[iter]
         G_U[I_ctt[iter]]=ctt_U[iter]
 
-    HS07 = ipopt_obj(X, n_agents=n_agt, k_init=k_init, NELE_JAC=NELE_JAC, NELE_HESS=NELE_HESS, gp_old=gp_old, initial=initial, verbose=verbose) 
+    HS07 = ipopt_class_inst(X, n_agents=n_agt, k_init=k_init, NELE_JAC=NELE_JAC, NELE_HESS=NELE_HESS, gp_old=gp_old, verbose=verbose) 
 
     nlp = cyipopt.Problem(
         n=N,

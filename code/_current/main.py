@@ -3,13 +3,13 @@
 #     edited by Patrick O'Callaghan, with Cameron Gordon and Josh Aberdeen, 11/2021
 # ======================================================================
 
-import nonlinear_solver as solver
+import solver as solver
 from parameters import *  # parameters of model
 from variables import *
 from equations import *
-import i_pth
 import postprocessing as post  # computes the L2 and Linfinity error of the model
-
+import iteration
+import iteration_post
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
@@ -26,6 +26,22 @@ from datetime import datetime
 
 start = time.time()
 
+
+for i_pth in range(0, Tstar):
+# terminal value function
+    if (i_pth==0):
+        print("start with untipped path")
+        iteration.sceq(i_pth)
+    
+    else:     
+        print("Now we are running the tipped path", i_pth)
+        iteration_post.sceq_post(i_pth)
+
+
+
+
+
+
 now = datetime.now()
 dt = int(now.strftime("%H%M%S%f"))
 rngm = np.random.default_rng(dt)  # fix seed #move to main so it doesnt re-initialise
@@ -35,7 +51,7 @@ for iter in range(numstart, numits):
 
     # terminal value function
     # run the model:
-    res_fin = i_pth.GPR_post(iter)
+    res_fin = i_pth.sceq(iter)
 
 # ======================================================================
 print("===============================================================")
@@ -109,13 +125,13 @@ def solve_for_kvals(kap, n_agt, gp_old):
 
     result = np.empty((kap.shape[0]))
     for iter in range(kap.shape[0]): 
-        result[iter] = solver.ipoptSolve(k_init=kap[iter], n_agt=n_agt, gp_old=gp_old,initial=False, verbose=verbose)['obj']
+        result[iter] = solver.ipopt_interface(k_init=kap[iter], n_agt=n_agt, gp_old=gp_old,initial=False, verbose=verbose)['obj']
 
     return result
 
 def convergence_check():
     # tests for convergence by checking the predicted values at the sampled points of the final
-    # ipoptSolve and then testing on the optimized value #v_old - val_tst
+    # ipopt_interface and then testing on the optimized value #v_old - val_tst
 
     # load the final instance of Gaussian Process
 
@@ -143,7 +159,7 @@ def convergence_check():
 
     print(val_old - val_new)
 
-    print("maximum difference between value function ipoptSolves is",np.max(np.abs(val_old-val_new)))
+    print("maximum difference between value function ipopt_interfaces is",np.max(np.abs(val_old-val_new)))
 
     print("generated from k vals",random_k)
 

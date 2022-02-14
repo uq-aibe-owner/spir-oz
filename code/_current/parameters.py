@@ -36,6 +36,8 @@ ipopt_tol = 1e-1 ##not needed: for GP
 
 # ======================================================================
 # Model Parameters
+
+p_01 = 0.01 # transition probability from state 0 to 1 
 Delta_s = 30
 Tstar = 20
 beta = 0.99

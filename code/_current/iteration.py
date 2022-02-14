@@ -6,7 +6,7 @@ import numpy as np
 from parameters import *
 from variables import *
 from equations import *
-import nonlinear_solver as solver
+import solver
 
 # import cPickle as pickle
 import pickle
@@ -19,38 +19,22 @@ import time
 # ======================================================================
 
 
-#def GPR_post(i_pth, rng, save_data=True):
-def GPR_post(i_pth, save_data=True):
-    
-    if i_pth == 0:
-        gp_old = None ### change to untipped model 
-
-    elif i_pth > 0: 
-        # Load the model from the previous i_pth step
-        restart_data = filename + str(i_pth - 1) + ".pcl"
-        with open(restart_data, "rb") as fd_old:
-            gp_old = pickle.load(fd_old)
-            print("data from i_pth step ", i_pth - 1, "loaded from disk")
-        fd_old.close()
-
-    ##generate sample aPoints
-    stt_nlp = time.time()
-    dt = 12345 #int(now.strftime("%d%H%M%S%f"))#"%M%S%f"))
-    # fix seed
-    rng = np.random.default_rng(dt)
-    dim = n_agt
-    Xtraining = rng.uniform(kap_L, kap_U, (No_samples, dim))
-    y = np.zeros(No_samples, float)  # training targets
-
-    ctnr = []
-    # solve bellman equations at training points
-    # Xtraining is our initial level of capital for this i_pth
-
-    for iI in range(len(Xtraining)):
-        if i_pth == 0: 
-            res = solver.ipoptSolve(Xtraining[iI], n_agt,initial=True,verbose=verbose)
-        else: 
-            res = solver.ipoptSolve(Xtraining[iI], n_agt, gp_old,initial=False,verbose=verbose)
+#def sceq(i_pth, rng, save_data=True):
+def sceq(i_pth, save_data=True):
+    # for i_pth=0,  
+    # iterate over periods of interest (the last extra period is for error checking only)
+    #loop(tt$(ord(tt)<=Tstar+1),
+        for tt in range(0,Tstar+1):
+            s = tt
+            
+            for t in range(s, Delta_s + s):
+                def Pr_noTip(t):
+                    return (1 - p_01)**(t-s) ###
+            #now solve for that tt
+            solver.ipopt_interface(...) ###
+            pickle for each tt ###
+        
+        """
         print(res['ITM'])
         SAV_add = np.zeros(n_agt, float)
         ITM_add = np.zeros(n_agt, float)
@@ -87,39 +71,18 @@ def GPR_post(i_pth, save_data=True):
             print("{}".format(msg))
         if i_pth == numits - 1:
             ctnr.append(res)
-    end_nlp = time.time()
-    # print data for debugging purposes
-    # for iI in range(len(Xtraining)):
-    # print Xtraining[iI], y[iI]
+        """
+            end_nlp = time.time()
+   
+            output_file = filename + str(i_pth) + ".pcl"
+            print(output_file)
+            with open(output_file, "wb") as fd:
+                pickle.dump(gp, fd, protocol=pickle.HIGHEST_PROTOCOL)
+                print("data of step ", i_pth, "  written to disk")
+                print(" -------------------------------------------")
+            fd.close()
 
-    # Instantiate a Gaussian Process model
-    kernel = RBF(length_scale_bounds=length_scale_bounds) 
-
-    # Instantiate a Gaussian Process model
-    # kernel = 1.0 * RBF(length_scale=1.0, length_scale_bounds=(1e-1, 10.0))
-
-    # kernel = 1.0 * RBF(length_scale=100.0, length_scale_bounds=(1e-1, 2e2)) \
-    # + WhiteKernel(noise_level=1, noise_level_bounds=(1e-3, 1e+0))
-
-    # kernel = 1.0 * RBF(length_scale=100.0, length_scale_bounds=(1e-1, 2e2))
-    # kernel = 1.0 * Matern(length_scale=1.0, length_scale_bounds=(1e-1, 10.0),nu=1.5)
-    stt_gpr = time.time()
-    gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=n_restarts_optimizer, alpha=alphaSK)
-    end_gpr = time.time()
-    # Fit to data using Maximum Likelihood Estimation of the parameters
-    gp.fit(Xtraining, y)
-
-    ##save the model to a file
-    output_file = filename + str(i_pth) + ".pcl"
-    print(output_file)
-    with open(output_file, "wb") as fd:
-        pickle.dump(gp, fd, protocol=pickle.HIGHEST_PROTOCOL)
-        print("data of step ", i_pth, "  written to disk")
-        print(" -------------------------------------------")
-    fd.close()
-
-    if i_pth == numits - 1:
-        return ctnr
+    return #ctnr
 
 
 # ======================================================================
