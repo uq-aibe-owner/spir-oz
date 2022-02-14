@@ -24,14 +24,19 @@ def sceq(i_pth, save_data=True):
     # for i_pth=0,  
     # iterate over periods of interest (the last extra period is for error checking only)
     #loop(tt$(ord(tt)<=Tstar+1),
-        for tt in range(0,Tstar+1):
-            s = tt
-            ###
-            #now solve for that tt
-            solver.ipopt_interface(...) ###
-            pickle for each tt ###
-        
+
+        res = dict()
+        # solve for s == 0
+        res[0] = solver.ipopt_interface(k_init, n_agt=None, final=False, verbose=False) ###           
+        for s in range(1, Tstar+1):
+            #now solve for s > 0
+            if s < Tstar+1:
+                res[s] = solver.ipopt_interface(res[s-1]["knx"], n_agt=None, final=False, verbose=False) ###
+            else:
+                res[s] = solver.ipopt_interface(res[s-1]["knx"], n_agt=None, final=True, verbose=False) ###
         """
+        res[s]["kap"]
+
         print(res['ITM'])
         SAV_add = np.zeros(n_agt, float)
         ITM_add = np.zeros(n_agt, float)
@@ -74,8 +79,8 @@ def sceq(i_pth, save_data=True):
             output_file = filename + str(i_pth) + ".pcl"
             print(output_file)
             with open(output_file, "wb") as fd:
-                pickle.dump(gp, fd, protocol=pickle.HIGHEST_PROTOCOL)
-                print("data of step ", i_pth, "  written to disk")
+                pickle.dump(res, fd, protocol=pickle.HIGHEST_PROTOCOL)
+                print("data of path ", i_pth, "  written to disk")
                 print(" -------------------------------------------")
             fd.close()
 

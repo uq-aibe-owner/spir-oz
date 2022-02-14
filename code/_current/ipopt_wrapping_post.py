@@ -12,7 +12,7 @@ import equations_post
 #=======================================================================
 #   Objective Function during VFI (note - we need to interpolate on an "old" GPR)
     
-def EV_F_post(X, kap, n_agt, gp_old):
+def EV_F_post(X, kap, n_agt):
     
     """ # initialize correct data format for training point
     s = (1,n_agt)
@@ -38,7 +38,7 @@ def EV_F_post(X, kap, n_agt, gp_old):
 #=======================================================================
 #   Computation of gradient (first order finite difference) of the objective function 
     
-def EV_GRAD_F_post(X, kap, n_agt, gp_old):
+def EV_GRAD_F_post(X, kap, n_agt):
     
     N=len(X)
     GRAD=np.zeros(N, float) # Initial Gradient of Objective Function
@@ -49,19 +49,19 @@ def EV_GRAD_F_post(X, kap, n_agt, gp_old):
         
         if (xAdj[ixN] - h >= 0):
             xAdj[ixN]=X[ixN] + h            
-            fx2=EV_F_post(xAdj, kap, n_agt, gp_old)
+            fx2=EV_F_post(xAdj, kap, n_agt)
             
             xAdj[ixN]=X[ixN] - h
-            fx1=EV_F_post(xAdj, kap, n_agt, gp_old)
+            fx1=EV_F_post(xAdj, kap, n_agt)
             
             GRAD[ixN]=(fx2-fx1)/(2.0*h)
             
         else:
             xAdj[ixN]=X[ixN] + h
-            fx2=EV_F_post(xAdj, kap, n_agt, gp_old)
+            fx2=EV_F_post(xAdj, kap, n_agt)
             
             xAdj[ixN]=X[ixN]
-            fx1=EV_F_post(xAdj, kap, n_agt, gp_old)
+            fx1=EV_F_post(xAdj, kap, n_agt)
             GRAD[ixN]=(fx2-fx1)/h
             
     return GRAD
@@ -70,7 +70,7 @@ def EV_GRAD_F_post(X, kap, n_agt, gp_old):
 
 #======================================================================
 #   Equality constraints during the VFI of the model
-def EV_G_post(X, kap, n_agt, gp_old):
+def EV_G_post(X, kap, n_agt):
     
     M=n_ctt
     G=np.empty(M, float)
@@ -86,7 +86,7 @@ def EV_G_post(X, kap, n_agt, gp_old):
     print(np.shape(kap2)) """
 
     # pull in constraints
-    e_ctt = equations_post.f_ctt(X, gp_old, kap2, 0, kap)
+    e_ctt = equations_post.f_ctt(X, kap2, 0, kap)
     # apply all constraints with this one loop
     for iter in ctt_key:
         G[I_ctt[iter]] = e_ctt[iter]
@@ -97,7 +97,7 @@ def EV_G_post(X, kap, n_agt, gp_old):
 #   Computation (finite difference) of Jacobian of equality constraints 
 #   during i_pth  
   
-def EV_JAC_G_post(X, flag, kap, n_agt, gp_old):
+def EV_JAC_G_post(X, flag, kap, n_agt):
     N=len(X)
     M=n_ctt
     NZ=M*N
@@ -118,13 +118,13 @@ def EV_JAC_G_post(X, flag, kap, n_agt, gp_old):
     else:
         # Finite Differences
         h=1e-4
-        gx1=EV_G_post(X, kap, n_agt, gp_old)
+        gx1=EV_G_post(X, kap, n_agt)
 
         for ixM in range(M):
             for ixN in range(N):
                 xAdj=np.copy(X)
                 xAdj[ixN]=xAdj[ixN]+h
-                gx2=EV_G_post(xAdj, kap, n_agt, gp_old)
+                gx2=EV_G_post(xAdj, kap, n_agt)
                 A[ixN + ixM*N]=(gx2[ixM] - gx1[ixM])/h
         return A
     
@@ -137,7 +137,7 @@ class ipopt_class_inst():
     Uses the existing instance of the Gaussian Process (GP OLD) 
     """
 
-    def __init__(self, X, n_agents, k_init, NELE_JAC, NELE_HESS, gp_old=None, verbose=False): 
+    def __init__(self, X, n_agents, k_init, NELE_JAC, NELE_HESS=None, verbose=False): 
         self.x = X 
         self.n_agents = n_agents 
         self.k_init = k_init 

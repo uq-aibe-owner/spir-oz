@@ -111,7 +111,7 @@ def f_ctt_post(X, gp_old, Kap2, init, kap):
     e_ctt["savt"] = SAV_com - X[I["sav"]]
     # e_ctt["itmt"] = ITM_com - X[I["itm"]] ## for Cai-Judd rep
     # value function constraint
- #   e_ctt["valt"] = X[I["val"]] - sum(value_f(init, gp_old, Kap2))
+ #   e_ctt["valt"] = X[I["val"]] - sum(value_f(init, Kap2))
     # output constraint
     e_ctt["outt"] = X[I["out"]] - output(kap, X[I["itm"]])  # *np.power(lab, phil)
     # utility constraint
