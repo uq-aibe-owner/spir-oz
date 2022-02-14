@@ -31,7 +31,7 @@ numits = numstart + fthrits
 
 ipopt_tol = 1e-1 ##not needed: for GP
 # n_restarts_optimizer=10 ##not needed: for GP
-filename = "paths/path_number_" ##not needed: for GP
+filename = "paths/path_number_"
 # folder with the restart/result files
 
 # ======================================================================
@@ -53,6 +53,7 @@ phim = 0.5 # weight of intermediate inputs in production
 
 gamma = 2.0 # power utility exponent
 gammahat = 1 - gamma
+tau = np.ones(n_agt) # regional weights ### change to rho 
 delta = 0.025 # discount factor
 eta = 1 # 
 big_A = 1 / (phim ** phim * phik ** phik)  # * (1-phik-phim)**(1-phik-phim))
@@ -62,7 +63,9 @@ mu = np.ones(n_agt) * 1 / n_agt
 
 # Ranges For States
 kap_L = 0.1
-kap_U = 10
-range_cube = kap_U - kap_L  # range of [0..1]^d in 1D
-
+kap_U = 10 
+#k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
+k_init = np.ones(n_agt)
+for j in range(n_agt):
+    k_init[j] = np.exp(np.log(kap_L) + (np.log(kap_U)-np.log(kap_L)) * j / (n_agt-1))
 # ======================================================================
