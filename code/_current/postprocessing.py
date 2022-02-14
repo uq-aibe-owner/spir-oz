@@ -12,7 +12,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import (RBF, Matern, RationalQuadratic,
                                               ExpSineSquared, DotProduct,
                                               ConstantKernel)
-import nonlinear_solver as solver
+import solver as solver
 import os
 #======================================================================    
 # Routine compute the errors
@@ -55,7 +55,7 @@ def ls_error(n_agents, t1, t2, num_points):
         gp_old = gp
         # solve bellman equations at test points
         for j in range(len(k_test)):
-            y_test[j] = solver.ipoptSolve(k_test[j], n_agents, gp_old)["obj"]
+            y_test[j] = solver.ipopt_interface(k_test[j], n_agents, gp_old)["obj"]
 
         targ_new = y_test
         # plot predictive mean and 95% quantiles
@@ -75,7 +75,7 @@ def ls_error(n_agents, t1, t2, num_points):
         to_print[0,2]= avg_diff_mean
         to_print[0,3]= max_diff_targ
         to_print[0,4]= avg_diff_targ
-        msg="with k_test varying across ipoptSolves:"
+        msg="with k_test varying across ipopt_interfaces:"
         msg+="alphaSK=" + str(alphaSK) + ",tolIpopt=" + str(alphaSK)
         msg+=",n_restarts_optimizer=" +str(n_restarts_optimizer)
         msg+=",numstart=" + str(numstart)
