@@ -24,17 +24,19 @@ def sceq(i_pth, save_data=True):
     # for i_pth=0,  
     # iterate over periods of interest (the last extra period is for error checking only)
     #loop(tt$(ord(tt)<=Tstar+1),
-        for s in range(0,Tstar+1):
-            
-            
-            for t in range(s, Delta_s + s):
-                def Pr_noTip(t):
-                    return (1 - p_01)**(t-s) ###
-            #now solve for that tt
-            res = solver.ipopt_interface(...) ###
-            pickle [:, :, 0] for each s ###
-        
+
+        res = dict()
+        # solve for s == 0
+        res[0] = solver.ipopt_interface(k_init, n_agt=None, final=False, verbose=False) ###           
+        for s in range(1, Tstar+1):
+            #now solve for s > 0
+            if s < Tstar+1:
+                res[s] = solver.ipopt_interface(res[s-1]["knx"], n_agt=None, final=False, verbose=False) ###
+            else:
+                res[s] = solver.ipopt_interface(res[s-1]["knx"], n_agt=None, final=True, verbose=False) ###
         """
+        res[s]["kap"]
+
         print(res['ITM'])
         SAV_add = np.zeros(n_agt, float)
         ITM_add = np.zeros(n_agt, float)
