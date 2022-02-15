@@ -70,15 +70,16 @@ def EV_GRAD_F_post(X, kap, n_agt):
 
 #======================================================================
 #   Equality constraints during the VFI of the model
-def EV_G_post(X, kap, t):
+def EV_G_post(X, kap):
     
-    M=n_ctt
+    M=n_ctt * Delta
     G=np.empty(M, float)
 
     #s = (1,n_agt)
-
+    for t in range(Delta):
+        var[t] = X[: t * n_agt]
     # pull in constraints
-    e_ctt = equations_post.f_ctt(X, kap, t)
+    e_ctt = equations_post.f_ctt(var[t], kap)
     # apply all constraints with this one loop
     for iter in ctt_key:
         G[I_ctt[iter]] = e_ctt[iter]
@@ -135,22 +136,21 @@ class ipopt_class_inst():
         self.k_init = k_init 
         self.NELE_JAC = NELE_JAC 
         self.NELE_HESS = NELE_HESS 
-        self.gp_old = gp_old 
         self.initial = initial 
         self.verbose = verbose 
 
     # Create ev_f, eval_f, eval_grad_f, eval_g, eval_jac_g for given k_init and n_agent 
     def eval_f(self, x): 
-        return EV_F_post(x, self.k_init, self.n_agents, self.gp_old) 
+        return EV_F_post(x, self.k_init, self.n_agents) 
 
     def eval_grad_f(self, x): 
-        return EV_GRAD_F_post(x, self.k_init, self.n_agents, self.gp_old) 
+        return EV_GRAD_F_post(x, self.k_init, self.n_agents) 
 
     def eval_g(self, x): 
-        return EV_G_post(x, self.k_init, self.n_agents, self.gp_old) 
+        return EV_G_post(x, self.k_init, self.n_agents) 
 
     def eval_jac_g(self, x, flag):
-        return EV_JAC_G_post(x, flag, self.k_init, self.n_agents, self.gp_old) 
+        return EV_JAC_G_post(x, flag, self.k_init, self.n_agents) 
 
     def objective(self, x): 
         # Returns the scalar value of the objective given x. 

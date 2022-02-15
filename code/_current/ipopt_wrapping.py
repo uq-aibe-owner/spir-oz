@@ -84,7 +84,7 @@ def EV_G(X, kap, n_agt):
     print(np.shape(kap2)) """
 
     # pull in constraints
-    e_ctt =  equations.f_ctt(X, kap2, 1, kap)
+    e_ctt =  equations.f_ctt(X, kap)
     # apply all constraints with this one loop
     for iter in ctt_key:
         G[I_ctt[iter]] = e_ctt[iter]

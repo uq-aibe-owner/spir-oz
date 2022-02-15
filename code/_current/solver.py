@@ -45,7 +45,7 @@ def ipopt_interface(k_init, n_agt=None, final=False, verbose=False):
     Z_U = np.empty(N)
 
     # get coords of an individual grid points
-    grid_pt_box = k_init
+    # grid_pt_box = k_init ### to remove
 
     # set bounds for policy variables 
     for iter in pol_key:
@@ -87,7 +87,7 @@ def ipopt_interface(k_init, n_agt=None, final=False, verbose=False):
     ctt = info["g"]  # constraints
     obj = info["obj_val"]  # objective value
 
-    if final != True:
+    if final == True:
         nlp.close()
 
     # x: Solution of the primal variables

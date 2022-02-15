@@ -49,7 +49,7 @@ def budget(kap, c, Inv, l, t):
 # ======================================================================
 # Constraints
 
-def f_ctt(X, kap, t): 
+def f_ctt(var[t], kap): 
     # f_prod=output_f(kap, lab, itm)
     e_ctt = dict()
     # canonical market clearing constraint
