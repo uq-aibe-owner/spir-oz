@@ -123,10 +123,10 @@ prv_ind = 0
 # dict for indices of each policy variable in X/x
 I = dict()
 for iter in pol_key:
-    n_pol += n_agt ** d_pol[iter] * Delta
+    n_pol += n_agt ** d_pol[iter]
     # allocating slices of indices to each policy variable as a key
-    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter] * Delta)
-    prv_ind += n_agt ** d_pol[iter] * Delta
+    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter])
+    prv_ind += n_agt ** d_pol[iter]
 
 
 # =========================
@@ -142,7 +142,7 @@ I_ctt = dict()
 prv_ind = 0
 for iter in ctt_key:
     # add to number of total constraint values
-    n_ctt += n_agt ** d_ctt[iter] * Delta
+    n_ctt += n_agt ** d_ctt[iter]
     # allocating slicess of indices to each constraint variable as a key
-    I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter] * Delta)
-    prv_ind += n_agt ** d_ctt[iter] * Delta
+    I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter])
+    prv_ind += n_agt ** d_ctt[iter]

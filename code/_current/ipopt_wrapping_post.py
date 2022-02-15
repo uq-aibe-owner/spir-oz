@@ -75,14 +75,17 @@ def EV_G_post(X, kap):
     M=n_ctt * Delta
     G=np.empty(M, float)
 
-    #s = (1,n_agt)
+    # I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter])
+    # I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter])
+    var = []
     for t in range(Delta):
-        var[t] = X[: t * n_agt]
-    # pull in constraints
-    e_ctt = equations_post.f_ctt(var[t], kap)
-    # apply all constraints with this one loop
-    for iter in ctt_key:
-        G[I_ctt[iter]] = e_ctt[iter]
+        for iter in ctt_key:
+            var[t] = X[t * sum(n_agt**d_ctt[iter]): (t+1) * sum(n_agt**d_ctt[iter])]
+        # pull in constraints
+        e_ctt[t] = equations_post.f_ctt(var[t], kap)
+        # apply all constraints with this one loop
+        for iter in ctt_key:
+            G[I_ctt[iter]] = e_ctt[t][iter]
 
     return G
   

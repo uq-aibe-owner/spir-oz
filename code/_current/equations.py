@@ -49,20 +49,20 @@ def budget(kap, c, Inv, l, t):
 # ======================================================================
 # Constraints
 
-def f_ctt(var[t], kap): 
+def f_ctt(var, kap): 
     # f_prod=output_f(kap, lab, itm)
     e_ctt = dict()
     # canonical market clearing constraint
-    e_ctt["mclt"] = budget(kap, X[I["con"]], X[I["sav"]], X[I["lab"]], t)
+    e_ctt["mclt"] = budget(kap, var[I["con"]], var[I["sav"]], var[I["lab"]], t)
     # capital next period constraint
-    e_ctt["knxt"] = (1 - delta) * kap + X[I["sav"]] - X[I["knx"]] 
+    e_ctt["knxt"] = (1 - delta) * kap + var[I["sav"]] - var[I["knx"]] 
     # intermediate sum constraints
-    #e_ctt["savt"] = SAV_com - X[I["sav"]]
-    # e_ctt["itmt"] = ITM_com - X[I["itm"]] ## for Cai-Judd rep
+    #e_ctt["savt"] = SAV_com - var[I["sav"]]
+    # e_ctt["itmt"] = ITM_com - var[I["itm"]] ## for Cai-Judd rep
     # output constraint
-    e_ctt["outt"] = X[I["out"]] - output(kap, X[I["lab"]], t)
+    e_ctt["outt"] = var[I["out"]] - output(kap, var[I["lab"]], t)
     # utility constraint
-    e_ctt["utlt"] = X[I["utl"]] - utility(X[I["con"]], X[I["lab"]], t)
+    e_ctt["utlt"] = var[I["utl"]] - utility(var[I["con"]], var[I["lab"]], t)
     # e_ctt["blah blah blah"] = constraint rearranged into form that can be equated to zero
 
     # Check dicts are all same length
@@ -80,8 +80,8 @@ def f_ctt(var[t], kap):
     # ITM_add = np.zeros(n_agt, float)
     # for iter in range(n_agt):
     #     for ring in range(n_agt):
-    #         #  SAV_com[iter] *= X[I["SAV"]][iter+n_agt*ring]**xi[ring] ## for Cai-Judd rep
-    #         #  ITM_com[iter] *= X[I["ITM"]][iter+n_agt*ring]**mu[ring] ## for Cai-Judd rep
-    #         #  SAV_add[iter] += X[I["SAV"]][iter*n_agt+ring] ## for Cai-Judd rep
-    #         #SAV_add[iter] += X[I["SAV"]][iter * n_agt + ring]  ### to add Gamma?
-    #     #  ITM_add[iter] += X[I["ITM"]][iter*n_agt+ring] ## for Cai-Judd rep
+    #         #  SAV_com[iter] *= var[I["SAV"]][iter+n_agt*ring]**xi[ring] ## for Cai-Judd rep
+    #         #  ITM_com[iter] *= var[I["ITM"]][iter+n_agt*ring]**mu[ring] ## for Cai-Judd rep
+    #         #  SAV_add[iter] += var[I["SAV"]][iter*n_agt+ring] ## for Cai-Judd rep
+    #         #SAV_add[iter] += var[I["SAV"]][iter * n_agt + ring]  ### to add Gamma?
+    #     #  ITM_add[iter] += var[I["ITM"]][iter*n_agt+ring] ## for Cai-Judd rep

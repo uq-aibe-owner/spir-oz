@@ -29,7 +29,8 @@ def EV_F(X, kap, n_agt):
     # Compute Value Function
     VT_sum=utility(X[I["con"]], X[I["lab"]]) + beta*V_old1 """
        
-    return X[I["utl"]] + beta*X[I["val"]]
+    return X[I["utl"]] + beta*X[I["val"]] ### to remove "val" replace with V_tail
+                                            ### also "utl" needs to sum across t
 
 #=======================================================================
     
