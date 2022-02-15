@@ -10,7 +10,7 @@ verbose = True
 economic_verbose = True
 # ======================================================================
 # number of goods of the model
-n_agt = 2  ## for Cai-Judd this is number of regions
+n_agt = 4  ## for Cai-Judd this is number of regions
 # Number of paths
 No_samples = 10 * n_agt
 # ======================================================================
@@ -20,7 +20,7 @@ No_samples = 10 * n_agt
 # set numstart equal to the last path.)
 numstart = 0
 # how many i_pths
-fthrits = 4
+fthrits = 21
 numits = numstart + fthrits
 # ======================================================================
 # Number of test points to compute the error in postprocessing
