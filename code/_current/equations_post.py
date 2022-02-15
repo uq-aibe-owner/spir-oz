@@ -6,11 +6,13 @@ from cmath import sqrt
 import numpy as np
 from parameters import *
 from variables import * 
-from equations import *
+from equations import * 
+del globals()[output]
+#utility, V_tail, Pr_noTip, output, Gamma_adjust, budget, f_ctt
 
 # ======================================================================
 # output_f
-def output(zeta, k, l):
-    return zeta2*A*(k[t,:]**alpha) * (l[t,:]**(1-alpha))
+def output(k, l, t):
+    return zeta2 * A * (k[t,:]**phik) * (l[t,:]**(1-phik))
 # ======================================================================
 

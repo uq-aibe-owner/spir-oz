@@ -10,34 +10,23 @@ import equations
 #=======================================================================
 #   Objective Function to start VFI (in our case, the value function)
         
-def EV_F(X, kap, n_agt):
+def EV_F(X, kap, s):
+    # extract tail kapital
+    var_tail = X[(Delta - 1) * sum(n_agt**d_ctt[iter]): Delta * sum(n_agt**d_ctt[iter])] 
+    kap_tail = var_tail[I["knx"]]
+    # extract utilities 
+    var = []
+    for t in range(Delta):
+      var[t] = X[(t - 1) * sum(n_agt**d_ctt[iter]): t * sum(n_agt**d_ctt[iter])]
     
-    """ # Extract Variables
-    # this loop extracts the variables more expandably than doing them individualy as before
-    for iter in i_pol_key:
-        # forms the  2d intermediate variables into globals of the same name but in matrix form
-        if d_pol[iter] == 2:
-            globals()[iter] = np.zeros((n_agt,n_agt))
-            for row in range(n_agt):
-                for col in range(n_agt):
-                    globals()[iter][row,col] = X[I[iter][0]+col+row*n_agt]
-        else:
-            # forms the 1d intermediate variables into globals of the same name in vector(list) form
-            globals()[iter] = [X[ring] for ring in I[iter]] """
-    """ val = X[I["val"]]
-    V_old1 = V_INFINITY(X[I["knx"]])
-    # Compute Value Function
-    VT_sum=utility(X[I["con"]], X[I["lab"]]) + beta*V_old1 """
-       
-    return X[I["utl"]] + beta*X[I["val"]] ### to remove "val" replace with V_tail
-                                            ### also "utl" needs to sum across t
+    return sum(var[t][I["utl"]] for t in range(Delta)) + beta**Delta * equations.V_tail(kap_tail, s)
 
 #=======================================================================
     
 #=======================================================================
 #   Computation of gradient (first order finite difference) of initial objective function 
 
-def EV_GRAD_F(X, kap, n_agt):
+def EV_GRAD_F(X, kap):
     
     N=len(X)
     GRAD=np.zeros(N, float) # Initial Gradient of Objective Function
@@ -48,19 +37,19 @@ def EV_GRAD_F(X, kap, n_agt):
         
         if (xAdj[ixN] - h >= 0):
             xAdj[ixN]=X[ixN] + h            
-            fx2=EV_F(xAdj, kap, n_agt)
+            fx2=EV_F(xAdj, kap)
             
             xAdj[ixN]=X[ixN] - h
-            fx1=EV_F(xAdj, kap, n_agt)
+            fx1=EV_F(xAdj, kap)
             
             GRAD[ixN]=(fx2-fx1)/(2.0*h)
             
         else:
             xAdj[ixN]=X[ixN] + h
-            fx2=EV_F(xAdj, kap, n_agt)
+            fx2=EV_F(xAdj, kap)
             
             xAdj[ixN]=X[ixN]
-            fx1=EV_F(xAdj, kap, n_agt)
+            fx1=EV_F(xAdj, kap)
             GRAD[ixN]=(fx2-fx1)/h
             
     return GRAD
@@ -70,25 +59,22 @@ def EV_GRAD_F(X, kap, n_agt):
 #======================================================================
 #   Equality constraints for the first time step of the model
       
-def EV_G(X, kap, n_agt):
-    M=n_ctt
+def EV_G(X, kap):
+    M=n_ctt * Delta
     G=np.empty(M, float)
 
-    s = (1,n_agt)
-    kap2 = np.zeros(s)
-    kap2[0,:] = X[I["knx"]]
-
-    """ print("should be the same")
-    #print(type(X[I["knx"]]))
-    print(np.shape(X[I["knx"]]))
-    #print(type(kap2))
-    print(np.shape(kap2)) """
-
-    # pull in constraints
-    e_ctt =  equations.f_ctt(X, kap)
-    # apply all constraints with this one loop
-    for iter in ctt_key:
-        G[I_ctt[iter]] = e_ctt[iter]
+    # I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter])
+    # I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter])
+    var = []
+    e_ctt = dict()
+    for t in range(Delta):
+        for iter in ctt_key:
+            var[t] = X[t * sum(n_agt**d_ctt[iter]): (t+1) * sum(n_agt**d_ctt[iter])]
+        # pull in constraints
+        e_ctt[t] = equations.f_ctt(var[t], kap, t)
+        # apply all constraints with this one loop
+        for iter in ctt_key:
+            G[I_ctt[iter]] = e_ctt[t][iter]
 
     return G
 
@@ -98,11 +84,11 @@ def EV_G(X, kap, n_agt):
 #   Computation (finite difference) of Jacobian of equality constraints 
 #   for first time step
     
-def EV_JAC_G(X, flag, kap, n_agt):
+def EV_JAC_G(X, flag, kap):
     N=n_pol
     M=n_ctt
     #print(N, "  ",M) #testing testing
-    NZ=n_pol*n_ctt # J - could it be this?
+    NZ=n_pol*n_ctt 
     A=np.empty(NZ, float)
     ACON=np.empty(NZ, int) # its cause int is already a global variable cause i made it
     AVAR=np.empty(NZ, int)    
@@ -120,7 +106,7 @@ def EV_JAC_G(X, flag, kap, n_agt):
     else:
         # Finite Differences
         h=1e-4
-        gx1=EV_G(X, kap, n_agt)
+        gx1=EV_G(X, kap)
         
         for ixM in range(M):
             for ixN in range(N):
@@ -141,28 +127,25 @@ class ipopt_class_inst():
     Uses the existing instance of the Gaussian Process (GP OLD) 
     """
 
-    def __init__(self, X, n_agents, k_init, NELE_JAC, NELE_HESS=None, verbose=False): 
+    def __init__(self, X, k_init, NELE_JAC, NELE_HESS=None, verbose=False): 
         self.x = X 
-        self.n_agents = n_agents 
         self.k_init = k_init 
         self.NELE_JAC = NELE_JAC 
         self.NELE_HESS = NELE_HESS 
-        self.gp_old = gp_old 
-        self.initial = initial 
         self.verbose = verbose 
 
     # Create ev_f, eval_f, eval_grad_f, eval_g, eval_jac_g for given k_init and n_agent 
     def eval_f(self, x): 
-        return EV_F(x, self.k_init, self.n_agents)
+        return EV_F(x, self.k_init)
 
     def eval_grad_f(self, x): 
-        return EV_GRAD_F(x, self.k_init, self.n_agents)  
+        return EV_GRAD_F(x, self.k_init)  
         
     def eval_g(self, x):
-        return EV_G(x, self.k_init, self.n_agents, self.gp_old)  
+        return EV_G(x, self.k_init)
         
     def eval_jac_g(self, x, flag):
-        return EV_JAC_G(x, flag, self.k_init, self.n_agents, self.gp_old)
+        return EV_JAC_G(x, flag, self.k_init)
 
     def objective(self, x): 
         # Returns the scalar value of the objective given x. 

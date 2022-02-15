@@ -12,10 +12,10 @@ from variables import *
 def utility(cons, lab, t):
     sum_util=0.0
     for i in range(n_agt):
-        nom1=(cons[t,i])**gammahat -1.0 
+        nom1=(cons[t,i])**gammahat - 1.0 
         den1=gammahat
         
-        nom2= B * lab[t,i]**etahat -1.0
+        nom2= B * lab[t,i]**etahat - 1.0
         den2= etahat
         
         sum_util+=tau[i]*(nom1/den1 - nom2/den2)
@@ -49,7 +49,7 @@ def budget(kap, c, Inv, l, t):
 # ======================================================================
 # Constraints
 
-def f_ctt(var, kap): 
+def f_ctt(var, kap, t): 
     # f_prod=output_f(kap, lab, itm)
     e_ctt = dict()
     # canonical market clearing constraint

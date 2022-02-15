@@ -20,7 +20,7 @@ import numpy as np
 # import pyipopt
 import cyipopt 
 
-def ipopt_interface(k_init, n_agt=None, final=False, verbose=False):
+def ipopt_interface(k_init, final=False, verbose=False):
 
     N = n_pol  # number of vars
     M = n_ctt  # number of constraints
