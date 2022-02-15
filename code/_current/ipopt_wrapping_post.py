@@ -25,12 +25,12 @@ def EV_F_post(X, kap, n_agt):
     VT_sum = X[I["utl"]] + beta*val """
        ### value function needs to have the full sum over Dt=30 periods: for each s
     ### thus create a vector of utilities
-    u = np.zeros(Delta_s)
+    u = np.zeros(Delta)
     #u = utility(cons=[], lab=[])
     ### the objective fcn itself
-    #VT_sum = sum(u) + beta**Delta_s * V_tail_post 
+    #VT_sum = sum(u) + beta**Delta * V_tail_post 
 
-    return sum(X[I["utl"]]) + beta**Delta_s * V_tail
+    return sum(X[I["utl"]]) + beta**Delta * V_tail
     
 #=======================================================================
 
@@ -70,23 +70,15 @@ def EV_GRAD_F_post(X, kap, n_agt):
 
 #======================================================================
 #   Equality constraints during the VFI of the model
-def EV_G_post(X, kap, n_agt):
+def EV_G_post(X, kap, t):
     
     M=n_ctt
     G=np.empty(M, float)
 
-    s = (1,n_agt)
-    kap2 = np.zeros(s)
-    kap2[0,:] = X[I["knx"]]
-
-    """ print("should be the same")
-    print(type(X[I["knx"]]))
-    print(np.shape(X[I["knx"]]))
-    print(type(kap2))
-    print(np.shape(kap2)) """
+    #s = (1,n_agt)
 
     # pull in constraints
-    e_ctt = equations_post.f_ctt(X, kap2, 0, kap)
+    e_ctt = equations_post.f_ctt(X, kap, t)
     # apply all constraints with this one loop
     for iter in ctt_key:
         G[I_ctt[iter]] = e_ctt[iter]
@@ -97,7 +89,7 @@ def EV_G_post(X, kap, n_agt):
 #   Computation (finite difference) of Jacobian of equality constraints 
 #   during i_pth  
   
-def EV_JAC_G_post(X, flag, kap, n_agt):
+def EV_JAC_G_post(X, flag, kap, t):
     N=len(X)
     M=n_ctt
     NZ=M*N
@@ -118,13 +110,13 @@ def EV_JAC_G_post(X, flag, kap, n_agt):
     else:
         # Finite Differences
         h=1e-4
-        gx1=EV_G_post(X, kap, n_agt)
+        gx1=EV_G_post(X, kap, t)
 
         for ixM in range(M):
             for ixN in range(N):
                 xAdj=np.copy(X)
                 xAdj[ixN]=xAdj[ixN]+h
-                gx2=EV_G_post(xAdj, kap, n_agt)
+                gx2=EV_G_post(xAdj, kap, t)
                 A[ixN + ixM*N]=(gx2[ixM] - gx1[ixM])/h
         return A
     

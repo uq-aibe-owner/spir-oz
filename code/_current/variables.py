@@ -21,7 +21,7 @@ d_pol = {
 
 # dimensions of the dual variables (i.e. number of constraints)
 d_ctt = {
-    "mclt": 1,
+    "mclt": 0,
     "knxt": 1,
     "outt": 1,
 #         "savt": 1,
@@ -123,10 +123,10 @@ prv_ind = 0
 # dict for indices of each policy variable in X/x
 I = dict()
 for iter in pol_key:
-    n_pol += n_agt ** d_pol[iter] * Delta_s
+    n_pol += n_agt ** d_pol[iter] * Delta
     # allocating slices of indices to each policy variable as a key
-    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter] * Delta_s)
-    prv_ind += n_agt ** d_pol[iter] * Delta_s
+    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter] * Delta)
+    prv_ind += n_agt ** d_pol[iter] * Delta
 
 
 # =========================
@@ -142,7 +142,7 @@ I_ctt = dict()
 prv_ind = 0
 for iter in ctt_key:
     # add to number of total constraint values
-    n_ctt += n_agt ** d_ctt[iter] * Delta_s
+    n_ctt += n_agt ** d_ctt[iter] * Delta
     # allocating slicess of indices to each constraint variable as a key
-    I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter] * Delta_s)
-    prv_ind += n_agt ** d_ctt[iter] * Delta_s
+    I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter] * Delta)
+    prv_ind += n_agt ** d_ctt[iter] * Delta

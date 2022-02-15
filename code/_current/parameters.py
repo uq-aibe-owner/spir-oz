@@ -38,32 +38,31 @@ filename = "paths/path_number_"
 # Model Parameters
 
 p_01 = 0.01 # transition probability from state 0 to 1 
-Delta_s = 30
+Delta = 30
 Tstar = 20
 beta = 0.99
 # rho = 0.95
-# zeta = 0.0
-""" phi = {
-    "itm": 0.5,
-    "kap": 0.5
-} """
+zeta1 = 1
+zeta2 = 0.95
 phi = 0.5 # adjustment cost multiplier
-phik = 0.5 # weight of capital in production
+phik = 0.5 # weight of capital in production # alpha in CJ
 phim = 0.5 # weight of intermediate inputs in production
 
-gamma = 2.0 # power utility exponent
-gammahat = 1 - gamma
+gamma = 0.5 # power utility exponent
+gammahat = 1 - 1/gamma
 tau = np.ones(n_agt) # regional weights ### change to rho 
 delta = 0.025 # discount factor
-eta = 1 # 
-big_A = 1 / (phim ** phim * phik ** phik)  # * (1-phik-phim)**(1-phik-phim))
-#B = ###
+eta = 0.5 #Frisch elasticity of labour supply
+etahat = 1+1/eta 
+A = (1- (1-delta)*beta) / (phik * beta)
+B = (1-phik)*A*(A-delta)**(-1/gamma)
 xi = np.ones(n_agt) * 1 / n_agt
 mu = np.ones(n_agt) * 1 / n_agt
 
 # Ranges For States
 kap_L = 0.1
 kap_U = 10 
+
 #k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
 k_init = np.ones(n_agt)
 for j in range(n_agt):
