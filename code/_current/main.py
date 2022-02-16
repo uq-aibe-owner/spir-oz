@@ -3,21 +3,22 @@
 #     edited by Patrick O'Callaghan, with Cameron Gordon and Josh Aberdeen, 11/2021
 # ======================================================================
 
-import solver as solver
+#import solver as solver
 from parameters import *  # parameters of model
 from variables import *
 from equations import *
 import postprocessing as post  # computes the L2 and Linfinity error of the model
 import iteration
 import iteration_post
-import numpy as np
+#import numpy as np
+#import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import matplotlib
-from mpl_toolkits.mplot3d import Axes3D
+#from mpl_toolkits.mplot3d import Axes3D
 import pickle
 import time
-from numpy.random import PCG64
-from datetime import datetime
+#from numpy.random import PCG64
+#from datetime import datetime
 # ======================================================================
 # Start with Value Function i_pth
 
@@ -27,45 +28,34 @@ from datetime import datetime
 start = time.time()
 
 
-for i_pth in range(0, Tstar):
+for i_pth in range(Tstar):
 # terminal value function
     if (i_pth==0):
         print("start with untipped path")
-        iteration.sceq(i_pth)
+        iteration.path_gen(i_pth)
     
     else:     
         print("Now we are running the tipped path", i_pth)
-        iteration_post.sceq_post(i_pth)
+        iteration_post.path_gen_post(i_pth)
 
-
-
-
-
-
-now = datetime.now()
-#dt = int(now.strftime("%H%M%S%f"))
-#rngm = np.random.default_rng(dt)  # fix seed #move to main so it doesnt re-initialise
-#print(rng)
-
-for iter in range(numstart, numits):
-    # terminal value function
-    # run the model:
-    res_fin = i_pth.sceq(iter)
-
+#now = datetime.now()
+end = time.time()
+minutes_taken = (end - start) / 60
 # ======================================================================
 print("===============================================================")
 print(" ")
 print(
-    " Computation of a growth model of dimension ",
-    n_agt,
-    " finished after ",
-    numits,
-    " steps",
+    " Computation of this multi-regional model",
+    " generated ",
+    n_pth,
+    " paths, finishing in ",
+    minutes_taken,
+    " minutes",
+    " "
 )
 print(" ")
 print("===============================================================")
 # ======================================================================
 
 # ======================================================================
-end = time.time()
 

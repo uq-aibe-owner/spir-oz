@@ -2,24 +2,29 @@
 #     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
 # ======================================================================
 
-import numpy as np
+
 from parameters import *
 from variables import *
 import equations
 
+import numpy as np
+#mport jax.numpy as jnp
+#from jax import jit, grad, jacfwd
+from cyipopt import minimize_ipopt
+
 #=======================================================================
 #   Objective Function to start VFI (in our case, the value function)
         
-def EV_F(X, kap, s):
+def EV_F(X, kap):
     # extract tail kapital
-    var_tail = X[(Delta - 1) * sum(n_agt**d_ctt[iter]): Delta * sum(n_agt**d_ctt[iter])] 
-    kap_tail = var_tail[I["knx"]]
+    var_final = X[(Delta - 1) * sum(n_agt**d_ctt[iter]): Delta * sum(n_agt**d_ctt[iter])] 
+    kap_tail = var_final[I["knx"]]
     # extract utilities 
     var = []
     for t in range(Delta):
       var[t] = X[(t - 1) * sum(n_agt**d_ctt[iter]): t * sum(n_agt**d_ctt[iter])]
     
-    return sum(var[t][I["utl"]] for t in range(Delta)) + beta**Delta * equations.V_tail(kap_tail, s)
+    return sum(var[t][I["utl"]] for t in range(Delta)) + beta**Delta * equations.V_tail(kap_tail)
 
 #=======================================================================
     
@@ -63,8 +68,8 @@ def EV_G(X, kap):
     M=n_ctt * Delta
     G=np.empty(M, float)
 
-    # I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter])
-    # I_ctt[iter] = slice(prv_ind, prv_ind + n_agt ** d_ctt[iter])
+    # I[iter] = slice(prv_ind, prv_ind + n_agt**d_pol[iter])
+    # I_ctt[iter] = slice(prv_ind, prv_ind + n_agt**d_ctt[iter])
     var = []
     e_ctt = dict()
     for t in range(Delta):
@@ -120,19 +125,18 @@ def EV_JAC_G(X, flag, kap):
 
 #======================================================================
 
-class ipopt_class_inst(): 
+class cyipopt_class_inst: 
     """
     Class for the optimization problem to be passed to cyipopt 
-    Further optimisations may be possible here by including a hessian (optional param) 
-    Uses the existing instance of the Gaussian Process (GP OLD) 
+    Further optimisations may be possible here by including a hessian (optional param)
     """
-
-    def __init__(self, X, k_init, NELE_JAC, NELE_HESS=None, verbose=False): 
+    def __init__(self, X, n_prim, k_init, NELE_JAC, NELE_HESS=None, verbose=True): 
         self.x = X 
+        self.n_polDel = n_prim
         self.k_init = k_init 
         self.NELE_JAC = NELE_JAC 
-        self.NELE_HESS = NELE_HESS 
-        self.verbose = verbose 
+        self.NELE_HESS = NELE_HESS
+        self.verbose = verbose
 
     # Create ev_f, eval_f, eval_grad_f, eval_g, eval_jac_g for given k_init and n_agent 
     def eval_f(self, x): 
@@ -145,7 +149,7 @@ class ipopt_class_inst():
         return EV_G(x, self.k_init)
         
     def eval_jac_g(self, x, flag):
-        return EV_JAC_G(x, flag, self.k_init)
+        return EV_JAC_G(x, self.k_init, flag)
 
     def objective(self, x): 
         # Returns the scalar value of the objective given x. 
@@ -169,5 +173,5 @@ class ipopt_class_inst():
         """Prints information at every Ipopt i_pth."""
 
         if self.verbose: 
-            msg = "Objective value at i_pth #{:d} is - {:g}"
+            msg = "Objective value at step #{:d} of current optimization is - {:g}"
             print(msg.format(iter_count, obj_value))

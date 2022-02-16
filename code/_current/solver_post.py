@@ -9,18 +9,18 @@
 #     Involves a class to pass the optimisation problem to ipopt
 # ======================================================================
 
-from pickle import TRUE
+# local modules
 from parameters import *
 from variables import *
 from equations import * 
-import ipopt_wrapping
+from ipopt_wrapping_post import cyipopt_class_inst_post
 
+# external modules
 import numpy as np
-
-# import pyipopt
 import cyipopt 
+from pickle import TRUE
 
-def ipopt_interface(k_init, n_agt=None, final=False, verbose=False):
+def ipopt_interface(kap, final=False, verbose=False):
 
     N = n_pol  # number of vars
     M = n_ctt  # number of constraints
@@ -41,8 +41,8 @@ def ipopt_interface(k_init, n_agt=None, final=False, verbose=False):
     X_U = np.empty(N)
     X_start = np.empty(N)
 
-    Z_L = np.empty(N)
-    Z_U = np.empty(N)
+   # Z_L = np.empty(N)
+   # Z_U = np.empty(N)
 
     # get coords of an individual grid points
     grid_pt_box = k_init
@@ -63,12 +63,20 @@ def ipopt_interface(k_init, n_agt=None, final=False, verbose=False):
         G_L[I_ctt[iter]]=ctt_L[iter]
         G_U[I_ctt[iter]]=ctt_U[iter]
 
-    HS07 = ipopt_wrapping.ipopt_class_inst(X, n_agents=n_agt, k_init=k_init, NELE_JAC=NELE_JAC, NELE_HESS=NELE_HESS=gp_old, verbose=verbose) 
+    SCEQ = cyipopt_class_inst_post(
+                                    X,
+                                    n_polDel,
+                                    kap, 
+                                    NELE_JAC=NELE_JAC, 
+                                    NELE_HESS=NELE_HESS, 
+                                    verbose=verbose
+                                    )
+
 
     nlp = cyipopt.Problem(
         n=N,
         m=M,
-        problem_obj=HS07,
+        problem_obj=SCEQ,
         lb=X_L,
         ub=X_U,
         cl=G_L,
@@ -81,36 +89,19 @@ def ipopt_interface(k_init, n_agt=None, final=False, verbose=False):
     nlp.add_option("print_level", 0)
     nlp.add_option("hessian_approximation", "limited-memory")
     #nlp.add_option("max_iter", 10)
-    optimal_soln, info = nlp.solve(X)
+    # solve the model and store related values in a dict called info
+    info = nlp.solve(X)[1] 
+    return info
 
-    x = info["x"]  # soln of the primal variables
-    ctt = info["g"]  # constraints
-    obj = info["obj_val"]  # objective value
-
-    if final != True:
-        nlp.close()
-
-    # x: Solution of the primal variables
-    # z_l, z_u: Solution of the bound multipliers
-    # constraint_multipliers: Solution of the constraint
-    # obj: Objective value
-    # status: Exit Status
-
-    to_print = np.hstack((obj, x))
-
-    # == debug ==
-    # f=open("results.txt", 'a')
-    # np.savetxt(f, np.transpose(to_print) #, fmt=len(x)*'%10.10f ')
-    # for num in to_print:
-    #    f.write(str(num)+"\t")
-    # f.write("\n")
-    # f.close()
-    res = dict()
-    res['obj'] = obj
-    res['ctt'] = ctt
-
-    for iter in pol_key:
-        res[iter] = x[I[iter]]
-
-    return res
+"""
+The above dict, info, has the following keys which may be called as info["key"] e.g. info["x"] will return the solution for the primal variables
+x: ndarray, shape(n, ) # optimal solution
+g: ndarray, shape(m, ) #constraints at the optimal solution
+obj_val: float # objective value at optimal solution
+mult_g: ndarray, shape(m, ) # final values of the constraint multipliers
+mult_x_L: ndarray, shape(n, ) # bound multipliers at the solution
+mult_x_U: ndarray, shape(n, ) # bound multipliers at the solution
+status: integer # gives the status of the algorithm
+status_msg: string # gives the status of the algorithm as a message 
+"""
 

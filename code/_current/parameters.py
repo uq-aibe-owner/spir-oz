@@ -3,10 +3,11 @@
 # ======================================================================
 
 import numpy as np
+#import jax.numpy as jnp
 
 # ======================================================================
 ## Verbosity of print output
-verbose = True
+verb = True
 economic_verbose = True
 # ======================================================================
 # number of goods of the model
@@ -22,6 +23,7 @@ numstart = 0
 # how many i_pths
 fthrits = 21
 numits = numstart + fthrits
+
 # ======================================================================
 # Number of test points to compute the error in postprocessing
 # No_samples_postprocess = 20 ##not needed as we use all paths generated now
@@ -40,6 +42,7 @@ filename = "paths/path_number_"
 p_01 = 0.01 # transition probability from state 0 to 1 
 Delta = 30
 Tstar = 20
+n_pth = Tstar + 1
 beta = 0.99
 # rho = 0.95
 zeta1 = 1

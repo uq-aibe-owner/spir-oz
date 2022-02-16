@@ -9,23 +9,19 @@ from variables import *
 
 # ======================================================================
 # utility function u(c,l)
-def utility(cons, lab, t):
-    sum_util=0.0
-    for i in range(n_agt):
-        nom1=(cons[t,i])**gammahat - 1.0 
-        den1=gammahat
-        
-        nom2= B * lab[t,i]**etahat - 1.0
-        den2= etahat
-        
-        sum_util+=tau[i]*(nom1/den1 - nom2/den2)
-    
-    return sum_util
+def utility(con, lab, t):
+    return beta**t * sum(tau[j] * (con[t, j])**gammahat / gammahat 
+                            - B * lab[t, j]**etahat / etahat 
+                            for j in range(n_agt)
+                        )
 
 # ======================================================================
 #v-tail
-def V_tail(k, s):
-    return sum(tau[j] * beta**Delta * (0.75 * A * k[s + Delta, j]**phik)**gammahat /gammahat - B / (1-beta) for j in range(n_agt))
+def V_tail(kap):
+    con = 0.75 * A * kap**phik
+    lab = np.ones(len(kap))
+    t = Delta
+    return utility(con, lab, t)/ (1 - beta)
 
 # ======================================================================
 def Pr_noTip(t):
@@ -34,7 +30,7 @@ def Pr_noTip(t):
 # ======================================================================
 # output
 def output(k, l, t):
-    return (zeta2 + Pr_noTip(t) * (zeta1-zeta2)) * A * (k[t,:]**phik) * (l[t,:]**(1 - phik))
+    return (zeta2 + Pr_noTip(t) * (zeta1 - zeta2)) * A * (k[t,:]**phik) * (l[t,:]**(1 - phik))
 
 # ======================================================================
 # adjustment costs for investment 

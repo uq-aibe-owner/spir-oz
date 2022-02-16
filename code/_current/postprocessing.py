@@ -76,8 +76,8 @@ def ls_error(n_agents, t1, t2, num_points):
         to_print[0,3]= max_diff_targ
         to_print[0,4]= avg_diff_targ
         msg="with k_test varying across ipopt_interfaces:"
-        msg+="alphaSK=" + str(alphaSK) + ",tolIpopt=" + str(alphaSK)
-        msg+=",n_restarts_optimizer=" +str(n_restarts_optimizer)
+#        msg+="alphaSK=" + str(alphaSK) + ",tolIpopt=" + str(alphaSK)
+#        msg+=",n_restarts_optimizer=" +str(n_restarts_optimizer)
         msg+=",numstart=" + str(numstart)
         msg+=",No_samples=" + str(No_samples)
         np.savetxt(file, to_print, header=msg, fmt='%2.16f')
