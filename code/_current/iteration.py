@@ -19,8 +19,8 @@ import time
 # ======================================================================
 
 
-#def sceq(i_pth, rng, save_data=True):
-def sceq(i_pth, save_data=True):
+#def path_gen(i_pth, rng, save_data=True):
+def path_gen(i_pth, save_data=True):
     # for i_pth=0,  
     # iterate over periods of interest (the last extra period is for error checking only)
     #loop(tt$(ord(tt)<=Tstar+1),

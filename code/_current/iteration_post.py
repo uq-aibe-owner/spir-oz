@@ -17,8 +17,8 @@ import time
 # ======================================================================
 
 
-#def sceq(i_pth, rng, save_data=True):
-def sceq(i_pth, save_data=True):
+#def path_gen(i_pth, rng, save_data=True):
+def path_gen(i_pth, save_data=True):
     # i_pth is greater than zero
     s = i_pth - 1
     # unpickle
