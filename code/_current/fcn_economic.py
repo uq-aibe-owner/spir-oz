@@ -16,8 +16,7 @@ def utility(con, lab, t):
 def V_tail(kap):
     con = 0.75 * A * kap ** phik
     lab = np.ones(len(kap))
-    t = Delta
-    return utility(con, lab, t) / (1 - beta)
+    return utility(con, lab, Delta) / (1 - beta)
 
 
 # ======================================================================
@@ -34,7 +33,7 @@ def output(kap, lab, t):
 # ======================================================================
 # adjustment costs for investment
 def Gamma_adjust(kap, sav, t):
-    return 0.5 * phi * kap * np.sqrt(sav / kap - delta)
+    return 0.5 * phi * kap * np.square(sav / kap - delta)
 
 
 # ======================================================================
@@ -46,5 +45,6 @@ def budget(kap, con, sav, lab, t):
 
 # ======================================================================
 # objective
-
+#def objective(kap, )
+#    sum(utility(con[t], lab[t], t) for t in range(Delta)) + V_tail(kap[Delta])
 # ======================================================================

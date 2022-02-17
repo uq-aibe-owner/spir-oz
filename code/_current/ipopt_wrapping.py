@@ -26,8 +26,9 @@ def EV_F(X, kap):
     sum_utl = 0.0
     var = []
     for t in range(Delta):
-        var.append(X[(t - 1) * n_pol : t * n_pol])
+        var.append(X[t * n_pol : (t + 1) * n_pol])
         sum_utl = +var[t][I["utl"]]
+    print(sum_utl)
     return sum_utl + beta ** Delta * V_tail(kap_tail)
 
 
@@ -73,23 +74,24 @@ def EV_GRAD_F(X, kap):
 
 
 def EV_G(X, kap):
-    M = n_ctt * Delta
+    M = n_ctt_all
     G = np.empty(M, float)
 
     # I[iter] = slice(prv_ind, prv_ind + n_agt**d_pol[iter])
     # I_ctt[iter] = slice(prv_ind, prv_ind + n_agt**d_ctt[iter])
     var = []
     e_ctt = dict()
-    for t in range(Delta):
-        for iter in ctt_key:
-            var[t] = X[
-                t * sum(n_agt ** d_ctt[iter]) : (t + 1) * sum(n_agt ** d_ctt[iter])
-            ]
+    e_ctt[0] = equations.f_ctt(X, kap, 0)
+    # apply all constraints with this one loop
+    for iter in ctt_key:
+            G[I_ctt[iter]] = e_ctt[0][iter]
+    """ for t in range(Delta):
+        var[t] = X[t * n_pol : (t + 1) * n_pol]
         # pull in constraints
         e_ctt[t] = equations.f_ctt(var[t], kap, t)
         # apply all constraints with this one loop
         for iter in ctt_key:
-            G[I_ctt[iter]] = e_ctt[t][iter]
+            G[I_ctt[iter]] = e_ctt[t][iter] """
 
     return G
 
@@ -101,7 +103,7 @@ def EV_G(X, kap):
 #   for first time step
 
 
-def EV_JAC_G(X, flag, kap):
+def EV_JAC_G(X, kap, flag):
     N = n_pol
     M = n_ctt
     # print(N, "  ",M) #testing testing
@@ -131,7 +133,7 @@ def EV_JAC_G(X, flag, kap):
             for ixN in range(N):
                 xAdj = np.copy(X)
                 xAdj[ixN] = xAdj[ixN] + h
-                gx2 = EV_G(xAdj, kap, n_agt)
+                gx2 = EV_G(xAdj, kap)
                 A[ixN + ixM * N] = (gx2[ixM] - gx1[ixM]) / h
         return A
 

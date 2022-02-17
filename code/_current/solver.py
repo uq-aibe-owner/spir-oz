@@ -74,7 +74,7 @@ def ipopt_interface(kap, N, M, final=False, verbose=False):
         cl=G_L,
         cu=G_U,
     )
-    print(X_U - X_L)
+    #print(X_U - X_L)
     nlp.add_option("obj_scaling_factor", -1.00)  # max function
     # nlp.add_option("mu_strategy", "adaptive")
     nlp.add_option("tol", ipopt_tol)
@@ -82,10 +82,10 @@ def ipopt_interface(kap, N, M, final=False, verbose=False):
     # nlp.add_option("hessian_approximation", "limited-memory")
     # nlp.add_option("max_iter", 10)
     # solve the model and store related values in a dict called info
-    x, info = nlp.solve(X)
+    x, res = nlp.solve(X)
     if final == True:
         nlp.close
-    return info
+    return res
 
 
 """

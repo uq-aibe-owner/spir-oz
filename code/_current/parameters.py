@@ -12,9 +12,8 @@ verbose = True
 economic_verbose = True
 # ======================================================================
 # number of goods of the model
-n_agt = 4  ## for Cai-Judd this is number of regions
 # Number of paths
-No_samples = 10 * n_agt
+#No_samples = 10 * n_agt
 # ======================================================================
 ## Control of paths
 # To start from scratch, set numstart = 0.
@@ -40,9 +39,9 @@ filename = "paths/path_number_"
 # ================================================================
 # Economic Parameters
 
-p_01 = 0.01  # transition probability from state 0 to 1
+n_agt = 4  ## for Cai-Judd this is number of regions
 Delta = 1
-Tstar = 20
+Tstar = 1
 n_pth = 1  # Tstar + 1
 beta = 0.99
 # rho = 0.95
@@ -52,6 +51,7 @@ phi = 0.5  # adjustment cost multiplier
 phik = 0.5  # weight of capital in production # alpha in CJ
 phim = 0.5  # weight of intermediate inputs in production
 phil = 1 - phik
+p_01 = 0.01  # transition probability from state 0 to 1
 
 gamma = 0.5  # power utility exponent
 gammahat = 1 - 1 / gamma
