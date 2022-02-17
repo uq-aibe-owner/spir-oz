@@ -10,6 +10,7 @@
 # ======================================================================
 
 from pickle import TRUE
+from tkinter.messagebox import YES
 from parameters import *
 from parameters_compute import *
 from variables import *
@@ -79,7 +80,8 @@ def ipopt_interface(kap, N, M, final=False, verbose=False):
     # nlp.add_option("mu_strategy", "adaptive")
     nlp.add_option("tol", ipopt_tol)
     nlp.add_option("print_level", 0)
-    # nlp.add_option("hessian_approximation", "limited-memory")
+    nlp.add_option("check_derivatives_for_naninf", True)
+    #nlp.add_option("hessian_approximation", "limited-memory")
     # nlp.add_option("max_iter", 10)
     # solve the model and store related values in a dict called info
     x, res = nlp.solve(X)
