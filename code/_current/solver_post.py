@@ -65,7 +65,7 @@ def ipopt_interface(kap, final=False, verbose=False):
 
     SCEQ = cyipopt_class_inst_post(
                                     X,
-                                    n_polDel,
+                                    n_pol_all,
                                     kap, 
                                     NELE_JAC=NELE_JAC, 
                                     NELE_HESS=NELE_HESS, 

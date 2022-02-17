@@ -4,6 +4,7 @@
 
 import numpy as np
 from parameters import *
+from parameters_compute import *
 
 # ======================================================================
 # dimensions of each policy variable: 0 for a scalar; 1 for a vector; 2 for a matrix
@@ -12,7 +13,7 @@ d_pol = {
     "lab": 1,
     "knx": 1,
     "out": 1,
-    #    "sav": 1,
+    "sav": 1,
     #    "itm": 1,
     #    "ITM": 2,
     #    "SAV": 2,
@@ -32,48 +33,43 @@ d_ctt = {
 }
 # ======================================================================m
 
-# Ranges for Controls
-pL = 1e-1
-pU = 1e3
-uL = -1e3
-uU = 1e3
 # Lower policy variables bounds
 pol_L = {
-    "con": pL,
-    "lab": pL,
-    "knx": pL,
-    #    "sav": pL,
+    "con": con_L,
+    "lab": lab_L,
+    "knx": kap_L,
+    "sav": sav_L,
     #    "ITM": pL,
     #    "SAV": pL,
     #    "itm": pL,
-    "out": pL,
-    "utl": uL,
+    "out": out_L,
+    "utl": utl_L,
     #    "val": -pU,
 }
 # Upper policy variables bounds
 pol_U = {
-    "con": pU,
-    "lab": pU,
-    "knx": pU,
-    #    "sav": pU,
+    "con": con_U,
+    "lab": lab_U,
+    "knx": kap_U,
+    "sav": sav_U,
     #    "ITM": pU,
     #    "SAV": pU,
     #    "itm": pU,
-    "out": pU,
-    "utl": uU,
+    "out": out_U,
+    "utl": utl_U,
     #    "val": pU,
 }
 # Warm start
 pol_S = {
-    "con": 10,
-    "lab": 10,
-    "knx": 10,
+    "con": 4,
+    "lab": 1,
+    "knx": k_init,
     #    "sav": 10,
     #    "itm": 10,
     #    "ITM": 10,
     #    "SAV": 10,
-    "out": 10,
-    "utl": 10,
+    "out": 6,
+    "utl": 1,
     #    "val": -300,
 }
 
@@ -83,31 +79,29 @@ if not len(d_pol) == len(pol_U) == len(pol_L) == len(pol_S):
     )
 
 # Constraint variables bounds
-cL = 0 * -1e-5
-cU = 0 * 1e-5
 ctt_L = {
-    "mclt": cL,
-    "knxt": cL,
-    #    "savt": cL,
-    #    "itmt": cL,
-    "utlt": cL,
-    "outt": cL,
-    #    "valt": cL,
+    "mclt": ctt_L,
+    "knxt": ctt_L,
+    #    "savt": ctt_L,
+    #    "itmt": ctt_L,
+    "utlt": ctt_L,
+    "outt": ctt_L,
+    #    "valt": ctt_L,
 }
 ctt_U = {
-    "mclt": cU,
-    "knxt": cU,
-    #    "savt": cU,
-    #    "itmt": cU,
-    "utlt": cU,
-    "outt": cU,
-    #    "valt": cU,
+    "mclt": ctt_U,
+    "knxt": ctt_U,
+    #    "savt": ctt_U,
+    #    "itmt": ctt_U,
+    "utlt": ctt_U,
+    "outt": ctt_U,
+    #    "valt": ctt_U,
 }
 
 # Check dicts are all same length
 if not len(d_ctt) == len(ctt_U) == len(ctt_L):
     raise ValueError(
-        "Constraint-related Dicts are not all the same length, check parameters.py"
+        "Constraint-related dicts are not all the same length, check parameters.py and variables.py"
     )
 
 # =================================================================# =========================

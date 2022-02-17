@@ -5,6 +5,7 @@
 
 from parameters import *
 from variables import *
+from fcn_economic import V_tail
 import equations
 
 import numpy as np
@@ -19,16 +20,15 @@ import cyipopt
 
 def EV_F(X, kap):
     # extract tail kapital
-    var_final = X[
-        (Delta - 1) * sum(n_agt ** d_ctt[iter]) : Delta * sum(n_agt ** d_ctt[iter])
-    ]
+    var_final = X[(Delta - 1) * n_pol : Delta * n_pol]
     kap_tail = var_final[I["knx"]]
     # extract utilities
     sum_utl = 0.0
+    var = []
     for t in range(Delta):
-        var[t] = X[(t - 1) * sum(n_agt ** d_ctt[iter]) : t * sum(n_agt ** d_ctt[iter])]
+        var.append(X[(t - 1) * n_pol : t * n_pol])
         sum_utl = +var[t][I["utl"]]
-    return sum_utl + beta ** Delta * equations.V_tail(kap_tail)
+    return sum_utl + beta ** Delta * V_tail(kap_tail)
 
 
 # =======================================================================
@@ -147,12 +147,10 @@ class cyipopt_class_inst:
     Further optimisations may be possible here by including a hessian
     """
 
-    def __init__(
-        self, X, n_prim, n_cttAll, k_init, NELE_JAC, NELE_HESS=None, verbose=True
-    ):
+    def __init__(self, X, N, M, k_init, NELE_JAC, NELE_HESS=None, verbose=True):
         self.x = X
-        self.n = n_polAll
-        self.m = n_cttAll
+        self.n = N
+        self.m = M
         self.k_init = k_init
         self.NELE_JAC = NELE_JAC
         self.NELE_HESS = NELE_HESS
