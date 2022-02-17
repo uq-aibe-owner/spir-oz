@@ -15,10 +15,7 @@ from fcn_economic import (
     budget,
     # objective,
 )
-
 # Constraints
-
-
 def f_ctt(var, kap, t):
     # f_prod=output_f(kap, lab, itm)
     e_ctt = dict()

@@ -37,14 +37,16 @@ def path_gen(i_pth, save_data=True):
     info[0] = call_to_solver(k_init, False)
     print("status_msg", info[0]["status_msg"])
     ### to fix
-    for s in range(1, Tstar + 1):
+    """ for s in range(1, Tstar + 1):
         # now solve for s > 0
         kap = info[s - 1]["x"][I["knx"]]
         print(kap)
         if s < Tstar:
             info[s] = call_to_solver(kap, False)
+            print("status_msg", info[s]["status_msg"])
         else:
             info[s] = call_to_solver(kap, True)
+            print("status_msg", info[s]["status_msg"]) """
 
     output_file = filename + str(i_pth) + ".pcl"
     print(output_file)
