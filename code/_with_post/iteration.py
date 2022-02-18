@@ -36,11 +36,7 @@ def path_gen(i_pth, save_data=True):
     # solve for s == 0
     info[0] = call_to_solver(kap=k_init, final=False)
     print("status_msg0", info[0]["status_msg"])
-    print("knx at ", 0, "is ", info[0]["x"][I["knx"]])
-    print("con at ", 0, "is ", info[0]["x"][I["con"]])
-    print("sav at ", 0, "is ", info[0]["x"][I["sav"]])
-    print("out at ", 0, "is ", info[0]["x"][I["out"]])
-    print("lab at ", 0, "is ", info[0]["x"][I["lab"]])
+    print("sol ", 0, "is ", info[0]["x"])
     ### to fix
     for s in range(1, Tstar + 1):
         # now solve for s > 0

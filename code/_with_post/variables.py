@@ -17,7 +17,7 @@ d_pol = {
     #    "itm": 1,
     #    "ITM": 2,
     #    "SAV": 2,
-    #"utl": 0
+    "utl": 0
     #    "val": 0,
 }
 
@@ -28,7 +28,7 @@ d_ctt = {
     "outt": 1,
     #         "savt": 1,
     #        "itmt": 1,
-    #"utlt": 0,
+    "utlt": 0,
     #         "valt": 0,
 }
 # ======================================================================m
@@ -43,7 +43,7 @@ pol_L = {
     #    "SAV": pL,
     #    "itm": pL,
     "out": out_L,
-    #"utl": utl_L,
+    "utl": utl_L,
     #    "val": -pU,
 }
 # Upper policy variables bounds
@@ -56,7 +56,7 @@ pol_U = {
     #    "SAV": pU,
     #    "itm": pU,
     "out": out_U,
-    #"utl": utl_U,
+    "utl": utl_U,
     #    "val": pU,
 }
 # Warm start
@@ -69,7 +69,7 @@ pol_S = {
     #    "ITM": 10,
     #    "SAV": 10,
     "out": 6,
-    #"utl": 1,
+    "utl": 1,
     #    "val": -300,
 }
 
@@ -84,7 +84,7 @@ ctt_L = {
     "knxt": ctt_L,
     #    "savt": ctt_L,
     #    "itmt": ctt_L,
-    #"utlt": ctt_L,
+    "utlt": ctt_L,
     "outt": ctt_L,
     #    "valt": ctt_L,
 }
@@ -93,7 +93,7 @@ ctt_U = {
     "knxt": ctt_U,
     #    "savt": ctt_U,
     #    "itmt": ctt_U,
-    #"utlt": ctt_U,
+    "utlt": ctt_U,
     "outt": ctt_U,
     #    "valt": ctt_U,
 }
