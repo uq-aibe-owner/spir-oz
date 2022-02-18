@@ -37,20 +37,21 @@ def path_gen(i_pth, save_data=True):
     info[0] = call_to_solver(kap=k_init, final=False)
     print("status_msg0", info[0]["status_msg"])
     print("knx at ", 0, "is ", info[0]["x"][I["knx"]])
-    print("con at ", 0, "is ", info[0]["x"][I["con"]])
-    print("sav at ", 0, "is ", info[0]["x"][I["sav"]])
-    print("out at ", 0, "is ", info[0]["x"][I["out"]])
+    print("total con at ", 0, "is ", sum(info[0]["x"][I["con"]]))
+    print("total sav at ", 0, "is ", sum(info[0]["x"][I["sav"]]))
+    #print("total out at ", 0, "is ", sum(info[0]["x"][I["out"]]))
     print("lab at ", 0, "is ", info[0]["x"][I["lab"]])
     ### to fix
     for s in range(1, Tstar + 1):
         # now solve for s > 0
-        kap = info[s - 1]["x"][I["knx"]][0]
+        var = info[s - 1]["x"][(s - 1) * n_pol: s * n_pol]
+        kap = var[I["knx"]]
         print(kap)
         if s < Tstar:
-            info[s] = call_to_solver(kap=k_init, final=False)
+            info[s] = call_to_solver(kap, final=False)
             print("status_msg1", info[s]["status_msg"])
         else:
-            info[s] = call_to_solver(kap=k_init, final=True)
+            info[s] = call_to_solver(kap, final=True)
             print("status_msg2", info[s]["status_msg"])
 
     output_file = filename + str(i_pth) + ".pcl"

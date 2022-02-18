@@ -39,5 +39,5 @@ for j in range(n_agt):
     )
 # ======================================================================
 # constraint upper and lower bounds
-ctt_L = -1e-6
-ctt_U = 1e-6
+c_L = -1e-6
+c_U = 1e-6

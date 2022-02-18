@@ -38,18 +38,27 @@ def ipopt_interface(kap, N, M, final=False, verbose=False):
     X_U = np.empty(N)
     X_start = np.empty(N)
     # set bounds for policy variables
-    for iter in pol_key:
-        X_L[I[iter]] = pol_L[iter]
-        X_U[I[iter]] = pol_U[iter]
-        # initial guesses for first i_pth (aka a warm start)
-        #if iter != "sav" and iter != "con":  ### why no warm start?
-        X_start[I[iter]] = pol_S[iter]
-        # else:
-        #    X[I[iter]] = pol_L[iter]
+    var_L = np.ones(n_pol)
+    var_U = np.ones(n_pol)
+    var_start = np.ones(n_pol)
+    short_ctt_L = np.ones(n_ctt)
+    short_ctt_U = np.ones(n_ctt)
+    for t in range(Delta):
+        for iter in pol_key:
+            var_L[I[iter]] = pol_L[iter]
+            X_L[t * n_pol: (t+1) * n_pol] = var_L
+            var_U[I[iter]] = pol_U[iter]
+            X_U[t * n_pol: (t+1) * n_pol] = var_U
+            # initial guesses for first i_pth (aka a warm start)
+            #if iter != "sav" and iter != "con":  ### why no warm start?
+            var_start[I[iter]] = pol_S[iter]
+            X_start[t * n_pol: (t+1) * n_pol] = var_start
+            # else:
+            #    X[I[iter]] = pol_L[iter]
     # Set bounds for the constraints
-    for iter in ctt_key:
-        G_L[I_ctt[iter]] = ctt_L[iter]
-        G_U[I_ctt[iter]] = ctt_U[iter]
+        
+        G_L[t * n_ctt: (t+1) * n_ctt] = short_ctt_L
+        G_U[t * n_ctt: (t+1) * n_ctt] = short_ctt_U
 
     #print(X_L[I["con"]])
     #print(kap)
@@ -67,7 +76,9 @@ def ipopt_interface(kap, N, M, final=False, verbose=False):
         cl=G_L,
         cu=G_U,
     )
-    #print(X_U - X_L)
+    msg = "upper minus lower bounds on vars =\n"  
+    msg += str(X_U - X_L)
+    print(msg)
     nlp.add_option("obj_scaling_factor", -1.00)  # max function
     #nlp.add_option("mu_strategy", "adaptive")
     nlp.add_option("tol", 1e-1)

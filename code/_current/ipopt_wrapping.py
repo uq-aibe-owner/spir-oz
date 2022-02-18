@@ -22,13 +22,14 @@ from jax import jit, grad, jacfwd, jacrev
 def EV_F(X, kap):
     # extract tail kapital
     var_final = X[(Delta - 1) * n_pol : Delta * n_pol]
+    #print(len(var_final))
     kap_tail = var_final[I["knx"]]
     # extract utilities
     sum_utl = 0.0
-    var = []
+    #var = np.empty(n_pol)
     for t in range(Delta):
-        var.append(X[t * n_pol : (t + 1) * n_pol])
-        sum_utl += (beta ** t * utility(var[t][I["con"]], var[t][I["lab"]]))
+        var = X[t * n_pol : (t + 1) * n_pol]
+        sum_utl += (beta ** t * utility(var[I["con"]], var[I["lab"]]))
     #print("utility vector = ", X["utl"])
     #sum_utl = 
     return sum_utl + beta ** Delta * V_tail(kap_tail)
@@ -142,7 +143,7 @@ def EV_JAC_G(X, kap, flag):
 
 
 # ======================================================================
-
+# Hessian
 # ======================================================================
 
 

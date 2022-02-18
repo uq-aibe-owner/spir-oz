@@ -40,7 +40,7 @@ filename = "paths/path_number_"
 # Economic Parameters
 
 n_agt = 4  ## for Cai-Judd this is number of regions
-Delta = 1
+Delta = 2
 Tstar = 1
 n_pth = 1  # Tstar + 1
 beta = 0.99
