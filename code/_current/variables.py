@@ -12,8 +12,8 @@ d_pol = {
     "con": 1,
     "lab": 1,
     "knx": 1,
-    "out": 1,
     "sav": 1,
+    #"out": 1,
     #    "itm": 1,
     #    "ITM": 2,
     #    "SAV": 2,
@@ -25,7 +25,7 @@ d_pol = {
 d_ctt = {
     "mclt": 0,
     "knxt": 1,
-    "outt": 1,
+    #"outt": 1,
     #         "savt": 1,
     #        "itmt": 1,
     #"utlt": 0,
@@ -42,7 +42,7 @@ pol_L = {
     #    "ITM": pL,
     #    "SAV": pL,
     #    "itm": pL,
-    "out": out_L,
+    #"out": out_L,
     #"utl": utl_L,
     #    "val": -pU,
 }
@@ -55,7 +55,7 @@ pol_U = {
     #    "ITM": pU,
     #    "SAV": pU,
     #    "itm": pU,
-    "out": out_U,
+    #"out": out_U,
     #"utl": utl_U,
     #    "val": pU,
 }
@@ -68,7 +68,7 @@ pol_S = {
     #    "itm": 10,
     #    "ITM": 10,
     #    "SAV": 10,
-    "out": 6,
+    #"out": 6,
     #"utl": 1,
     #    "val": -300,
 }
@@ -80,21 +80,21 @@ if not len(d_pol) == len(pol_U) == len(pol_L) == len(pol_S):
 
 # Constraint variables bounds
 ctt_L = {
-    "mclt": ctt_L,
-    "knxt": ctt_L,
+    "mclt": c_L,
+    "knxt": c_L,
     #    "savt": ctt_L,
     #    "itmt": ctt_L,
     #"utlt": ctt_L,
-    "outt": ctt_L,
+    #"outt": c_L,
     #    "valt": ctt_L,
 }
 ctt_U = {
-    "mclt": ctt_U,
-    "knxt": ctt_U,
+    "mclt": c_U,
+    "knxt": c_U,
     #    "savt": ctt_U,
     #    "itmt": ctt_U,
     #"utlt": ctt_U,
-    "outt": ctt_U,
+    #"outt": c_U,
     #    "valt": ctt_U,
 }
 
