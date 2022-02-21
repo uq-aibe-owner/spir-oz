@@ -19,7 +19,7 @@ from jax import jit, grad, jacfwd, jacrev
 #   Objective Function to start VFI (in our case, the value function)
 
 
-def EV_F(X, kap):
+def EV_F(X):
     # extract tail kapital
     var_final = X[(Delta - 1) * n_pol : Delta * n_pol]
     #print(len(var_final))
@@ -41,7 +41,7 @@ def EV_F(X, kap):
 #   Computation of gradient (first order finite difference) of initial objective function
 
 
-def EV_GRAD_F(X, kap):
+def EV_GRAD_F(X):
 
     N = len(X)
     GRAD = np.zeros(N, float)  # Initial Gradient of Objective Function

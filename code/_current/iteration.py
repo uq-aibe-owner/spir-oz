@@ -39,7 +39,7 @@ def path_gen(i_pth, save_data=True):
     print("knx at ", 0, "is ", info[0]["x"][I["knx"]])
     print("total con at ", 0, "is ", sum(info[0]["x"][I["con"]]))
     print("total sav at ", 0, "is ", sum(info[0]["x"][I["sav"]]))
-    #print("total out at ", 0, "is ", sum(info[0]["x"][I["out"]]))
+    print("total out at ", 0, "is ", sum(info[0]["x"][I["out"]]))
     print("lab at ", 0, "is ", info[0]["x"][I["lab"]])
     ### to fix
     for s in range(1, Tstar + 1):

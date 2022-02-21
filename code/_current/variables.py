@@ -13,7 +13,7 @@ d_pol = {
     "lab": 1,
     "knx": 1,
     "sav": 1,
-    #"out": 1,
+    "out": 1,
     #    "itm": 1,
     #    "ITM": 2,
     #    "SAV": 2,
@@ -25,7 +25,7 @@ d_pol = {
 d_ctt = {
     "mclt": 0,
     "knxt": 1,
-    #"outt": 1,
+    "outt": 1,
     #         "savt": 1,
     #        "itmt": 1,
     #"utlt": 0,
@@ -39,10 +39,10 @@ pol_L = {
     "lab": lab_L,
     "knx": kap_L,
     "sav": sav_L,
+    "out": out_L,
     #    "ITM": pL,
     #    "SAV": pL,
     #    "itm": pL,
-    #"out": out_L,
     #"utl": utl_L,
     #    "val": -pU,
 }
@@ -52,10 +52,10 @@ pol_U = {
     "lab": lab_U,
     "knx": kap_U,
     "sav": sav_U,
+    "out": out_U,
     #    "ITM": pU,
     #    "SAV": pU,
     #    "itm": pU,
-    #"out": out_U,
     #"utl": utl_U,
     #    "val": pU,
 }
@@ -65,10 +65,10 @@ pol_S = {
     "lab": 1,
     "knx": k_init,
     "sav": 2,
+    "out": 6,
     #    "itm": 10,
     #    "ITM": 10,
     #    "SAV": 10,
-    #"out": 6,
     #"utl": 1,
     #    "val": -300,
 }
@@ -82,19 +82,19 @@ if not len(d_pol) == len(pol_U) == len(pol_L) == len(pol_S):
 ctt_L = {
     "mclt": c_L,
     "knxt": c_L,
+    "outt": c_L,
     #    "savt": ctt_L,
     #    "itmt": ctt_L,
     #"utlt": ctt_L,
-    #"outt": c_L,
     #    "valt": ctt_L,
 }
 ctt_U = {
     "mclt": c_U,
     "knxt": c_U,
+    "outt": c_U,
     #    "savt": ctt_U,
     #    "itmt": ctt_U,
     #"utlt": ctt_U,
-    #"outt": c_U,
     #    "valt": ctt_U,
 }
 

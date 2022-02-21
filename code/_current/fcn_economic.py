@@ -31,7 +31,7 @@ def output(kap, lab, t):
 # adjustment costs for investment
 def Gamma_adjust(kap, sav, t):
     return 0.5 * phi * kap * np.square(sav / kap - delta)
-
+    
 # ======================================================================
 # budget constraint
 def budget(kap, con, sav, lab, t):
