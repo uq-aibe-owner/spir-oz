@@ -16,25 +16,18 @@ from fcn_economic import (
     # objective,
 )
 # Constraints
-# var is a single time period's variables (of length n_pol)
-def f_ctt(X, initial_kap=k_init):
+def f_ctt(var, kap, t):
     # f_prod=output_f(kap, lab, itm)
     e_ctt = dict()
     # canonical market clearing constraint
+    e_ctt["mclt"] = budget(kap, var[I["con"]], var[I["sav"]], var[I["lab"]], t)
     # capital next period constraint
-    for t in range(Delta):
-        if t == 0:
-            e_ctt["kapt"][t] = X[I["kap"]][t] - initial_kap
-        else:
-            e_ctt["kapt"][t] = X[I["kap"]][t] - X[I["knx"]][t - 1]
-    e_ctt["mclt"] = budget(X[I["kap"]], X[I["con"]], X[I["sav"]], X[I["lab"]], t)
-    #for t in range(Delta):
-    e_ctt["knxt"] = (1 - delta) * X[I["kap"]] + X[I["sav"]] -  X[I["knx"]]
-    #e_ctt["outt"] = X[I["out"]] - output(kap, X[I["lab"]], t)
+    e_ctt["knxt"] = (1 - delta) * kap + var[I["sav"]] - var[I["knx"]]
     # intermediate sum constraints
     # e_ctt["savt"] = SAV_com - var[I["sav"]]
     # e_ctt["itmt"] = ITM_com - var[I["itm"]] ## for Cai-Judd rep
     # output constraint
+    e_ctt["outt"] = var[I["out"]] - output(kap, var[I["lab"]], t)
     # utility constraint
     #e_ctt["utlt"] = var[I["utl"]] - utility(var[I["con"]], var[I["lab"]], t)
     # e_ctt["blah blah blah"] = constraint rearranged into form that can be equated to zero
