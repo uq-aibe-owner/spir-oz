@@ -1,24 +1,54 @@
-from jax.config import config
-config.update("jax_enable_x64", True)
+from jax.config import config config.update("jax_enable_x64", True)
 
 import jax.numpy as np
 from jax import jit, grad, jacrev, jacfwd
 from cyipopt import minimize_ipopt
 
-#--------------- parameters
-p = np.array([1.0, 2.0, 3.0, 4.0])
-GAMMA = np.array([0.25])
-RHO = np.float32(-4)
-RHO_inv = 1/RHO
-y = np.float32(100.0)
-print(y)
-#y.at[0].set(10.0)
-print(GAMMA[0]) 
-#p = p.at[1].set(9.0) 
-#--------------- objective
-def objective(x, con_weights=GAMMA, elast_par=RHO, inv_elast_par=RHO_inv):
-    #GAMMA[0] = 1.0
-    return np.power(np.sum(GAMMA * np.power(x[:4],elast_par)), inv_elast_par)
+#---------------basic economic parameters
+NREG = 4        # number of regions
+NSEC = 6        # number of sectors
+LFWD = 1        # look-forward parameter / time horizon length (Delta_s) in paper 
+LPTH = 1        # path length (Tstar): number of random steps along a given path
+NPTH = 1        # number of paths Tstar + 1
+BETA = 99e-2    # discount factor
+ZETA0 = 1       # output multiplier in status quo state 0
+ZETA1 = 95e-2   # output multiplier in tipped state 1
+PHIG = 5e-1     # adjustment cost multiplier
+PHIK = 5e-1     # weight of capital in production # alpha in CJ
+TPT = 1e-2      # transition probability of tipping (from state 0 to 1)
+GAMMA = 5e-1    # power utility exponent
+DELTA = 25e-3   # depreciation rate
+ETA = 5e-1      # Frisch elasticity of labour supply
+RHO = np.ones(NREG) # regional weights (population)
+TCS=0.75
+#---------------suppressed basic parameters
+#PHIM = 5e-1    # weight of intermediate inputs in production
+#XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
+#MU = np.ones(NRxS) * 1 / NRxS # importance of one sector to another
+#---------------derived economic parameters
+NRxS = NREG * NSEC
+GAMMAhat = 1 - 1 / GAMMA    # utility parameter (consumption denominator)
+ETAhat = 1 + 1 / ETA        # utility parameter
+PHIL = 1 - PHIK             # labour's importance in production
+DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic productivity trend
+B = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and lab in utility
+ZETA = np.array([ZETA0, ZETA1])
+#---------------objective function
+#con_weights=GAMMA, elast_par=RHO, inv_elast_par=RHO_inv):
+def objective(x, # full NREGxNSECxLFWD vector of variables
+              beta=BETA, # discount factor
+              lfwd=LFWD, # look-forward parameter
+              npol=NPOL, # number of policy-variable types (con, lab, etc)
+              ):
+    # locate tail kapital in x
+    var_fin = x[(LFWD - 1) * NPOL : LFWD * NPOL]
+    kap_tail = var_fin[I["knx"]]
+    # locate consumption in x
+    sum_utl = 0.0
+    for t in range(LFWD):
+        var = x[t * NPOL : (t + 1) * NPOL]
+        sum_utl += (BETA ** t * utility(var[I["con"]], var[I["lab"]]))
+    return sum_utl + BETA ** LFWD * V_tail(kap_tail)
 
 
 #--------------- equality constraints
@@ -28,7 +58,7 @@ def eq_constraints(x, state, par=THETA, dicts=DICTS):
         # constraint 1
     eqns = eqns.at[0].set(income - np.inner(kap, x))
         # constraint 2
-    for i in range(Delta):
+    for i in range(LFWD):
         eqns  = eqns.at[i].set(np.power(x[i] - i, 2))
     return eqns
 
@@ -69,7 +99,7 @@ fin_con_eq_jit = WK_con_eq_jit(state=res[s-1][I["knx"]])
 # ---------------variable bounds: 0.0 <= x[i] <= 100
     bnds = [(0.1, 100.0) for _ in range(x0.size)]
 
-#--------------- iteration starts here 
+# -*-*-*-*-*-*-*-*iteration starts here 
 for s in range(1, Tstar):
 
     # --------------- constraints

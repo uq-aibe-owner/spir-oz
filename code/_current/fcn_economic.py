@@ -1,26 +1,43 @@
 #!/usr/bin/env python3
-from parameters import *
 
 # ======================================================================
-# utility function
-def utility(con, lab):
-    #util = beta ** t * sum(tau[j] * (con[j] ** gammahat / gammahat - B * lab[j] ** etahat / etahat) for j in range(n_agt))
-    util = sum(tau[j] * (np.log(con[j]) -  np.log(lab[j])) for j in range(n_agt))
-    #print("util=", util)
+#-----------utility as a pure function
+#----requirements: "import parameters as par"
+
+def utility(con, # consumption vector variable
+            lab, # labour vector variable
+            rho=par.RHO, # vector of regional weights
+            nreg=par.NREG, # number of regions
+            ):
+    #-------log utility
+    util = np.sum(rho * (np.log(con) -  np.log(lab)))
+    #-------general power utility:
+    #util = BETA ** t * np.sum(RHO[j] * (con[j] ** GAMMAhat / GAMMAhat \
+    #        - B * lab[j] ** ETAhat / ETAhat) for j in range(NREG))
     return util
 
 # ======================================================================
-# v-tail
-def V_tail(kap):
-    con = 0.75 * A * kap ** phik
-    #print("con_tail =", con)
-    lab = np.ones(len(kap))
-    #print("V_tail =", utility(con, lab) / (1 - beta))
-    return utility(con, lab) / (1 - beta)
+#-----------v-tail as a pure function
+#----required: "import parameters as par"
+#----required: "import economic_functions as efcn"
+def V_tail(kap, # kapital vector variable
+           tcs=par.TCS # tail consumption share
+           A=par.DPT, # deterministic productivity trend
+           phik=par.PHIK, # weight of capital in production # alpha in CJ
+           beta=par.BETA, # discount factor
+           u=efcn.utility, # utility function
+           ):
+    #-------tail consumption vector (as kap is a vector)
+    tail_con = tcs * A * kap ** phik
+    #-------tail labour vector normalised to one
+    tail_lab = np.ones(len(kap))
+    return u(tail_con, tail_lab) / (1 - beta)
 
 # ======================================================================
-def Pr_noTip(t):
-    return (1 - p_01) ** (t)
+def Pr_noTip(t, # time step along a path
+             tpt=TPT, # transition probability of tipping
+             ):
+    return (1 - tpt) ** (t)
 
 # ======================================================================
 # output
@@ -31,7 +48,7 @@ def output(kap, lab, t):
 # adjustment costs for investment
 def Gamma_adjust(kap, sav, t):
     return 0.5 * phi * kap * np.square(sav / kap - delta)
-    
+
 # ======================================================================
 # budget constraint
 def budget(kap, con, sav, lab, t):
