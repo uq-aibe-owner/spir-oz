@@ -1,10 +1,11 @@
-from jax.config import config config.update("jax_enable_x64", True)
+from jax.config import config
+config.update("jax_enable_x64", True)
 
 import jax.numpy as np
 from jax import jit, grad, jacrev, jacfwd
 from cyipopt import minimize_ipopt
 
-#---------------basic economic parameters
+#-----------basic economic parameters
 NREG = 4        # number of regions
 NSEC = 6        # number of sectors
 LFWD = 1        # look-forward parameter / time horizon length (Delta_s) in paper 
@@ -21,21 +22,21 @@ DELTA = 25e-3   # depreciation rate
 ETA = 5e-1      # Frisch elasticity of labour supply
 RHO = np.ones(NREG) # regional weights (population)
 TCS=0.75
-#---------------suppressed basic parameters
+#-----------suppressed basic parameters
 #PHIM = 5e-1    # weight of intermediate inputs in production
 #XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
 #MU = np.ones(NRxS) * 1 / NRxS # importance of one sector to another
-#---------------derived economic parameters
+#-----------derived economic parameters
 NRxS = NREG * NSEC
 GAMMAhat = 1 - 1 / GAMMA    # utility parameter (consumption denominator)
 ETAhat = 1 + 1 / ETA        # utility parameter
 PHIL = 1 - PHIK             # labour's importance in production
 DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic productivity trend
-B = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and lab in utility
+RWU = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and lab in utility
 ZETA = np.array([ZETA0, ZETA1])
-#---------------objective function
+#-----------objective function
 #con_weights=GAMMA, elast_par=RHO, inv_elast_par=RHO_inv):
-def objective(x, # full NREGxNSECxLFWD vector of variables
+def objective(x,         # full NREGxNSECxLFWD vector of variables
               beta=BETA, # discount factor
               lfwd=LFWD, # look-forward parameter
               npol=NPOL, # number of policy-variable types (con, lab, etc)
@@ -48,12 +49,15 @@ def objective(x, # full NREGxNSECxLFWD vector of variables
     for t in range(LFWD):
         var = x[t * NPOL : (t + 1) * NPOL]
         sum_utl += (BETA ** t * utility(var[I["con"]], var[I["lab"]]))
-    return sum_utl + BETA ** LFWD * V_tail(kap_tail)
+    val = sum_utl + BETA ** LFWD * V_tail(kap_tail)
+    return
 
-
-#--------------- equality constraints
-def eq_constraints(x, state, par=THETA, dicts=DICTS):
-    #income.at[0].set(10)
+#-----------equality constraints
+def eq_constraints(x,
+                   state,
+                   par=THETA,
+                   dicts=DICTS
+                   ):
     eqns = np.zeros(4)
         # constraint 1
     eqns = eqns.at[0].set(income - np.inner(kap, x))
@@ -63,75 +67,79 @@ def eq_constraints(x, state, par=THETA, dicts=DICTS):
     return eqns
 
 
-#--------------- inequality constraints
+#-----------inequality constraints
 #def ineq_constraints(x):
 #    return #np.prod(x) - 25
 
-from jax.config import config
-config.update("jax_enable_x64", True)
-
-
-#--------------- jit the functions
-obj_jit = jit(objective)
+#-----------jit the functions
 
 res = dict()
 #G(x) = eq_constraints(x, state=res[s-1][I["knx"]])
-con_eq_jit = jit(lambda x, state: eq_constraints(x, state))
-#con_ineq_jit = jit(ineq_constraints)
 
-#------------ build and jit "objective" derivatives 
-obj_grad = jit(grad(obj_jit))
-obj_hess = jit(jacrev(jacfwd(obj_jit)))
-#------------ build and jit "eq_constraints" derivatives
-con_eq_jac = jit(jacfwd(con_eq_jit))
-#con_ineq_jac = jit(jacfwd(con_ineq_jit))
-con_eq_hess = jacrev(jacfwd(con_eq_jit))
-con_eq_hessvp = jit(lambda x, v: con_eq_hess(x) * v[0]) # hessian vector-product
-#------------ build and jit "ineq_constraints" derivatives
-#con_ineq_hess = jacrev(jacfwd(con_ineq_jit))  # hessian
-#con_ineq_hessvp = jit(lambda x, v: con_ineq_hess(x) * v[0]) # hessian vector-product
+#-----------build and jit "objective" derivatives 
+obj = jit(objective)
+obj_grad = jit(grad(obj))
+obj_hess = jit(jacrev(jacfwd(obj)))
+#-----------build and jit "eq_constraints" derivatives
+eq_ctt = jit(lambda x, state: eq_constraints(x, state))
+eq_ctt_jac = jit(jacfwd(eq_ctt))
+eq_ctt_hess = jacrev(jacfwd(eq_ctt))
+eq_ctt_hessvp = jit(lambda x, v: eq_ctt_hess(x) * v[0]) # hessian vector-product
+#-----------build and jit "ineq_constraints" derivatives
+#con_ineq = jit(ineq_constraints)
+#ineq_ctt_jac = jit(jacfwd(ineq_ctt))
+#ineq_ctt_hess = jacrev(jacfwd(ineq_ctt))  # hessian
+#ineq_ctt_hessvp = jit(lambda x, v: ineq_ctt_hess(x) * v[0]) # hessian vector-product
 
-def WK_con_eq_jit(state): 
-    return lambda x: con_eq_jit(x, state)
+def eq_ctt_jwk(state): 
+    return lambda x: eq_ctt(x, state)
 
-fin_con_eq_jit = WK_con_eq_jit(state=res[s-1][I["knx"]])
+def eq_ctt_jac_jwk(state): 
+    return lambda x: eq_ctt(x, state)
 
-# ---------------variable bounds: 0.0 <= x[i] <= 100
+def eq_ctt_jwk(state): 
+    return lambda x: eq_ctt(x, state)
+
+#-----------variable bounds:
     bnds = [(0.1, 100.0) for _ in range(x0.size)]
 
-# -*-*-*-*-*-*-*-*iteration starts here 
-for s in range(1, Tstar):
-
-    # --------------- constraints
+#-*-*-*-*-*-iteration over LPTH starts here 
+for s in range(1, LPTH):
+    #-------feed in kapital from starting point s-1
+    eq_ctt_fin = eq_ctt_jwk(state=res[s-1][I["knx"]])
+    #-------wrap up constraints for cyipopt
     cons = [{'type': 'eq',
-         'fun': fin_con_eq_jit,
-         'jac': con_eq_jac,
-         'hess': con_eq_hessvp
-         }
-        ]
+             'fun': eq_ctt_fin,
+             'jac': eq_ctt_jac,
+             'hess': eq_ctt_hessvp,
+             }]
 #,
-#{'type': 'ineq', 'fun': con_ineq_jit, 'jac': con_ineq_jac, 'hess': con_ineq_hessvp}]
+#{'type': 'ineq', 'fun': con_ineq, 'jac': con_ineq_jac, 'hess': con_ineq_hessvp}]
 
-# --------------- starting point
+#-----------starting point
     x0 = x[s] np.array([15.0, 14.0, 13.0, 12.0])
 
 
 
-# ----------------- execute solver
-    res[s] = minimize_ipopt(
-        obj_jit,
-        jac=obj_grad,
-        hess=obj_hess,
-        x0=x0,
-        bounds=bnds,
-        constraints=cons,
-        options={'disp': 5,
-                 'obj_scaling_factor': -1.0
-                }
-)
-# -*-*-*-*-*-*-*-*-*-*-*-*-*-*-* loop ends here
+#-----------execute solver
+    res[s] = minimize_ipopt(obj,
+                            jac=obj_grad,
+                            hess=obj_hess,
+                            x0=x0,
+                            bounds=bnds,
+                            constraints=cons,
+                            options={'disp': 5,
+                                     'obj_scaling_factor': -1.0,
+                                     'warm_start_init_point': 'yes',
+                                     'warm_start_same_structure': 'yes',
+                                     'timing_statistics': 'yes',
+                                     'print_timing_statistics': 'yes',
 
-# --------------- print solution, etc.
+                                     }
+                            )
+#-*-*-*-*-*-loop ends here
+
+# ----------- print solution, etc.
 x_sol = res["x"]
 print("sol=", x_sol)
 diff_x_sol = np.zeros(len(x_sol) - 1)
