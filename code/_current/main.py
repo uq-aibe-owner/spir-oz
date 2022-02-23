@@ -4,44 +4,51 @@ import jax.numpy as np
 from jax import jit, grad, jacrev, jacfwd
 from cyipopt import minimize_ipopt
 
-#--------------- basic economic parameters
-NREG = 4    # number of regions
-NSEC = 6    # number of sectors
-LHZN = 1    # horizon length (Delta_s) in paper: forward-looking parameter
-LPTH = 1    # path length (Tstar) in the paper
-NPTH = 1    # number of paths Tstar + 1
-BETA = 99e-2  # discount factor
-ZETA1 = 1   # output multiplier in status quo state 0
-ZETA2 = 95e-2 # output multiplier in tipped state 1
-PHIA = 5e-1  # adjustment cost multiplier
-PHIK = 5e-1  # weight of capital in production # alpha in CJ
-#PHIM = 5e-1  # weight of intermediate inputs in production
-TP01 = 1e-2 # transition probability from state 0 to 1
-GAMMA = 5e-1 # power utility exponent
+#---------------basic economic parameters
+NREG = 4        # number of regions
+NSEC = 6        # number of sectors
+LFWD = 1        # look-forward parameter / time horizon length (Delta_s) in paper 
+LPTH = 1        # path length (Tstar): number of random steps along a given path
+NPTH = 1        # number of paths Tstar + 1
+BETA = 99e-2    # discount factor
+ZETA0 = 1       # output multiplier in status quo state 0
+ZETA1 = 95e-2   # output multiplier in tipped state 1
+PHIG = 5e-1     # adjustment cost multiplier
+PHIK = 5e-1     # weight of capital in production # alpha in CJ
+TPT = 1e-2      # transition probability of tipping (from state 0 to 1)
+GAMMA = 5e-1    # power utility exponent
 DELTA = 25e-3   # depreciation rate
-ETA = 5e-1   # Frisch elasticity of labour supply
+ETA = 5e-1      # Frisch elasticity of labour supply
 RHO = np.ones(NREG) # regional weights (population)
-#---------------derived economic parameters
-NRxS = NREG * NSEC
-GAMMAhat = 1 - 1 / GAMMA # utility parameter (consumption denominator)
-ETAhat = 1 + 1 / ETA # utility parameter
-PHIL = 1 - PHIK # labour's importance in production
-A = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # output multiplier
-B = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # utility parameter (multiplies lab)
+TCS=0.75
+#---------------suppressed basic parameters
+#PHIM = 5e-1    # weight of intermediate inputs in production
 #XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
 #MU = np.ones(NRxS) * 1 / NRxS # importance of one sector to another
-#--------------- objective function
+#---------------derived economic parameters
+NRxS = NREG * NSEC
+GAMMAhat = 1 - 1 / GAMMA    # utility parameter (consumption denominator)
+ETAhat = 1 + 1 / ETA        # utility parameter
+PHIL = 1 - PHIK             # labour's importance in production
+DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic productivity trend
+B = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and lab in utility
+ZETA = np.array([ZETA0, ZETA1])
+#---------------objective function
 #con_weights=GAMMA, elast_par=RHO, inv_elast_par=RHO_inv):
-def objective(x, par=THETA, dicts=DICTS):
-    # tail kapital
-    var_final = X[(LHZN - 1) * NPOL : LHZN * NPOL]
-    kap_tail = var_final[I["knx"]]
-    # extract utilities
+def objective(x, # full NREGxNSECxLFWD vector of variables
+              beta=BETA, # discount factor
+              lfwd=LFWD, # look-forward parameter
+              npol=NPOL, # number of policy-variable types (con, lab, etc)
+              ):
+    # locate tail kapital in x
+    var_fin = x[(LFWD - 1) * NPOL : LFWD * NPOL]
+    kap_tail = var_fin[I["knx"]]
+    # locate consumption in x
     sum_utl = 0.0
-    for t in range(LHZN):
-        var = X[t * NPOL : (t + 1) * NPOL]
+    for t in range(LFWD):
+        var = x[t * NPOL : (t + 1) * NPOL]
         sum_utl += (BETA ** t * utility(var[I["con"]], var[I["lab"]]))
-    return sum_utl + BETA ** LHZN * V_tail(kap_tail)
+    return sum_utl + BETA ** LFWD * V_tail(kap_tail)
 
 
 #--------------- equality constraints
@@ -51,7 +58,7 @@ def eq_constraints(x, state, par=THETA, dicts=DICTS):
         # constraint 1
     eqns = eqns.at[0].set(income - np.inner(kap, x))
         # constraint 2
-    for i in range(LHZN):
+    for i in range(LFWD):
         eqns  = eqns.at[i].set(np.power(x[i] - i, 2))
     return eqns
 
