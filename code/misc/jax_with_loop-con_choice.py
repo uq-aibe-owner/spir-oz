@@ -44,11 +44,11 @@ eq_ctt_hess = jacrev(jacfwd(eq_ctt))
 #ineq_ctt_hessvp = jit(lambda x, v: ineq_ctt_hess(x) * v[0]) # hessian vector-product
 
 #-----------define the jitted-with-price functions for the loop
-def eq_ctt_jwp(p):
+def eq_ctt_jp(p):
     return lambda x: eq_ctt(x, p)
-def eq_ctt_jac_jwp(p):
+def eq_ctt_jac_jp(p):
     return lambda x: eq_ctt_jac(x, p)
-def eq_ctt_hess_jwp(p):
+def eq_ctt_hess_jp(p):
     return lambda x: eq_ctt_hess(x, p)
 
 d = dict()
@@ -65,10 +65,10 @@ bnds = [(0.1, 100.0) for _ in range(x0.size)]
 res = dict()
 #-*-*-*-*-*-iteration over LPTH starts here 
 for s in range(3):
-    #-------feed in kapital from starting point s-1
-    eq_ctt_fin = eq_ctt_jwp(d[s])
-    eq_ctt_jac_fin = eq_ctt_jac_jwp(d[s])
-    eq_ctt_hess_fin = eq_ctt_hess_jwp(d[s])
+    #-------feed in price vectors
+    eq_ctt_fin = eq_ctt_jp(d[s])
+    eq_ctt_jac_fin = eq_ctt_jac_jp(d[s])
+    eq_ctt_hess_fin = eq_ctt_hess_jp(d[s])
     eq_ctt_hessvp_fin = jit(lambda x, v: eq_ctt_hess_fin(x) * v[0]) # hessian vector-product
     #-------wrap up constraints for cyipopt
     cons = [{'type': 'eq',
