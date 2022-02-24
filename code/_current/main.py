@@ -66,16 +66,6 @@ def eq_constraints(x,
         eqns  = eqns.at[i].set(np.power(x[i] - i, 2))
     return eqns
 
-
-#-----------inequality constraints
-#def ineq_constraints(x):
-#    return #np.prod(x) - 25
-
-#-----------jit the functions
-
-res = dict()
-#G(x) = eq_constraints(x, state=res[s-1][I["knx"]])
-
 #-----------build and jit "objective" derivatives 
 obj = jit(objective)
 obj_grad = jit(grad(obj))
@@ -84,29 +74,31 @@ obj_hess = jit(jacrev(jacfwd(obj)))
 eq_ctt = jit(lambda x, state: eq_constraints(x, state))
 eq_ctt_jac = jit(jacfwd(eq_ctt))
 eq_ctt_hess = jacrev(jacfwd(eq_ctt))
-eq_ctt_hessvp = jit(lambda x, v: eq_ctt_hess(x) * v[0]) # hessian vector-product
 #-----------build and jit "ineq_constraints" derivatives
 #con_ineq = jit(ineq_constraints)
 #ineq_ctt_jac = jit(jacfwd(ineq_ctt))
 #ineq_ctt_hess = jacrev(jacfwd(ineq_ctt))  # hessian
 #ineq_ctt_hessvp = jit(lambda x, v: ineq_ctt_hess(x) * v[0]) # hessian vector-product
 
-def eq_ctt_jwk(state): 
+#-----------define the jitted-state-in functions for the loop
+def eq_ctt_js(state):
     return lambda x: eq_ctt(x, state)
-
-def eq_ctt_jac_jwk(state): 
-    return lambda x: eq_ctt(x, state)
-
-def eq_ctt_jwk(state): 
-    return lambda x: eq_ctt(x, state)
+def eq_ctt_jac_js(state):
+    return lambda x: eq_ctt_jac(x, p)
+def eq_ctt_hess_js(state):
+    return lambda x: eq_ctt_hess(x, state)
 
 #-----------variable bounds:
     bnds = [(0.1, 100.0) for _ in range(x0.size)]
-
-#-*-*-*-*-*-iteration over LPTH starts here 
+#-*-*-*-*-*-loop/iteration along path starts here 
+res = dict()
 for s in range(1, LPTH):
     #-------feed in kapital from starting point s-1
-    eq_ctt_fin = eq_ctt_jwk(state=res[s-1][I["knx"]])
+    eq_ctt_fin = eq_ctt_js(state=res[s-1][I["knx"]])
+    eq_ctt_jac_fin = eq_ctt_jac_js(state=d[s])
+    eq_ctt_hess_fin = eq_ctt_hess_js(state=d[s])
+    #!!-----create and jit the hessian vector product-more explanation needed!!
+    eq_ctt_hessvp = jit(lambda x, v: eq_ctt_hess(x) * v[0]) # hessian vector-product
     #-------wrap up constraints for cyipopt
     cons = [{'type': 'eq',
              'fun': eq_ctt_fin,
@@ -119,8 +111,6 @@ for s in range(1, LPTH):
 #-----------starting point
     x0 = x[s] np.array([15.0, 14.0, 13.0, 12.0])
 
-
-
 #-----------execute solver
     res[s] = minimize_ipopt(obj,
                             jac=obj_grad,
@@ -128,22 +118,22 @@ for s in range(1, LPTH):
                             x0=x0,
                             bounds=bnds,
                             constraints=cons,
-                            options={'disp': 5,
-                                     'obj_scaling_factor': -1.0,
-                                     'warm_start_init_point': 'yes',
-                                     'warm_start_same_structure': 'yes',
+                            options={'disp': 1, # printout range:0-12, default=5
+                                     'obj_scaling_factor': -1.0, # maximize obj
                                      'timing_statistics': 'yes',
                                      'print_timing_statistics': 'yes',
-
+                                     #!!how to warm start? see ipopt options page!!
+                                     #'warm_start_init_point': 'yes', 
+                                     #!!next one for "multiple problems in one nlp"!!
+                                     #'warm_start_same_structure': 'yes',
                                      }
                             )
 #-*-*-*-*-*-loop ends here
 
 # ----------- print solution, etc.
-x_sol = res["x"]
-print("sol=", x_sol)
-diff_x_sol = np.zeros(len(x_sol) - 1)
-#for i in range(len(x_sol) - 1):#
-#    diff_x_sol.at[i].set(x_sol[i] - x_sol[i+1])
-for i in range(len(x_sol)-1):
-    print("diff=", x_sol[i] - x_sol[i+1])
+for s in range(len(res)):
+    print("the solution for iterate ", s, "is ", res[s])
+    x_sol[s] = res[s]["x"]
+    print("sol=", x_sol[s])
+    for i in range(len(x_sol[s])-1):
+        print("diff=", x_sol[s][i] - x_sol[s][i+1])
