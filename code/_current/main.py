@@ -55,7 +55,7 @@ for t in range(numTime):
     TD[t] = indlist
 
 TS = dict()
-for t in sectNames:
+for t in sectNames: #comment
     indlist = []
     for i in range(numPol):
         for ring in range(numTime):
