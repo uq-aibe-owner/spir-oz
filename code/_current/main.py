@@ -36,15 +36,20 @@ RWU = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and 
 ZETA = np.array([ZETA0, ZETA1])
 #-----------structure of x
 #---x = [
-        c_{t0, s0, r0},
-        c_{t0, s0, r1}, c_{t0, s0, r2}
-        c_{t0, s1, r0}, c_{t0, s1, r1}, c_{t0, s1, r2}
-        c_{t1, s0, r0},
-        c_{t1, s0, r1}, c_{t0, s0, r2}
-        c_{t1, s1, r0}, c_{t1, s1, r1}, c_{t1, s1, r2}
-cs0 = []
-for i in range(numTime):
-    cs0[i] = x[i * numReg * numSec  : i * numReg * numSec + numReg : 1]
+        x_{p0, t0, s0, r0}, x_{p0, t0, s0, r1}, x_{p0, t0, s0, r2}
+        x_{p0, t0, s1, r0}, x_{p0, t0, s1, r1}, x_{p0, t0, s1, r2}
+        x_{p0, t1, s0, r0}, x_{p0, t1, s0, r1}, x_{p0, t1, s0, r2}
+        x_{p0, t1, s1, r0}, x_{p0, t1, s1, r1}, x_{p0, t1, s1, r2}
+        x_{p1, t0, s0, r0}, x_{p1, t0, s0, r1}, x_{p1, t0, s0, r2}
+        x_{p1, t0, s1, r0}, x_{p1, t0, s1, r1}, x_{p1, t0, s1, r2}
+        x_{p1, t1, s0, r0}, x_{p1, t1, s0, r1}, x_{p1, t1, s0, r2}
+        x_{p1, t1, s1, r0}, x_{p1, t1, s1, r1}, x_{p1, t1, s1, r2}
+TD = dict()
+
+for t in range(numTime):
+    for i in range(numPol):
+        TD[t] += range(len(x))[i * numReg * numSec * numTime  : \
+                            i * numReg * numSec * numTime + numSec * numReg : 1]
 
 #-----------objective function
 #con_weights=GAMMA, elast_par=RHO, inv_elast_par=RHO_inv):

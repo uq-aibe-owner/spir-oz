@@ -2,7 +2,8 @@
 from jax.config import config
 config.update("jax_enable_x64", True)
 
-import jax.numpy as np
+import jax.numpy as jnp
+import numpy as np
 
 regName = ["Bris", "Town", "Darl"]
 numReg = len(regName)
@@ -66,7 +67,7 @@ def xIndV(timeKey,
          totInds = numTime*numReg
           ):
     # regKey enters before timeKey as RDV[timeKey] is a vec (would need a region index)
-    return RDV[regKey][timeKey]
+    return RDV[regKey]
 
 def xIndL(timeKey,
          regKey,
@@ -78,8 +79,8 @@ def xIndL(timeKey,
     time = range(totInds)[time_dict[timeKey]]
     return list(set(reg) & set(time))[0]
 ### more testing
-print('the index for ', regName[0], 'at time ', 3, 'is ', vec[xInd(3,"Bris")])
+print('the index for ', regName[0], 'at time ', 3, 'is ', xInd(3,"Bris"))
 print('the index for ', regName[0], 'at time ', 3, 'is ', xIndV(3,"Bris"))
 print('the index for ', regName[0], 'at time ', 3, 'is ', xIndVTF(3,"Bris"))
-#print('the index for ', regName[0], 'at time ', 3, 'is ', vec[xIndL(3,"Bris")])
+print('the index for ', regName[0], 'at time ', 3, 'is ', vec[[0, 3, 7]])
 
