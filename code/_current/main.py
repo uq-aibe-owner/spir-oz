@@ -77,7 +77,7 @@ for s in sectNames: #comment
     SD[t] = indlist
 #----the final one can be done with a slicer with stride NREG
 RD = dict()
-for r in regNames:
+for r in range(NREG)::
     indlist = []
     for s in range(NSECt):
         for t in range(NTIM):

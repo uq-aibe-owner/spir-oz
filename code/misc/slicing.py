@@ -57,7 +57,7 @@ def xIndVTF(timeKey,
          time_dict=TDV,
          totInds = numTime*numReg
           ):
-    # regKey enters before timeKey as RDV[timeKey] is a vec (would need a region index)
+    # this uses a regional enumeration
     return TDV[timeKey][RId[regKey]]
 
 def xIndV(timeKey,
@@ -67,7 +67,7 @@ def xIndV(timeKey,
          totInds = numTime*numReg
           ):
     # regKey enters before timeKey as RDV[timeKey] is a vec (would need a region index)
-    return RDV[regKey]
+    return RDV[regKey][timeKey]
 
 def xIndL(timeKey,
          regKey,
