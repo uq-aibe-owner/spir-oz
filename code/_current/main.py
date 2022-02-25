@@ -44,12 +44,35 @@ ZETA = np.array([ZETA0, ZETA1])
         x_{p1, t0, s1, r0}, x_{p1, t0, s1, r1}, x_{p1, t0, s1, r2}
         x_{p1, t1, s0, r0}, x_{p1, t1, s0, r1}, x_{p1, t1, s0, r2}
         x_{p1, t1, s1, r0}, x_{p1, t1, s1, r1}, x_{p1, t1, s1, r2}
-TD = dict()
 
+
+TD = dict()
 for t in range(numTime):
+    indlist = []
     for i in range(numPol):
-        TD[t] += range(len(x))[i * numReg * numSec * numTime  : \
-                            i * numReg * numSec * numTime + numSec * numReg : 1]
+        indlist += (range(len(x))[i * (numReg * numSec * numTime) + t * numSec * numReg : 
+                            i * (numReg * numSec * numTime) + (t+1)*(numSec * numReg) : 1])
+    TD[t] = indlist
+
+TS = dict()
+for t in sectNames:
+    indlist = []
+    for i in range(numPol):
+        for ring in range(numTime):
+            indlist += (range(len(x))[i * ring * (numReg * numSec) + t * numReg: 
+                            i * ring * (numReg * numSec) + (t+1) * (numReg) : 1])
+    TS[t] = indlist
+
+TR = dict()
+for t in regNames:
+    indlist = []
+    for i in range(numPol):
+        for ring in range(numTime):
+            for iter in range(numSect):
+                indlist += (range(len(x))[i * ring * iter * (numReg) +t : 
+                            i * ring * iter * (numReg) + 1 + t: 1])
+    TR[t] = indlist
+
 
 #-----------objective function
 #con_weights=GAMMA, elast_par=RHO, inv_elast_par=RHO_inv):
