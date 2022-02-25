@@ -8,9 +8,9 @@ from cyipopt import minimize_ipopt
 #-----------basic economic parameters
 NREG = 4        # number of regions
 NSEC = 6        # number of sectors
-LFWD = 10        # look-forward parameter / time horizon length (Delta_s) in paper 
-LPTH = 28        # path length (Tstar): number of random steps along a given path
-NPTH = 1        # number of paths Tstar + 1
+NTIM = LFWD = 10# look-forward parameter / time horizon length (Delta_s)
+NITR = LPTH = 28# path length (Tstar): number of random steps along given path
+NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 99e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
@@ -35,60 +35,60 @@ DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic productivity tren
 RWU = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and lab in utility
 ZETA = np.array([ZETA0, ZETA1])
 #-----------structure of x
+#-------first in latex notation:
 #---x = [
-        x_{p0, t0, s0, r0}, x_{p0, t0, s0, r1}, x_{p0, t0, s0, r2}
-        x_{p0, t0, s1, r0}, x_{p0, t0, s1, r1}, x_{p0, t0, s1, r2}
-        x_{p0, t1, s0, r0}, x_{p0, t1, s0, r1}, x_{p0, t1, s0, r2}
-        x_{p0, t1, s1, r0}, x_{p0, t1, s1, r1}, x_{p0, t1, s1, r2}
-        x_{p1, t0, s0, r0}, x_{p1, t0, s0, r1}, x_{p1, t0, s0, r2}
-        x_{p1, t0, s1, r0}, x_{p1, t0, s1, r1}, x_{p1, t0, s1, r2}
-        x_{p1, t1, s0, r0}, x_{p1, t1, s0, r1}, x_{p1, t1, s0, r2}
-        x_{p1, t1, s1, r0}, x_{p1, t1, s1, r1}, x_{p1, t1, s1, r2}
-
+#        x_{p0, t0, s0, r0}, x_{p0, t0, s0, r1}, x_{p0, t0, s0, r2},
+#        x_{p0, t0, s1, r0}, x_{p0, t0, s1, r1}, x_{p0, t0, s1, r2},
+#        x_{p0, t1, s0, r0}, x_{p0, t1, s0, r1}, x_{p0, t1, s0, r2},
+#        x_{p0, t1, s1, r0}, x_{p0, t1, s1, r1}, x_{p0, t1, s1, r2},
+#        x_{p1, t0, s0, r0}, x_{p1, t0, s0, r1}, x_{p1, t0, s0, r2},
+#        x_{p1, t0, s1, r0}, x_{p1, t0, s1, r1}, x_{p1, t0, s1, r2},
+#        x_{p1, t1, s0, r0}, x_{p1, t1, s0, r1}, x_{p1, t1, s0, r2},
+#        x_{p1, t1, s1, r0}, x_{p1, t1, s1, r1}, x_{p1, t1, s1, r2},
+#       ]
+#-------construct dicts for Policies, Time, Sectors and Regions respectively:
 PD = dict()
-for p in range(numPol):
-    PD[p] = range(len(x))[p * numReg * numSec * numTime : \
-                       (p + 1) * numReg * numSec * numTime : \
-                       1]
-
+for p in range(NPOL):
+    PD[p] = range(len(x))[p * NREG * NSEC * NTIM : \
+                          (p + 1) * NREG * NSEC * NTIM : \
+                          1]
 TD = dict()
-for t in range(numTime):
+for t in range(NTIM):
     indlist = []
-    for p in range(numPol):
-        indlist += range(len(x))[p * numReg * numSec * numTime + \
-                                 t * numSec * numReg : \
-                                 p * numReg * numSec * numTime + \
-                                 (t + 1) * numSec * numReg : \
+    for p in range(NPOL):
+        indlist += range(len(x))[p * NREG * NSEC * NTIM + \
+                                 t * NSEC * NREG : \
+                                 p * NREG * NSEC * NTIM + \
+                                 (t + 1) * NSEC * NREG : \
                                  1]
     TD[t] = indlist
-
 SD = dict()
 for s in sectNames: #comment
     indlist = []
-    for p in range(numPol):
-        for t in range(numTime):
-            indlist += range(len(x))[p * numReg * numSec * numTime + \
-                                     t * numReg * numSec + \
-                                     s * numReg : \
-                                     p * numReg * numSec * numTime + \
-                                     t * numReg * numSec + \
-                                     (s + 1) * numReg : \
+    for t in range(NTIM):
+        for p in range(NPOL):
+            indlist += range(len(x))[p * NREG * NSEC * NTIM + \
+                                     t * NREG * NSEC + \
+                                     s * NREG : \
+                                     p * NREG * NSEC * NTIM + \
+                                     t * NREG * NSEC + \
+                                     (s + 1) * NREG : \
                                      1]
     SD[t] = indlist
-#----the final one can be done with a slicer with stride numReg
+#----the final one can be done with a slicer with stride NREG
 RD = dict()
 for r in regNames:
     indlist = []
-    for s in range(numSect):
-        for t in range(numTime):
-            for p in range(numPol):
-                indlist += range(len(x))[p * numReg * numSec * numTime + \
-                                         t * numReg * numSec + \
-                                         s * numReg + \
+    for s in range(NSECt):
+        for t in range(NTIM):
+            for p in range(NPOL):
+                indlist += range(len(x))[p * NREG * NSEC * NTIM + \
+                                         t * NREG * NSEC + \
+                                         s * NREG + \
                                          r : \
-                                         p * numReg * numSec * numTime + \
-                                         t * numReg * numSec + \
-                                         s * numReg + \
+                                         p * NREG * NSEC * NTIM + \
+                                         t * NREG * NSEC + \
+                                         s * NREG + \
                                          (r + 1) : \
                                          1]
     RD[r] = indlist
