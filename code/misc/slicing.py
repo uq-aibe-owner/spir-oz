@@ -7,10 +7,15 @@ import jax.numpy as np
 regName = ["Bris", "Town", "Darl"]
 numReg = len(regName)
 numTime = 4
-LV = numReg * numTime
+numPol = 1
+LV = numReg * numTime * numPol
 vec = np.arange(0, LV, 1)
 
 #-----------the dicts
+RId = dict()
+for i in range(len(regName)):
+    RId[regName[i]] = i
+
 RD = dict()
 RDV = dict()
 RDL = dict()
@@ -32,7 +37,8 @@ for i in range(numTime):
     TDL[i] = list(vec[i * numReg : (i+1) * numReg : 1])
 print(TD)
 print(TDV)
-print(TDL)
+#print(TDL)
+
 # could enter keys as a vector for more expandable function
 def xInd(timeKey,
          regKey,
@@ -43,6 +49,15 @@ def xInd(timeKey,
     reg = range(totInds)[reg_dict[regKey]]
     time = range(totInds)[time_dict[timeKey]]
     return list(set(reg) & set(time))[0]
+
+def xIndVTF(timeKey,
+         regKey,
+         reg_dict=RDV,
+         time_dict=TDV,
+         totInds = numTime*numReg
+          ):
+    # regKey enters before timeKey as RDV[timeKey] is a vec (would need a region index)
+    return TDV[timeKey][RId[regKey]]
 
 def xIndV(timeKey,
          regKey,
@@ -65,5 +80,6 @@ def xIndL(timeKey,
 ### more testing
 print('the index for ', regName[0], 'at time ', 3, 'is ', vec[xInd(3,"Bris")])
 print('the index for ', regName[0], 'at time ', 3, 'is ', xIndV(3,"Bris"))
+print('the index for ', regName[0], 'at time ', 3, 'is ', xIndVTF(3,"Bris"))
 #print('the index for ', regName[0], 'at time ', 3, 'is ', vec[xIndL(3,"Bris")])
 

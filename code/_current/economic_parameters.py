@@ -1,4 +1,4 @@
-#---------------basic economic parameters
+#-----------basic economic parameters
 NREG = 4        # number of regions
 NSEC = 6        # number of sectors
 LFWD = 1        # look-forward parameter / time horizon length (Delta_s) in paper 
@@ -15,15 +15,15 @@ DELTA = 25e-3   # depreciation rate
 ETA = 5e-1      # Frisch elasticity of labour supply
 RHO = np.ones(NREG) # regional weights (population)
 TCS=0.75
-#---------------suppressed basic parameters
+#-----------suppressed basic parameters
 #PHIM = 5e-1    # weight of intermediate inputs in production
 #XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
 #MU = np.ones(NRxS) * 1 / NRxS # importance of one sector to another
-#---------------derived economic parameters
+#-----------derived economic parameters
 NRxS = NREG * NSEC
 GAMMAhat = 1 - 1 / GAMMA    # utility parameter (consumption denominator)
 ETAhat = 1 + 1 / ETA        # utility parameter
 PHIL = 1 - PHIK             # labour's importance in production
 DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic productivity trend
-B = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and lab in utility
+RWU = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and lab in utility
 ZETA = np.array([ZETA0, ZETA1])

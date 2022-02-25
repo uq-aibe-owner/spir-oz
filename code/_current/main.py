@@ -8,8 +8,8 @@ from cyipopt import minimize_ipopt
 #-----------basic economic parameters
 NREG = 4        # number of regions
 NSEC = 6        # number of sectors
-LFWD = 1        # look-forward parameter / time horizon length (Delta_s) in paper 
-LPTH = 1        # path length (Tstar): number of random steps along a given path
+LFWD = 10        # look-forward parameter / time horizon length (Delta_s) in paper 
+LPTH = 28        # path length (Tstar): number of random steps along a given path
 NPTH = 1        # number of paths Tstar + 1
 BETA = 99e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
@@ -34,6 +34,18 @@ PHIL = 1 - PHIK             # labour's importance in production
 DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic productivity trend
 RWU = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # relative weight of con and lab in utility
 ZETA = np.array([ZETA0, ZETA1])
+#-----------structure of x
+#---x = [
+        c_{t0, s0, r0},
+        c_{t0, s0, r1}, c_{t0, s0, r2}
+        c_{t0, s1, r0}, c_{t0, s1, r1}, c_{t0, s1, r2}
+        c_{t1, s0, r0},
+        c_{t1, s0, r1}, c_{t0, s0, r2}
+        c_{t1, s1, r0}, c_{t1, s1, r1}, c_{t1, s1, r2}
+cs0 = []
+for i in range(numTime):
+    cs0[i] = x[i * numReg * numSec  : i * numReg * numSec + numReg : 1]
+
 #-----------objective function
 #con_weights=GAMMA, elast_par=RHO, inv_elast_par=RHO_inv):
 def objective(x,         # full NREGxNSECxLFWD vector of variables
@@ -42,7 +54,7 @@ def objective(x,         # full NREGxNSECxLFWD vector of variables
               npol=NPOL, # number of policy-variable types (con, lab, etc)
               ):
     # locate tail kapital in x
-    var_fin = x[(LFWD - 1) * NPOL : LFWD * NPOL]
+    var_fin = x[(LFWD - 1) * NPOL : LFWD * NPOL : 1]
     kap_tail = var_fin[I["knx"]]
     # locate consumption in x
     sum_utl = 0.0
@@ -105,13 +117,10 @@ for s in range(1, LPTH):
              'jac': eq_ctt_jac,
              'hess': eq_ctt_hessvp,
              }]
-#,
-#{'type': 'ineq', 'fun': con_ineq, 'jac': con_ineq_jac, 'hess': con_ineq_hessvp}]
+    #-----------starting point (absent warm start)
+    x0 = np.array([15.0, 14.0, 13.0, 12.0])
 
-#-----------starting point
-    x0 = x[s] np.array([15.0, 14.0, 13.0, 12.0])
-
-#-----------execute solver
+    #-----------execute solver
     res[s] = minimize_ipopt(obj,
                             jac=obj_grad,
                             hess=obj_hess,
