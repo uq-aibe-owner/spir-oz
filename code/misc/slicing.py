@@ -2,7 +2,7 @@
 from jax.config import config
 config.update("jax_enable_x64", True)
 
-import jax.numpy as jnp
+#import jax.numpy as np
 import numpy as np
 
 regName = ["Bris", "Town", "Darl"]
@@ -78,9 +78,12 @@ def xIndL(timeKey,
     reg = range(totInds)[reg_dict[regKey]]
     time = range(totInds)[time_dict[timeKey]]
     return list(set(reg) & set(time))[0]
+
+idx = [0, 3, 7]
+vec[np.array(idx)]
 ### more testing
 print('the index for ', regName[0], 'at time ', 3, 'is ', xInd(3,"Bris"))
 print('the index for ', regName[0], 'at time ', 3, 'is ', xIndV(3,"Bris"))
 print('the index for ', regName[0], 'at time ', 3, 'is ', xIndVTF(3,"Bris"))
-print('the index for ', regName[0], 'at time ', 3, 'is ', vec[[0, 3, 7]])
+print('the index for ', regName[0], 'at time ', 3, 'is ', vec[np.array([0, 3, 7])])
 

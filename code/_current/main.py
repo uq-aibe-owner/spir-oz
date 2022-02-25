@@ -45,38 +45,58 @@ ZETA = np.array([ZETA0, ZETA1])
         x_{p1, t1, s0, r0}, x_{p1, t1, s0, r1}, x_{p1, t1, s0, r2}
         x_{p1, t1, s1, r0}, x_{p1, t1, s1, r1}, x_{p1, t1, s1, r2}
 
+PD = dict()
+for p in range(numPol):
+    PD[p] = range(len(x))[p * numReg * numSec * numTime : \
+                       (p + 1) * numReg * numSec * numTime : \
+                       1]
 
 TD = dict()
 for t in range(numTime):
     indlist = []
-    for i in range(numPol):
-        indlist += (range(len(x))[i * (numReg * numSec * numTime) + t * numSec * numReg : 
-                            i * (numReg * numSec * numTime) + (t+1)*(numSec * numReg) : 1])
+    for p in range(numPol):
+        indlist += range(len(x))[p * numReg * numSec * numTime + \
+                                 t * numSec * numReg : \
+                                 p * numReg * numSec * numTime + \
+                                 (t + 1) * numSec * numReg : \
+                                 1]
     TD[t] = indlist
 
-TS = dict()
-for t in sectNames: #comment
+SD = dict()
+for s in sectNames: #comment
     indlist = []
-    for i in range(numPol):
-        for ring in range(numTime):
-            indlist += (range(len(x))[i * ring * (numReg * numSec) + t * numReg: 
-                            i * ring * (numReg * numSec) + (t+1) * (numReg) : 1])
-    TS[t] = indlist
-
-TR = dict()
-for t in regNames:
+    for p in range(numPol):
+        for t in range(numTime):
+            indlist += range(len(x))[p * numReg * numSec * numTime + \
+                                     t * numReg * numSec + \
+                                     s * numReg : \
+                                     p * numReg * numSec * numTime + \
+                                     t * numReg * numSec + \
+                                     (s + 1) * numReg : \
+                                     1]
+    SD[t] = indlist
+#----the final one can be done with a slicer with stride numReg
+RD = dict()
+for r in regNames:
     indlist = []
-    for i in range(numPol):
-        for ring in range(numTime):
-            for iter in range(numSect):
-                indlist += (range(len(x))[i * ring * iter * (numReg) +t : 
-                            i * ring * iter * (numReg) + 1 + t: 1])
-    TR[t] = indlist
+    for s in range(numSect):
+        for t in range(numTime):
+            for p in range(numPol):
+                indlist += range(len(x))[p * numReg * numSec * numTime + \
+                                         t * numReg * numSec + \
+                                         s * numReg + \
+                                         r : \
+                                         p * numReg * numSec * numTime + \
+                                         t * numReg * numSec + \
+                                         s * numReg + \
+                                         (r + 1) : \
+                                         1]
+    RD[r] = indlist
 
 
 #-----------objective function
 #con_weights=GAMMA, elast_par=RHO, inv_elast_par=RHO_inv):
-def objective(x,         # full NREGxNSECxLFWD vector of variables
+def objective(x,         # full NPOLxLFWDxNSECxNREG vector of variables
               beta=BETA, # discount factor
               lfwd=LFWD, # look-forward parameter
               npol=NPOL, # number of policy-variable types (con, lab, etc)
