@@ -1,7 +1,6 @@
 # ======================================================================
 #     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
 # ======================================================================
-
 import numpy as np
 from parameters import *
 from parameters_compute import *
@@ -13,7 +12,7 @@ d_pol = {
     "lab": 1,
     "knx": 1,
     "sav": 1,
-    "out": 1,
+    #"out": 1,
     #    "itm": 1,
     #    "ITM": 2,
     #    "SAV": 2,
@@ -21,11 +20,11 @@ d_pol = {
     #    "val": 0,
 }
 
-# dimensions of the dual variables (i.e. number of constraints)
+# dimensions of the dual variables (i.e. number of constraints per policy)
 d_ctt = {
     "mclt": 0,
     "knxt": 1,
-    "outt": 1,
+    #"outt": 1,
     #         "savt": 1,
     #        "itmt": 1,
     #"utlt": 0,
@@ -39,7 +38,7 @@ pol_L = {
     "lab": lab_L,
     "knx": kap_L,
     "sav": sav_L,
-    "out": out_L,
+    #"out": out_L,
     #    "ITM": pL,
     #    "SAV": pL,
     #    "itm": pL,
@@ -52,7 +51,7 @@ pol_U = {
     "lab": lab_U,
     "knx": kap_U,
     "sav": sav_U,
-    "out": out_U,
+    #"out": out_U,
     #    "ITM": pU,
     #    "SAV": pU,
     #    "itm": pU,
@@ -65,7 +64,7 @@ pol_S = {
     "lab": 1,
     "knx": k_init,
     "sav": 2,
-    "out": 6,
+    #"out": 6,
     #    "itm": 10,
     #    "ITM": 10,
     #    "SAV": 10,
@@ -82,20 +81,20 @@ if not len(d_pol) == len(pol_U) == len(pol_L) == len(pol_S):
 ctt_L = {
     "mclt": c_L,
     "knxt": c_L,
-    "outt": c_L,
-    #    "savt": ctt_L,
-    #    "itmt": ctt_L,
-    #"utlt": ctt_L,
-    #    "valt": ctt_L,
+    #   "outt": c_L,
+    #   "savt": ctt_L,
+    #   "itmt": ctt_L,
+    #   "utlt": ctt_L,
+    #   "valt": ctt_L,
 }
 ctt_U = {
     "mclt": c_U,
     "knxt": c_U,
-    "outt": c_U,
-    #    "savt": ctt_U,
-    #    "itmt": ctt_U,
-    #"utlt": ctt_U,
-    #    "valt": ctt_U,
+    #   "outt": c_U,
+    #   "savt": ctt_U,
+    #   "itmt": ctt_U,
+    #   "utlt": ctt_U,
+    #   "valt": ctt_U,
 }
 
 # Check dicts are all same length
@@ -109,7 +108,7 @@ if not len(d_ctt) == len(ctt_U) == len(ctt_L):
 # =========================
 # creating list of the dict keys
 pol_key = list(d_pol.keys())
-# instantiate the number of policy variables at a given time
+# instantiate the number of variables at a given time
 n_pol = 0
 # temporary variable to keep track of previous highest index
 prv_ind = 0

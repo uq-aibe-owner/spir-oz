@@ -16,6 +16,10 @@ def instant_utility(con,            # consumption vec of vars at given time
     return val
 
 # ======================================================================
+#-----------full utility (summing over time) as a pure fcn
+
+
+# ======================================================================
 #-----------v-tail as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
