@@ -12,7 +12,7 @@ import
 #-----------basic economic parameters
 NREG = 4        # number of regions
 NSEC = 6        # number of sectors
-PHZN = LFWD = 10# look-forward parameter / planning (time) horizon (Delta_s)
+PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 28# path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
@@ -98,71 +98,83 @@ ZETA = np.array([ZETA0, ZETA1])
 #       ]
 #
 #==============================================================================
-#----------- dimensions for each pol var: 0 : scalar; 1 : vector; 2 : matrix
+#---------------dicts
+#-----------dimensions for each pol var: 0 : scalar; 1 : vector; 2 : matrix
 d_dim = {
     "con": 1,
-    "lab": 1,
     "knx": 1,
-    #"sav": 1,
-    #"out": 1,
-    #    "itm": 1,
-    #    "ITM": 2,
-    #    "SAV": 2,
-    #"utl": 0
-    #    "val": 0,
+    "lab": 1,
+}
+i_pol = {
+    "con": 0,
+    "knx": 1,
+    "lab": 2,
+}
+i_reg = {
+    "aus": 0,
+    "qld": 1,
+    "wld": 2,
+}
+i_sec = {
+    "agr": 0,
+    "for": 1,
+    "min": 2,
+    "man": 3,
+    "uty": 4,
+    "ctn": 5,
+    "com": 6,
+    "tps": 7,
+    "res": 8,
 }
 #-----------dicts of index lists for locating variables in x:
 #-------Dict for locating every variable for a given policy
 d_pol_ind_x = dict()
-for p in polNames:
-    d_pol_ind_x[p] = range(len(x))[
-          NSEC ** d_dim[p] * NREG * PHZN * i_pol[p]
-        : NSEC ** d_dim[p] * NREG * PHZN * (i_pol[p] + 1)
-        : 1]
+for p in i_pol.values():
+    stride = NTIM * NREG * NSEC ** d_dim[p]
+    start = i_pol[p] * stride
+    end = start + stride
+    d_pol_ind_x[p] = range(len(x))[start : end : 1]
 
 #-------Dict for locating every variable at a given time
 d_tim_ind_x = dict()
-for t in range(PHZN):
+for t in range(NTIM):
     indlist = []
-    for p in polNames:
-        indlist += range(len(x))[
-             NSEC ** d_dim[p] * NREG * (i_pol[p] * PHZN + t)
-           : NSEC ** d_dim[p] * NREG * (i_pol[p] * PHZN + t + 1)
-           : 1]
+    for p in i_pol.values():
+        stride = NREG * NSEC ** d_dim[p]
+        start = (i_pol[p] * NTIM + t) * stride
+        end = start + stride
+        indlist += range(len(x))[start : end : 1]
     d_tim_ind_x[t] = sorted(indlist)
 
 #-----------the final one can be done with a slicer with stride NREG
 #-------Dict for locating every variable in a given region
 d_reg_ind_x = dict()
-for r in regNames:
+for r in i_reg.values():
     indlist = []
-    for t in range(PHZN):
-        for p in polNames:
-            indlist += range(len(x))[
-                  NSEC ** d_dim[p] * (p * NREG * PHZN + t * NREG + r)
-                : NSEC ** d_dim[p] * (p * NREG * PHZN + t * NREG + r + 1)
-                : 1]
+    for t in range(NTIM):
+        for p in i_sec.values():
+            stride NSEC ** d_dim[p]
+            start = (p * NTIM * NREG + t * NREG + r) * stride
+            end = start + stride
+            indlist += range(len(x))[start : end : 1]
     d_reg_ind_x[r] = sorted(indlist)
 
 #-------Dict for locating every variable in a given sector
 d_sec_ind_x = dict()
-for s in sectNames: #comment
+for s in i_sec.values(): #comment
     indlist = []
-    for t in range(PHZN):
-        for p in polNames:
-            indlist += range(len(x))[
-                  NSEC ** d_dim[p] * (p * NREG * PHZN + t * NREG + r) + s
-                : NSEC ** d_dim[p] * (p * NREG * PHZN + t * NREG + r) + s + 1
-                : 1]
+    for r in i_reg.values():
+        for t in range(NTIM):
+            for p in i_sec.values():
+                stride = 1
+                start = (p * NTIM * NREG + t * NREG + r) * NSEC ** d_dim[p] + s
+                end = start + stride
+                indlist += range(len(x))[start : end : 1]
     d_sec_ind_x[s] = sorted(indlist)
 #-----------union of all the "in_x" dicts: those relating to indices of x
 d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x | d_sec_ind_x
 
 #==============================================================================
-#-----------function for intersecting two lists: returns indices as np.array
-def f_I2L(list1,list2):
-    return np.array(list(set(list1) & set(list2)))
-
 #-----------function for returning index subsets of x for a pair of dict keys
 def sub_ind_x(key1,             # any key of d_ind_x
               key2,             # any key of d_ind_x
@@ -171,6 +183,9 @@ def sub_ind_x(key1,             # any key of d_ind_x
     val = np.array(list(set(d['key1']) & set(d['key2'])))
     return val
 
+#-----------function for intersecting two lists: returns indices as np.array
+#def f_I2L(list1,list2):
+#    return np.array(list(set(list1) & set(list2)))
 #==============================================================================
 #-----------computational parameters
 #dI_CON = dict()
