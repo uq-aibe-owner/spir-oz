@@ -203,38 +203,38 @@ def sub_ind_x(key1,             # any key of d_ind_x
 #-----------objective function (purified)
 def objective(x,                    # full vector of variables
               beta=par.BETA,        # discount factor
-              phzn=par.PHZN,        # look-forward parameter
+              lfwd=par.LFWD,        # look-forward parameter
               u=efcn.instant_utility# utility function representing flow per t
               v=efcn.V_tail         # tail-sum value function
               ind=cfcn.sub_ind_x    # subindices function for x: req. two keys
               ):
     # extract/locate knx at the planning horizon in x
-    kap_phzn = x[ind("knx", phzn)]
+    kap_lfwd = x[ind("knx", lfwd)]
     # sum discounted utility over the planning horizon
     sum_disc_utl = 0.0
-    for t in range(phzn):
-        con_t = x[ind("con", t)]    # locate consumption at t in x
-        lab_t = x[ind("lab", t)]    # locate labour at t in x
-        sum_disc_utl += beta ** t * u(con_t, lab_t)
-    val = sum_disc_utl + beta ** lfwd * v(kap_phzn)
+    for t in range(lfwd):
+        CON = x[ind("con", t)]    # locate consumption at t in x
+        LAB = x[ind("lab", t)]    # locate labour at t in x
+        sum_disc_utl += beta ** t * u(con=CON, lab=LAB)
+    val = sum_disc_utl + beta ** lfwd * v(kap=kap_lfwd)
     return val
 
 #==============================================================================
 #-----------equality constraints
 def eq_constraints(x,
                    state,
-                   n_ctt=par.N_CTT
+                   lfwd=par.LFWD
                    mcl=efcn.market_clearing,
                    ind=cfcn.sub_ind_x
                    ):
-    eqns = np.zeros(LFWD)
+    eqns = np.zeros(lfwd)
         # constraint 2
-    for t in range(LFWD):
-        kap_t = state
-        knx_t = x[ind("knx", t)]
-        con_t = x[ind("con", t)]
-        lab_t = x[ind("lab", t)]
-        eqns  = eqns.at[t].set(mcl(kap_t, knx_t, con_t, lab_t, t))
+    for t in range(lfwd):
+        KAP = state
+        KNX = x[ind("knx", t)]
+        CON = x[ind("con", t)]
+        LAB = x[ind("lab", t)]
+        eqns  = eqns.at[t].set(mcl(kap=KAP, knx=KNX, con=CON, lab=LAB, tim=t))
     return eqns
 
 #==============================================================================
