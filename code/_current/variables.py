@@ -1,13 +1,11 @@
 # ======================================================================
-#     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
-# ======================================================================
 import numpy as np
 from parameters import *
 from parameters_compute import *
 
 # ======================================================================
 # dimensions of each policy variable: 0 for a scalar; 1 for a vector; 2 for a matrix
-d_pol = {
+d_dim = {
     "con": 1,
     "lab": 1,
     "knx": 1,
@@ -72,7 +70,7 @@ pol_S = {
     #    "val": -300,
 }
 
-if not len(d_pol) == len(pol_U) == len(pol_L) == len(pol_S):
+if not len(d_dim) == len(pol_U) == len(pol_L) == len(pol_S):
     raise ValueError(
         "Policy-variable-related Dicts are not all the same length, check variables.py"
     )
@@ -107,7 +105,7 @@ if not len(d_ctt) == len(ctt_U) == len(ctt_L):
 # Slicing the ipopt vector for the policy variables
 # =========================
 # creating list of the dict keys
-pol_key = list(d_pol.keys())
+pol_key = list(d_dim.keys())
 # instantiate the number of variables at a given time
 n_pol = 0
 # temporary variable to keep track of previous highest index
@@ -115,10 +113,10 @@ prv_ind = 0
 # dict for indices of each policy variable in X/x
 I = dict()
 for iter in pol_key:
-    n_pol += n_agt ** d_pol[iter]
+    n_pol += n_agt ** d_dim[iter]
     # allocating slices of indices to each policy variable as a key
-    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_pol[iter])
-    prv_ind += n_agt ** d_pol[iter]
+    I[iter] = slice(prv_ind, prv_ind + n_agt ** d_dim[iter])
+    prv_ind += n_agt ** d_dim[iter]
 
 # total number of variables across time
 n_pol_all = Delta * n_pol

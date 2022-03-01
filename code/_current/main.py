@@ -42,82 +42,102 @@ ZETA = np.array([ZETA0, ZETA1])
 #==============================================================================
 #-----------structure of x using latex notation:
 #---x = [
-#        x_{p0, t0, r0, s00}, x_{p0, t0, r0, s01}, x_{p0, t0, r0, s02},
-#        x_{p0, t0, r0, s10}, x_{p0, t0, r0, s11}, x_{p0, t0, r0, s12},
-#        x_{p0, t0, r0, s20}, x_{p0, t0, r0, s21}, x_{p0, t0, r0, s22},
+#        x_{p0, t0, r0, s0}, x_{p0, t0, r0, s1}, x_{p0, t0, r0, s2},
 #
-#        x_{p0, t0, r1, s00}, x_{p0, t0, r1, s01}, x_{p0, t0, r1, s02},
-#        x_{p0, t0, r1, s10}, x_{p0, t0, r1, s11}, x_{p0, t0, r1, s12},
-#        x_{p0, t0, r1, s20}, x_{p0, t0, r1, s21}, x_{p0, t0, r1, s22},
+#        x_{p0, t0, r1, s0}, x_{p0, t0, r1, s1}, x_{p0, t0, r1, s2},
 #
-#        x_{p0, t1, r0, s00}, x_{p0, t1, r0, s01}, x_{p0, t1, r0, s02},
-#        x_{p0, t1, r0, s10}, x_{p0, t1, r0, s11}, x_{p0, t1, r0, s12},
-#        x_{p0, t1, r0, s20}, x_{p0, t1, r0, s21}, x_{p0, t1, r0, s22},
+#        x_{p0, t1, r0, s0}, x_{p0, t1, r0, s1}, x_{p0, t1, r0, s2},
 #
-#        x_{p0, t1, r1, s00}, x_{p0, t1, r1, s01}, x_{p0, t1, r1, s02},
-#        x_{p0, t1, r1, s10}, x_{p0, t1, r1, s11}, x_{p0, t1, r1, s12},
-#        x_{p0, t1, r1, s20}, x_{p0, t1, r1, s21}, x_{p0, t1, r1, s22},
+#        x_{p0, t1, r1, s0}, x_{p0, t1, r1, s1}, x_{p0, t1, r1, s2},
 #
-#        x_{p1, t0, r0, s00}, x_{p1, t0, r0, s01}, x_{p1, t0, r0, s02},
-#        x_{p1, t0, r0, s10}, x_{p1, t0, r0, s11}, x_{p1, t0, r0, s12},
-#        x_{p1, t0, r0, s20}, x_{p1, t0, r0, s21}, x_{p1, t0, r0, s22},
+#        x_{p1, t0, r0, s0}, x_{p1, t0, r0, s1}, x_{p0, t0, r0, s2},
 #
-#        x_{p1, t0, r1, s00}, x_{p1, t0, r1, s01}, x_{p1, t0, r1, s02},
-#        x_{p1, t0, r1, s10}, x_{p1, t0, r1, s11}, x_{p1, t0, r1, s12},
-#        x_{p1, t0, r1, s20}, x_{p1, t0, r1, s21}, x_{p1, t0, r1, s22},
+#        x_{p1, t0, r1, s0}, x_{p1, t0, r1, s1}, x_{p0, t0, r1, s2},
 #
-#        x_{p1, t1, r0, s00}, x_{p1, t1, r0, s01}, x_{p1, t1, r0, s02},
-#        x_{p1, t1, r0, s10}, x_{p1, t1, r0, s11}, x_{p1, t1, r0, s12},
-#        x_{p1, t1, r0, s20}, x_{p1, t1, r0, s21}, x_{p1, t1, r0, s22},
+#        x_{p1, t1, r0, s0}, x_{p1, t1, r0, s1}, x_{p0, t1, r0, s2},
 #
-#        x_{p1, t1, r1, s00}, x_{p1, t1, r1, s01}, x_{p1, t1, r1, s02},
-#        x_{p1, t1, r1, s10}, x_{p1, t1, r1, s11}, x_{p1, t1, r1, s12},
-#        x_{p1, t1, r1, s20}, x_{p1, t1, r1, s21}, x_{p1, t1, r1, s22},
+#        x_{p1, t1, r1, s0}, x_{p1, t1, r1, s1}, x_{p0, t1, r1, s2},
+#
+#
+#        x_{p2, t0, r0, s00}, x_{p2, t0, r0, s01}, x_{p2, t0, r0, s02},
+#        x_{p2, t0, r0, s10}, x_{p2, t0, r0, s11}, x_{p2, t0, r0, s12},
+#        x_{p2, t0, r0, s20}, x_{p2, t0, r0, s21}, x_{p2, t0, r0, s22},
+#
+#        x_{p2, t0, r1, s00}, x_{p2, t0, r1, s01}, x_{p2, t0, r1, s02},
+#        x_{p2, t0, r1, s10}, x_{p2, t0, r1, s11}, x_{p2, t0, r1, s12},
+#        x_{p2, t0, r1, s20}, x_{p2, t0, r1, s21}, x_{p2, t0, r1, s22},
+#
+#        x_{p2, t1, r0, s00}, x_{p2, t1, r0, s01}, x_{p2, t1, r0, s02},
+#        x_{p2, t1, r0, s10}, x_{p2, t1, r0, s11}, x_{p2, t1, r0, s12},
+#        x_{p2, t1, r0, s20}, x_{p2, t1, r0, s21}, x_{p2, t1, r0, s22},
+#
+#        x_{p2, t1, r1, s00}, x_{p2, t1, r1, s01}, x_{p2, t1, r1, s02},
+#        x_{p2, t1, r1, s10}, x_{p2, t1, r1, s11}, x_{p2, t1, r1, s12},
+#        x_{p2, t1, r1, s20}, x_{p2, t1, r1, s21}, x_{p2, t1, r1, s22},
+#
+#
+#        x_{p3, t0, r0, s00}, x_{p3, t0, r0, s01}, x_{p3, t0, r0, s02},
+#        x_{p3, t0, r0, s10}, x_{p3, t0, r0, s11}, x_{p3, t0, r0, s12},
+#        x_{p3, t0, r0, s20}, x_{p3, t0, r0, s21}, x_{p3, t0, r0, s22},
+#
+#        x_{p3, t0, r1, s00}, x_{p3, t0, r1, s01}, x_{p3, t0, r1, s02},
+#        x_{p3, t0, r1, s10}, x_{p3, t0, r1, s11}, x_{p3, t0, r1, s12},
+#        x_{p3, t0, r1, s20}, x_{p3, t0, r1, s21}, x_{p3, t0, r1, s22},
+#
+#        x_{p3, t1, r0, s00}, x_{p3, t1, r0, s01}, x_{p3, t1, r0, s02},
+#        x_{p3, t1, r0, s10}, x_{p3, t1, r0, s11}, x_{p3, t1, r0, s12},
+#        x_{p3, t1, r0, s20}, x_{p3, t1, r0, s21}, x_{p3, t1, r0, s22},
+#
+#        x_{p3, t1, r1, s00}, x_{p3, t1, r1, s01}, x_{p3, t1, r1, s02},
+#        x_{p3, t1, r1, s10}, x_{p3, t1, r1, s11}, x_{p3, t1, r1, s12},
+#        x_{p3, t1, r1, s20}, x_{p3, t1, r1, s21}, x_{p3, t1, r1, s22},
 #       ]
 #
 #==============================================================================
 #-----------dicts of index lists for locating variables in x:
 #-------Dict for locating every variable for a given policy
 d_pol_ind_x = dict()
-for p in range(NPOL):
-    dI_P[p] = range(len(x))[
-        p * NREG * NSEC * PHZN : (p + 1) * NREG * NSEC * PHZN : 1]
+for p in polNames:
+    d_pol_ind_x[p] = range(len(x))[
+          NSEC ** d_dim[p] * NREG * PHZN * i_pol[p]
+        : NSEC ** d_dim[p] * NREG * PHZN * (i_pol[p] + 1)
+        : 1]
 
 #-------Dict for locating every variable at a given time
 d_tim_ind_x = dict()
 for t in range(PHZN):
     indlist = []
-    for p in range(NPOL):
+    for p in polNames:
         indlist += range(len(x))[
-            p * NREG * NSEC * PHZN + t * NSEC * NREG : \
-            p * NREG * NSEC * PHZN + (t + 1) * NSEC * NREG : 1]
+             NSEC ** d_dim[p] * NREG * (i_pol[p] * PHZN + t)
+           : NSEC ** d_dim[p] * NREG * (i_pol[p] * PHZN + t + 1)
+           : 1]
     d_tim_ind_x[t] = sorted(indlist)
+
+#-----------the final one can be done with a slicer with stride NREG
+#-------Dict for locating every variable in a given region
+d_reg_ind_x = dict()
+for r in regNames:
+    indlist = []
+    for t in range(PHZN):
+        for p in polNames:
+            indlist += range(len(x))[
+                  NSEC ** d_dim[p] * (p * NREG * PHZN + t * NREG + r)
+                : NSEC ** d_dim[p] * (p * NREG * PHZN + t * NREG + r + 1)
+                : 1]
+    d_reg_ind_x[r] = sorted(indlist)
 
 #-------Dict for locating every variable in a given sector
 d_sec_ind_x = dict()
 for s in sectNames: #comment
     indlist = []
     for t in range(PHZN):
-        for p in range(NPOL):
+        for p in polNames:
             indlist += range(len(x))[
-                p * NREG * NSEC * PHZN + t * NREG * NSEC + s * NREG : \
-                p * NREG * NSEC * PHZN + t * NREG * NSEC + (s + 1) * NREG : 1]
-    d_sec_ind_x[t] = sorted(indlist)
-
-#-----------the final one can be done with a slicer with stride NREG
-#-------Dict for locating every variable in a given region
-d_reg_ind_x = dict()
-for r in range(NREG):
-    indlist = []
-    for s in range(NSEC):
-        for t in range(PHZN):
-            for p in range(NPOL):
-                indlist += range(len(x))[
-                    p * NREG * NSEC * PHZN + t * NREG * NSEC + s * NREG + r :\
-                    p * NREG * NSEC * PHZN + t * NREG * NSEC + s * NREG + \
-                    (r + 1) : 1]
-    d_reg_ind_x[r] = sorted(indlist)
-
+                  NSEC ** d_dim[p] * (p * NREG * PHZN + t * NREG + r) + s
+                : NSEC ** d_dim[p] * (p * NREG * PHZN + t * NREG + r) + s + 1
+                : 1]
+    d_sec_ind_x[s] = sorted(indlist)
 #-----------union of all the "in_x" dicts: those relating to indices of x
 d_ind_x = d_pol_ind_x | d_tim_ind_x | d_sec_ind_x | d_reg_ind_x
 
@@ -136,13 +156,13 @@ def sub_ind_x(key1,              # any key of d_ind_x
 
 #==============================================================================
 #-----------computational parameters
-dI_CON = dict()
-dI_LAB = dict()
-dI_KNX = dict()
-for t in range(LFWD):
-    dI_CON[t] = f_I2L(dI_P["con"], dI_T[t]) # Index set of con for each t in plan
-    dI_LAB[t] = f_I2L(dI_P["lab"], dI_T[t]) # Index set of lab for each t in plan
-    dI_KNX[t] = f_I2L(dI_P["knx"], dI_T[t]) # Index set of knx for each t in plan
+#dI_CON = dict()
+#dI_LAB = dict()
+#dI_KNX = dict()
+#for t in range(LFWD):
+#    dI_CON[t] = f_I2L(dI_P["con"], dI_T[t]) # Index set of con for each t in plan
+#    dI_LAB[t] = f_I2L(dI_P["lab"], dI_T[t]) # Index set of lab for each t in plan
+#    dI_KNX[t] = f_I2L(dI_P["knx"], dI_T[t]) # Index set of knx for each t in plan
 #I_CON = np.array(dI_P["con"])]
 #I_LAB = np.array(dI_P["lab"])]
 #I_FNLKNX = f_I2L(dI_P["knx"], dI_T[PHZN])  # Index set for final knx in plan
