@@ -42,23 +42,37 @@ ZETA = np.array([ZETA0, ZETA1])
 #==============================================================================
 #-----------structure of x using latex notation:
 #---x = [
-#        x_{p0, t0, s00, r0}, x_{p0, t0, s0, r1}, x_{p0, t0, s0, r2},
-#        x_{p0, t0, s10, r0}, x_{p0, t0, s1, r1}, x_{p0, t0, s1, r2},
-#        x_{p0, t0, s01, r0}, x_{p0, t0, s0, r1}, x_{p0, t0, s0, r2},
-#        x_{p0, t0, s11, r0}, x_{p0, t0, s1, r1}, x_{p0, t0, s1, r2},
-
-#        x_{p0, t1, s00, r0}, x_{p0, t1, s0, r1}, x_{p0, t1, s0, r2},
-#        x_{p0, t1, s10, r0}, x_{p0, t1, s1, r1}, x_{p0, t1, s1, r2},
-
-#        x_{p0, t0, s0, r0}, x_{p0, t0, s0, r1}, x_{p0, t0, s0, r2},
-#        x_{p0, t0, s1, r0}, x_{p0, t0, s1, r1}, x_{p0, t0, s1, r2},
-#        x_{p0, t1, s0, r0}, x_{p0, t1, s0, r1}, x_{p0, t1, s0, r2},
-#        x_{p0, t1, s1, r0}, x_{p0, t1, s1, r1}, x_{p0, t1, s1, r2},
-
-#        x_{p1, t0, s0, r0}, x_{p1, t0, s0, r1}, x_{p1, t0, s0, r2},
-#        x_{p1, t0, s1, r0}, x_{p1, t0, s1, r1}, x_{p1, t0, s1, r2},
-#        x_{p1, t1, s0, r0}, x_{p1, t1, s0, r1}, x_{p1, t1, s0, r2},
-#        x_{p1, t1, s1, r0}, x_{p1, t1, s1, r1}, x_{p1, t1, s1, r2},
+#        x_{p0, t0, r0, s00}, x_{p0, t0, r0, s01}, x_{p0, t0, r0, s02},
+#        x_{p0, t0, r0, s10}, x_{p0, t0, r0, s11}, x_{p0, t0, r0, s12},
+#        x_{p0, t0, r0, s20}, x_{p0, t0, r0, s21}, x_{p0, t0, r0, s22},
+#
+#        x_{p0, t0, r1, s00}, x_{p0, t0, r1, s01}, x_{p0, t0, r1, s02},
+#        x_{p0, t0, r1, s10}, x_{p0, t0, r1, s11}, x_{p0, t0, r1, s12},
+#        x_{p0, t0, r1, s20}, x_{p0, t0, r1, s21}, x_{p0, t0, r1, s22},
+#
+#        x_{p0, t1, r0, s00}, x_{p0, t1, r0, s01}, x_{p0, t1, r0, s02},
+#        x_{p0, t1, r0, s10}, x_{p0, t1, r0, s11}, x_{p0, t1, r0, s12},
+#        x_{p0, t1, r0, s20}, x_{p0, t1, r0, s21}, x_{p0, t1, r0, s22},
+#
+#        x_{p0, t1, r1, s00}, x_{p0, t1, r1, s01}, x_{p0, t1, r1, s02},
+#        x_{p0, t1, r1, s10}, x_{p0, t1, r1, s11}, x_{p0, t1, r1, s12},
+#        x_{p0, t1, r1, s20}, x_{p0, t1, r1, s21}, x_{p0, t1, r1, s22},
+#
+#        x_{p1, t0, r0, s00}, x_{p1, t0, r0, s01}, x_{p1, t0, r0, s02},
+#        x_{p1, t0, r0, s10}, x_{p1, t0, r0, s11}, x_{p1, t0, r0, s12},
+#        x_{p1, t0, r0, s20}, x_{p1, t0, r0, s21}, x_{p1, t0, r0, s22},
+#
+#        x_{p1, t0, r1, s00}, x_{p1, t0, r1, s01}, x_{p1, t0, r1, s02},
+#        x_{p1, t0, r1, s10}, x_{p1, t0, r1, s11}, x_{p1, t0, r1, s12},
+#        x_{p1, t0, r1, s20}, x_{p1, t0, r1, s21}, x_{p1, t0, r1, s22},
+#
+#        x_{p1, t1, r0, s00}, x_{p1, t1, r0, s01}, x_{p1, t1, r0, s02},
+#        x_{p1, t1, r0, s10}, x_{p1, t1, r0, s11}, x_{p1, t1, r0, s12},
+#        x_{p1, t1, r0, s20}, x_{p1, t1, r0, s21}, x_{p1, t1, r0, s22},
+#
+#        x_{p1, t1, r1, s00}, x_{p1, t1, r1, s01}, x_{p1, t1, r1, s02},
+#        x_{p1, t1, r1, s10}, x_{p1, t1, r1, s11}, x_{p1, t1, r1, s12},
+#        x_{p1, t1, r1, s20}, x_{p1, t1, r1, s21}, x_{p1, t1, r1, s22},
 #       ]
 #
 #==============================================================================
@@ -131,7 +145,7 @@ for t in range(LFWD):
     dI_KNX[t] = f_I2L(dI_P["knx"], dI_T[t]) # Index set of knx for each t in plan
 #I_CON = np.array(dI_P["con"])]
 #I_LAB = np.array(dI_P["lab"])]
-#I_FNLKNX = f_I2L(dI_P["knx"], dI_T[PHZN]) # Index set for final knx in plan
+#I_FNLKNX = f_I2L(dI_P["knx"], dI_T[PHZN])  # Index set for final knx in plan
 
 #==============================================================================
 #-----------objective function (purified)
@@ -140,17 +154,17 @@ def objective(x,                    # full vector of variables
               phzn=par.PHZN,        # look-forward parameter
               u=efcn.instant_utility# utility function representing flow per t
               v=efcn.V_tail         # tail-sum value function
-              ind=cfcn.sub_ind_x    # indices function: req. two keys
+              ind=cfcn.sub_ind_x    # subindices function for x: req. two keys
               ):
     # extract/locate knx at the planning horizon in x
     kap_phzn = x[ind("knx", phzn)]
-    # isolate/locate the consumption and labour elements of x
-    sum_utl = 0.0
+    # sum discounted utility over the planning horizon
+    sum_disc_utl = 0.0
     for t in range(phzn):
-        con_t = x[ind("con", t)]
-        lab_t = x[ind("lab", t)]
-        sum_disc_utility += beta ** t * u(con_t, lab_t)
-    val = sum_disc_utility + beta ** lfwd * v(kap_phzn)
+        con_t = x[ind("con", t)]    # locate consumption at t in x
+        lab_t = x[ind("lab", t)]    # locate labour at t in x
+        sum_disc_utl += beta ** t * u(con_t, lab_t)
+    val = sum_disc_utl + beta ** lfwd * v(kap_phzn)
     return val
 
 #==============================================================================
