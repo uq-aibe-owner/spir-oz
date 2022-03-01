@@ -40,26 +40,27 @@ def V_tail(kap,             # kapital vec of vars at time t=LFWD
 # ======================================================================
 #-----------probabity of no tip by time t as a pure function
 #-----------requires: "import economic_parameters as par"
-def prob_noTip(t, # time step along a path
+def prob_no_tip(t, # time step along a path
                tpt=par.TPT, # transition probability of tipping
                ):
-    return (1 - tpt) ** (t)
+    return (1 - tpt) ** t
 
 # ======================================================================
 #-----------expected output as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
-def expect_output(kap, # kapital vector of variables
-                  lab, # labour vector of variables
-                  t, # time step along a path
-                  A=par.DPT, # deterministic productivity trend
-                  phik=par.PHIK, # weight of capital in production # alpha in CJ
-                  phil=par.PHIL, # weight of labour in production # 1-alpha in CJ
-                  zeta=ZETA, # shock-value vector
-                  pnt=efcn.prob_noTip, # probability of no tip by time t
-                  ):
-    val = (zeta[1] + pnt(t) * (zeta[0] - zeta[1])) * \
-                A * (kap ** phik) * (lab ** phil)
+def expected_output(kap,                        # kap vector of vars
+                    lab,                        # lab vector of vars
+                    t,                          # time step along a path
+                    A=par.DPT,                  # determistic prod trend
+                    phik=par.PHIK,              # weight of kap in prod
+                    phil=par.PHIL,              # weight of lab in prod
+                    zeta=ZETA,                  # shock-value vector
+                    pnot=efcn.prob_no_tip,      # prob no tip by t
+                    ):
+    y = A * (kap ** phik) * (lab ** phil)       # output
+    E = zeta[1] + pnot(t) * (zeta[0] - zeta[1]) # expectation
+    val = E * y
     return val
 # ======================================================================
 #-----------adjustment costs of investment as a pure function
@@ -77,14 +78,15 @@ def adjustment_cost(kap,
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
 def market_clearing(kap,
+                    knx,
                     con,
-                    sav,
                     lab,
                     t,
-                    a_c=efcn.adjustment_cost,
-                    e_o=efcn.expect_output,
+                    adjc=efcn.adjustment_cost, # Gamma in Cai-Judd
+                    E_f=efcn.expected_output,
                     ):
-    val = sum(con + sav + a_c(kap, sav) - e_o(kap, lab, t))
+    sav = knx - (1 - delta) * kap
+    val = sum(E_f(kap, lab, t) - con - sav - adjc(kap, sav))
     return val
 
 # ======================================================================

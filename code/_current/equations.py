@@ -1,5 +1,5 @@
 # ======================================================================
-#     Created by Josh Aberdeen, Cameron Gordon, Patrick O'Callaghan 11/2021
+#     Created by Josh Aberdeen and Patrick O'Callaghan 11/2021
 # ======================================================================
 
 from cmath import sqrt

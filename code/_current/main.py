@@ -16,14 +16,14 @@ NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 99e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
-PHIG = 5e-1     # adjustment cost multiplier
+PHIA = 5e-1     # adjustment cost multiplier
 PHIK = 5e-1     # weight of capital in production # alpha in CJ
 TPT = 1e-2      # transition probability of tipping (from state 0 to 1)
 GAMMA = 5e-1    # power utility exponent
 DELTA = 25e-3   # depreciation rate
 ETA = 5e-1      # Frisch elasticity of labour supply
 RHO = np.ones(NREG) # regional weights (population)
-TCS=0.75
+TCS=75e-2       # ???????????
 #-----------suppressed basic parameters
 #PHIM = 5e-1    # weight of intermediate inputs in production
 #XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
@@ -157,12 +157,12 @@ def objective(x,                    # full vector of variables
 #-----------equality constraints
 def eq_constraints(x,
                    state,
-                   par=THETA,
-                   dicts=DICTS
+                   mcl=efcn.market_clearing,
+                   ind=cfcn.sub_ind_x
                    ):
     eqns = np.zeros(4)
         # constraint 1
-    eqns = eqns.at[0].set(income - np.inner(kap, x))
+    eqns = eqns.at[0].set()
         # constraint 2
     for i in range(LFWD):
         eqns  = eqns.at[i].set(np.power(x[i] - i, 2))
