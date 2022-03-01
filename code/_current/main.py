@@ -4,6 +4,9 @@ config.update("jax_enable_x64", True)
 import jax.numpy as np
 from jax import jit, grad, jacrev, jacfwd
 from cyipopt import minimize_ipopt
+#-----------local libraries
+import equations as efcn
+import 
 #==============================================================================
 #-------------economic parameters
 #-----------basic economic parameters
@@ -30,14 +33,15 @@ TCS=75e-2       # Tail Consumption Share
 #MU = np.ones(NRxS) * 1 / NRxS # importance of one sector to another
 #-----------derived economic parameters
 NRxS = NREG * NSEC
-NVAR = NPOL * LFWD * NSEC * NREG    # total number of variables
-IVAR = np.arange(0,NVAR)    # index set (as np.array) for all variables
 GAMMAhat = 1 - 1 / GAMMA    # utility parameter (consumption denominator)
 ETAhat = 1 + 1 / ETA        # utility parameter
 PHIL = 1 - PHIK             # labour's importance in production
 DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic prod trend
 RWU = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # rel weight: c vs l in u
 ZETA = np.array([ZETA0, ZETA1])
+#-----------suppressed derived economic parameters
+#NVAR = NPOL * LFWD * NSEC * NREG    # total number of variables
+#IVAR = np.arange(0,NVAR)    # index set (as np.array) for all variables
 
 #==============================================================================
 #-----------structure of x using latex notation:
@@ -94,6 +98,19 @@ ZETA = np.array([ZETA0, ZETA1])
 #       ]
 #
 #==============================================================================
+#----------- dimensions for each pol var: 0 : scalar; 1 : vector; 2 : matrix
+d_dim = {
+    "con": 1,
+    "lab": 1,
+    "knx": 1,
+    #"sav": 1,
+    #"out": 1,
+    #    "itm": 1,
+    #    "ITM": 2,
+    #    "SAV": 2,
+    #"utl": 0
+    #    "val": 0,
+}
 #-----------dicts of index lists for locating variables in x:
 #-------Dict for locating every variable for a given policy
 d_pol_ind_x = dict()
@@ -202,7 +219,7 @@ def eq_constraints(x,
         knx_t = x[ind("knx", t)]
         con_t = x[ind("con", t)]
         lab_t = x[ind("lab", t)]
-        eqns  = eqns.at[i].set(mcl(kap_t, knx_t, con_t, lab_t, t))
+        eqns  = eqns.at[t].set(mcl(kap_t, knx_t, con_t, lab_t, t))
     return eqns
 
 #==============================================================================
