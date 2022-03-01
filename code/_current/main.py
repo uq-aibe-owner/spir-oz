@@ -139,7 +139,7 @@ for s in sectNames: #comment
                 : 1]
     d_sec_ind_x[s] = sorted(indlist)
 #-----------union of all the "in_x" dicts: those relating to indices of x
-d_ind_x = d_pol_ind_x | d_tim_ind_x | d_sec_ind_x | d_reg_ind_x
+d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x | d_sec_ind_x
 
 #==============================================================================
 #-----------function for intersecting two lists: returns indices as np.array
@@ -147,9 +147,9 @@ def f_I2L(list1,list2):
     return np.array(list(set(list1) & set(list2)))
 
 #-----------function for returning index subsets of x for a pair of dict keys
-def sub_ind_x(key1,              # any key of d_ind_x
-              key2,              # any key of d_ind_x
-              d=cpar.d_ind_x, # dict of index categories: pol, time, sec, reg
+def sub_ind_x(key1,             # any key of d_ind_x
+              key2,             # any key of d_ind_x
+              d=cpar.d_ind_x,   # dict of index categories: pol, time, sec, reg
               ):
     val = np.array(list(set(d['key1']) & set(d['key2'])))
     return val
@@ -160,9 +160,9 @@ def sub_ind_x(key1,              # any key of d_ind_x
 #dI_LAB = dict()
 #dI_KNX = dict()
 #for t in range(LFWD):
-#    dI_CON[t] = f_I2L(dI_P["con"], dI_T[t]) # Index set of con for each t in plan
-#    dI_LAB[t] = f_I2L(dI_P["lab"], dI_T[t]) # Index set of lab for each t in plan
-#    dI_KNX[t] = f_I2L(dI_P["knx"], dI_T[t]) # Index set of knx for each t in plan
+#    dI_CON[t] = f_I2L(dI_P["con"], dI_T[t]) # Index set of con
+#    dI_LAB[t] = f_I2L(dI_P["lab"], dI_T[t]) # Index set of lab
+#    dI_KNX[t] = f_I2L(dI_P["knx"], dI_T[t]) # Index set of knx
 #I_CON = np.array(dI_P["con"])]
 #I_LAB = np.array(dI_P["lab"])]
 #I_FNLKNX = f_I2L(dI_P["knx"], dI_T[PHZN])  # Index set for final knx in plan
@@ -191,15 +191,18 @@ def objective(x,                    # full vector of variables
 #-----------equality constraints
 def eq_constraints(x,
                    state,
+                   n_ctt=par.N_CTT
                    mcl=efcn.market_clearing,
                    ind=cfcn.sub_ind_x
                    ):
-    eqns = np.zeros(4)
-        # constraint 1
-    eqns = eqns.at[0].set()
+    eqns = np.zeros(LFWD)
         # constraint 2
-    for i in range(LFWD):
-        eqns  = eqns.at[i].set(np.power(x[i] - i, 2))
+    for t in range(LFWD):
+        kap_t = state
+        knx_t = x[ind("knx", t)]
+        con_t = x[ind("con", t)]
+        lab_t = x[ind("lab", t)]
+        eqns  = eqns.at[i].set(mcl(kap_t, knx_t, con_t, lab_t, t))
     return eqns
 
 #==============================================================================
@@ -236,7 +239,7 @@ bnds = [(0.1, 100.0) for _ in range(x0.size)]
 res = dict()
 for s in range(1, LPTH):
     #-------feed in kapital from starting point s-1
-    eq_ctt_fin = eq_ctt_js(state=res[s-1][I["knx"]])
+    eq_ctt_fin = eq_ctt_js(state=res[s - 1]["x"][ind("knx", 1)])
     eq_ctt_jac_fin = eq_ctt_jac_js(state=d[s])
     eq_ctt_hess_fin = eq_ctt_hess_js(state=d[s])
     #!!-----create and jit the hessian vector product-more explanation needed!!
