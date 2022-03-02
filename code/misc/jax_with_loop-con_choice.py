@@ -89,7 +89,7 @@ for s in range(3):
                             x0=x0,
                             bounds=bnds,
                             constraints=cons,
-                            options={'disp': 3,
+                            options={'disp': 5,
                                      'obj_scaling_factor': -1.0,
                                     # 'warm_start_init_point': 'yes',
                                     # 'warm_start_same_structure': 'yes',

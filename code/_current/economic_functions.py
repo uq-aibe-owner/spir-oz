@@ -5,8 +5,8 @@
 #-----------requires: "import economic_parameters as par"
 def instant_utility(con,            # consumption vec of vars at given time
                     lab,            # labour vec of vars at given time
-                    B=par.RWU,      # relative weight of con and lab in util
-                    rho=par.RHO,    # regional-weights vec at given time
+                    B=RWU,      # relative weight of con and lab in util
+                    rho=RHO,    # regional-weights vec at given time
                     ):
     #-------log utility
     val = np.sum(rho * (np.log(con) - B * np.log(lab)))
@@ -24,10 +24,10 @@ def instant_utility(con,            # consumption vec of vars at given time
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
 def V_tail(kap,             # kapital vec of vars at time t=LFWD 
-           A=par.DPT,       # deterministic productivity trend
-           beta=par.BETA,   # discount factor
-           phik=par.PHIK,   # weight of capital in production
-           tcs=par.TCS,     # tail consumption share
+           A=DPT,       # deterministic productivity trend
+           beta=BETA,   # discount factor
+           phik=PHIK,   # weight of capital in production
+           tcs=TCS,     # tail consumption share
            u=efcn.instant_utility, # utility function
            ):
     #-------tail consumption vec
@@ -41,7 +41,7 @@ def V_tail(kap,             # kapital vec of vars at time t=LFWD
 #-----------probabity of no tip by time t as a pure function
 #-----------requires: "import economic_parameters as par"
 def prob_no_tip(tim, # time step along a path
-               tpt=par.TPT, # transition probability of tipping
+               tpt=TPT, # transition probability of tipping
                ):
     return (1 - tpt) ** tim
 
@@ -52,9 +52,9 @@ def prob_no_tip(tim, # time step along a path
 def expected_output(kap,                        # kap vector of vars
                     lab,                        # lab vector of vars
                     tim,                          # time step along a path
-                    A=par.DPT,                  # determistic prod trend
-                    phik=par.PHIK,              # weight of kap in prod
-                    phil=par.PHIL,              # weight of lab in prod
+                    A=DPT,                  # determistic prod trend
+                    phik=PHIK,              # weight of kap in prod
+                    phil=PHIL,              # weight of lab in prod
                     zeta=ZETA,                  # shock-value vector
                     pnot=efcn.prob_no_tip,      # prob no tip by t
                     ):
@@ -67,7 +67,7 @@ def expected_output(kap,                        # kap vector of vars
 #-----------requires: "import economic_parameters as par"
 def adjustment_cost(kap,
                     knx,
-                    phia=par.PHIA, # adjustment cost multiplier
+                    phia=PHIA, # adjustment cost multiplier
                     ):
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as

@@ -1,22 +1,23 @@
 from jax.config import config
 config.update("jax_enable_x64", True)
 
+#-----------global modules
 import jax.numpy as np
 from jax import jit, grad, jacrev, jacfwd
 from cyipopt import minimize_ipopt
-#-----------local libraries
-import equations as efcn
-import 
+#-----------local modules
+#import economic_functions as efcn
+
 #==============================================================================
 #-------------economic parameters
 #-----------basic economic parameters
-NREG = 4        # number of regions
+NREG = 2        # number of regions
 NSEC = 1        # number of sectors
-PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
+PHZN = NTIM = LFWD = 5# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 28# path length (Tstar): number of random steps along given path
+NITR = LPTH = 4# path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
-BETA = 99e-2    # discount factor
+BETA = 95e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
@@ -37,17 +38,19 @@ GAMMAhat = 1 - 1 / GAMMA    # utility parameter (consumption denominator)
 ETAhat = 1 + 1 / ETA        # utility parameter
 PHIL = 1 - PHIK             # labour's importance in production
 DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic prod trend
-RWU = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # rel weight: c vs l in u
+RWU = (1 - PHIK) * DPT * (DPT - DELTA) ** (-1 / GAMMA) # Rel Weight in Utility
 ZETA = np.array([ZETA0, ZETA1])
+NVAR = NPOL * LFWD * NSEC * NREG    # total number of variables
+X0 = np.ones(NVAR)      # our initial warm start 
 # k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
-K_INIT = np.ones(n_agt)
-for j in range(n_agt):
-    K_INIT[j] = np.exp(
-        np.log(kap_L) + (np.log(kap_U) - np.log(kap_L)) * j / (n_agt - 1)
-    )
+KAP0 = np.ones(NREG) # how about NSEC ????
+#for j in range(n_agt):
+#    KAP0[j] = np.exp(
+#        np.log(kap_L) + (np.log(kap_U) - np.log(kap_L)) * j / (n_agt - 1)
+#    )
 #-----------suppressed derived economic parameters
-#NVAR = NPOL * LFWD * NSEC * NREG    # total number of variables
 #IVAR = np.arange(0,NVAR)    # index set (as np.array) for all variables
+
 
 #==============================================================================
 #-----------structure of x using latex notation:
@@ -136,7 +139,7 @@ i_sec = {
 pol_S = {
     "con": 4,
     "lab": 1,
-    "knx": k_init,
+    "knx": KAP0,
     #"sav": 2,
     #"out": 6,
     #    "itm": 10,
@@ -148,58 +151,70 @@ pol_S = {
 #-----------dicts of index lists for locating variables in x:
 #-------Dict for locating every variable for a given policy
 d_pol_ind_x = dict()
-for p in i_pol.values():
-    stride = NTIM * NREG * (NSEC ** d_dim[p])
-    start = i_pol[p] * stride
+for pk in i_pol.keys():
+    p = i_pol[pk]
+    d = d_dim[pk]
+    stride = NTIM * NREG * NSEC ** d
+    start = p * stride
     end = start + stride
-    d_pol_ind_x[p] = range(len(x))[start : end : 1]
+    d_pol_ind_x[pk] = range(NVAR)[start : end : 1]
 
 #-------Dict for locating every variable at a given time
 d_tim_ind_x = dict()
 for t in range(NTIM):
     indlist = []
-    for p in i_pol.values():
-        stride = NREG * NSEC ** d_dim[p]
-        start = (i_pol[p] * NTIM + t) * stride
+    for pk in i_pol.keys():
+        p = i_pol[pk]
+        d = d_dim[pk]
+        stride = NREG #* NSEC ** d
+        start = (p * NTIM + t) * stride
         end = start + stride
-        indlist += range(len(x))[start : end : 1]
+        indlist.extend(range(NVAR)[start : end : 1])
     d_tim_ind_x[t] = sorted(indlist)
 
-#-----------the final one can be done with a slicer with stride NREG
+#-----------the final one can be done with a slicer with stride NSEC ** d_dim
 #-------Dict for locating every variable in a given region
 d_reg_ind_x = dict()
-for r in i_reg.values():
+for rk in i_reg.keys():
+    r = i_reg[rk]
     indlist = []
     for t in range(NTIM):
-        for p in i_sec.values():
-            stride NSEC ** d_dim[p]
+        for pk in i_pol.keys():
+            p = i_pol[pk]
+            d = d_dim[pk]
+            stride = NSEC ** d
             start = (p * NTIM * NREG + t * NREG + r) * stride
             end = start + stride
-            indlist += range(len(x))[start : end : 1]
-    d_reg_ind_x[r] = sorted(indlist)
+            indlist += range(NVAR)[start : end : 1]
+    d_reg_ind_x[rk] = sorted(indlist)
 
 #-------Dict for locating every variable in a given sector
 d_sec_ind_x = dict()
-for s in i_sec.values(): #comment
+for sk in i_sec.keys(): #comment
+    s = i_sec[sk]
     indlist = []
-    for r in i_reg.values():
+    for rk in i_reg.keys():
+        r = i_reg[rk]
         for t in range(NTIM):
-            for p in i_sec.values():
+            for pk in i_pol.keys():
+                p = i_pol[pk]
+                d = d_dim[pk]
                 stride = 1
-                start = (p * NTIM * NREG + t * NREG + r) * NSEC ** d_dim[p] + s
+                start = (p * NTIM * NREG + t * NREG + r) * NSEC ** d + s
                 end = start + stride
-                indlist += range(len(x))[start : end : 1]
+                indlist += range(NVAR)[start : end : 1]
     d_sec_ind_x[s] = sorted(indlist)
+
 #-----------union of all the "in_x" dicts: those relating to indices of x
-d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x | d_sec_ind_x
+d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x #| d_sec_ind_x
 
 #==============================================================================
 #-----------function for returning index subsets of x for a pair of dict keys
 def sub_ind_x(key1,             # any key of d_ind_x
               key2,             # any key of d_ind_x
-              d=cpar.d_ind_x,   # dict of index categories: pol, time, sec, reg
+              d=d_ind_x,   # dict of index categories: pol, time, sec, reg
               ):
-    val = np.array(list(set(d['key1']) & set(d['key2'])))
+    val = np.array(list(set(d[key1]) & set(d[key2])))
     return val
 
 #-----------function for intersecting two lists: returns indices as np.array
@@ -219,37 +234,129 @@ def sub_ind_x(key1,             # any key of d_ind_x
 #I_FNLKNX = f_I2L(dI_P["knx"], dI_T[PHZN])  # Index set for final knx in plan
 
 #==============================================================================
+#---------------economic_functions
+#-----------instantaneous utility as a pure function
+#-----------requires: "import economic_parameters as par"
+def instant_utility(con,            # consumption vec of vars at given time
+                    lab,            # labour vec of vars at given time
+                    B=RWU,      # relative weight of con and lab in util
+                    rho=RHO,    # regional-weights vec at given time
+                    gh=GAMMAhat,
+                    eh=ETAhat,
+                    ):
+    #-------log utility
+    #val = np.sum(rho * (np.log(con) - np.log(lab)))
+    #-------general power utility:
+    val = np.sum(rho * (con ** gh / gh - B * lab ** eh / eh))
+    return val
+
+#==============================================================================
+#-----------v-tail as a pure function
+#-----------requires: "import economic_parameters as par"
+#-----------requires: "import economic_functions as efcn"
+def V_tail(kap,             # kapital vec of vars at time t=LFWD 
+           A=DPT,       # deterministic productivity trend
+           beta=BETA,   # discount factor
+           phik=PHIK,   # weight of capital in production
+           tcs=TCS,     # tail consumption share
+           u=instant_utility, # utility function
+           ):
+    #-------tail consumption vec
+    tail_con = tcs * A * kap ** phik
+    #-------tail labour vec normalised to one
+    tail_lab = np.ones(len(kap))
+    val = u(tail_con, tail_lab) / (1 - beta)
+    return val
+
+#==============================================================================
+#-----------probabity of no tip by time t as a pure function
+#-----------requires: "import economic_parameters as par"
+def prob_no_tip(tim, # time step along a path
+               tpt=TPT, # transition probability of tipping
+               ):
+    return (1 - tpt) ** tim
+
+#==============================================================================
+#-----------expected output as a pure function
+#-----------requires: "import economic_parameters as par"
+#-----------requires: "import economic_functions as efcn"
+def expected_output(kap,                        # kap vector of vars
+                    lab,                        # lab vector of vars
+                    tim,                          # time step along a path
+                    A=DPT,                  # determistic prod trend
+                    phik=PHIK,              # weight of kap in prod
+                    phil=PHIL,              # weight of lab in prod
+                    zeta=ZETA,                  # shock-value vector
+                    pnot=prob_no_tip,      # prob no tip by t
+                    ):
+    y = A * (kap ** phik) * (lab ** phil)       # output
+    E_zeta = zeta[1] + pnot(tim) * (zeta[0] - zeta[1]) # expected shock
+    val = E_zeta * y
+    return val
+
+#==============================================================================
+#-----------adjustment costs of investment as a pure function
+#-----------requires: "import economic_parameters as par"
+def adjustment_cost(kap,
+                    knx,
+                    phia=PHIA, # adjustment cost multiplier
+                    ):
+    # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
+    # we can therefore rewrite the adjustment cost as
+    val = 0 #phia * kap * np.square(knx / kap - 1)
+    return val
+
+#==============================================================================
+#-----------market clearing/budget constraint as a pure function
+#-----------requires: "import economic_parameters as par"
+#-----------requires: "import economic_functions as efcn"
+def market_clearing(kap,
+                    knx,
+                    con,
+                    lab,
+                    tim,
+                    delta=DELTA,
+                    adjc=adjustment_cost, # Gamma in Cai-Judd
+                    E_f=expected_output,
+                    ):
+    sav = knx - (1 - delta) * kap
+    val = sum(E_f(kap, lab, tim) - con - sav - adjc(kap, sav))
+    return val
+
+#==============================================================================
 #-----------objective function (purified)
 def objective(x,                    # full vector of variables
-              beta=par.BETA,        # discount factor
-              lfwd=par.LFWD,        # look-forward parameter
-              u=efcn.instant_utility# utility function representing flow per t
-              v=efcn.V_tail         # tail-sum value function
-              ind=cfcn.sub_ind_x    # subindices function for x: req. two keys
+              beta=BETA,        # discount factor
+              lfwd=LFWD,        # look-forward parameter
+              ind=sub_ind_x,    # subindices function for x: req. two keys
+              u=instant_utility,# utility function representing flow per t
+              v=V_tail,         # tail-sum value function
               ):
     # extract/locate knx at the planning horizon in x
-    kap_lfwd = x[ind("knx", lfwd)]
+    kap_tail = x[ind("knx", lfwd - 1)]
     # sum discounted utility over the planning horizon
     sum_disc_utl = 0.0
     for t in range(lfwd):
         CON = x[ind("con", t)]    # locate consumption at t in x
         LAB = x[ind("lab", t)]    # locate labour at t in x
         sum_disc_utl += beta ** t * u(con=CON, lab=LAB)
-    val = sum_disc_utl + beta ** lfwd * v(kap=kap_lfwd)
+    val = sum_disc_utl + beta ** lfwd * v(kap=kap_tail)
     return val
 
 #==============================================================================
 #-----------equality constraints
 def eq_constraints(x,
                    state,
-                   lfwd=par.LFWD
-                   mcl=efcn.market_clearing,
-                   ind=cfcn.sub_ind_x
+                   lfwd=LFWD,
+                   ind=sub_ind_x,
+                   mcl=market_clearing,
                    ):
     eqns = np.zeros(lfwd)
-        # constraint 2
     for t in range(lfwd):
-        KAP = state
+        if t == 0:
+            KAP = state
+        else:
+            KAP = x[ind("knx", t-1)]
         KNX = x[ind("knx", t)]
         CON = x[ind("con", t)]
         LAB = x[ind("lab", t)]
@@ -277,37 +384,39 @@ eq_ctt_hess = jacrev(jacfwd(eq_ctt))                        # hessian
 def eq_ctt_js(state):
     return lambda x: eq_ctt(x, state)
 def eq_ctt_jac_js(state):
-    return lambda x: eq_ctt_jac(x, p)
+    return lambda x: eq_ctt_jac(x, state)
 def eq_ctt_hess_js(state):
     return lambda x: eq_ctt_hess(x, state)
 
 #==============================================================================
 #-----------variable bounds:
-bnds = [(0.1, 100.0) for _ in range(x0.size)]
+bnds = [(0.1, 100.0) for _ in range(NVAR)]
 
 #==============================================================================
 #-*-*-*-*-*-loop/iteration along path starts here 
 res = dict()
-for s in range(1, LPTH):
+for s in range(LPTH):
     #-------set initial capital for each plan
     if s == 0:
-        kap = K_INIT
+        KAP = KAP0
     else:
-        kap = res[s - 1]["x"][ind("knx", 0)]
+        X = np.array(res[s - 1]["x"])
+        KAP = X[sub_ind_x("knx", 0)]
+
     #-----------feed in kapital from starting point s-1 
-    eq_ctt_fin = eq_ctt_js(kap)
-    eq_ctt_jac_fin = eq_ctt_jac_js(kap)
-    eq_ctt_hess_fin = eq_ctt_hess_js(kap)
+    eq_ctt_fin = eq_ctt_js(state=KAP)
+    eq_ctt_jac_fin = eq_ctt_jac_js(state=KAP)
+    eq_ctt_hess_fin = eq_ctt_hess_js(state=KAP)
     #!!-----create and jit the hessian vector product-more explanation needed!!
-    eq_ctt_hessvp = jit(lambda x, v: eq_ctt_hess(x) * v[0]) # hessian vec-prod
+    eq_ctt_hessvp = jit(lambda x, v: eq_ctt_hess_fin(x) * v[0]) # hessian vec-prod
     #-------wrap up constraints for cyipopt
     cons = [{'type': 'eq',
              'fun': eq_ctt_fin,
-             'jac': eq_ctt_jac,
+             'jac': eq_ctt_jac_fin,
              'hess': eq_ctt_hessvp,
              }]
     #-----------starting point (absent warm start)
-    x0 = np.array([15.0, 14.0, 13.0, 12.0])
+    x0 = X0
 
     #-----------execute solver
     res[s] = minimize_ipopt(obj,
@@ -316,23 +425,30 @@ for s in range(1, LPTH):
                             x0=x0,
                             bounds=bnds,
                             constraints=cons,
-                            options={'disp': 1, # printout range:0-12, default=5
+                            options={'disp': 3, # printout range:0-12, default=5
                                      'obj_scaling_factor': -1.0, # maximize obj
                                      'timing_statistics': 'yes',
                                      'print_timing_statistics': 'yes',
+                                     'constr_viol_tol': 5e-2,
+                                     'max_iter': 1000,
+                                     'dual_inf_tol': 2.0,
                                      #!!how to warm start? see ipopt options page!!
                                      #'warm_start_init_point': 'yes', 
                                      #!!next one for "multiple problems in one nlp"!!
                                      #'warm_start_same_structure': 'yes',
                                      }
                             )
+    x_sol = np.array(res[s]["x"])
+    for pk in d_pol_ind_x.keys():
+        print("the solution for", pk, "at step", s, "along path 0 is \n", \
+              x_sol[np.array(d_pol_ind_x[pk])])
 #-*-*-*-*-*-loop ends here
 
 #==============================================================================
 # ----------- print solution, etc.
-for s in range(len(res)):
-    print("the solution for iterate ", s, "is ", res[s])
-    x_sol[s] = res[s]["x"]
-    print("sol=", x_sol[s])
-    for i in range(len(x_sol[s])-1):
-        print("diff=", x_sol[s][i] - x_sol[s][i+1])
+#for s in range(len(res)):
+#    print("the solution for iterate ", s, "is ", res[s])
+#    x_sol[s] = res[s]["x"]
+#    print("sol=", x_sol[s])
+#    for i in range(len(x_sol[s])-1):
+#        print("diff=", x_sol[s][i] - x_sol[s][i+1])
