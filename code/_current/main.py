@@ -11,7 +11,7 @@ import
 #-------------economic parameters
 #-----------basic economic parameters
 NREG = 4        # number of regions
-NSEC = 6        # number of sectors
+NSEC = 1        # number of sectors
 PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 28# path length (Tstar): number of random steps along given path
@@ -39,6 +39,12 @@ PHIL = 1 - PHIK             # labour's importance in production
 DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic prod trend
 RWU = (1 - PHIK) * A * (A - DELTA) ** (-1 / GAMMA) # rel weight: c vs l in u
 ZETA = np.array([ZETA0, ZETA1])
+# k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
+K_INIT = np.ones(n_agt)
+for j in range(n_agt):
+    K_INIT[j] = np.exp(
+        np.log(kap_L) + (np.log(kap_U) - np.log(kap_L)) * j / (n_agt - 1)
+    )
 #-----------suppressed derived economic parameters
 #NVAR = NPOL * LFWD * NSEC * NREG    # total number of variables
 #IVAR = np.arange(0,NVAR)    # index set (as np.array) for all variables
@@ -117,20 +123,33 @@ i_reg = {
 }
 i_sec = {
     "agr": 0,
-    "for": 1,
-    "min": 2,
-    "man": 3,
-    "uty": 4,
-    "ctn": 5,
-    "com": 6,
-    "tps": 7,
-    "res": 8,
+    #"for": 1,
+    #"min": 2,
+    #"man": 3,
+    #"uty": 4,
+    #"ctr": 5,
+    #"com": 6,
+    #"tps": 7,
+    #"res": 8,
+}
+# Warm start
+pol_S = {
+    "con": 4,
+    "lab": 1,
+    "knx": k_init,
+    #"sav": 2,
+    #"out": 6,
+    #    "itm": 10,
+    #    "ITM": 10,
+    #    "SAV": 10,
+    #"utl": 1,
+    #    "val": -300,
 }
 #-----------dicts of index lists for locating variables in x:
 #-------Dict for locating every variable for a given policy
 d_pol_ind_x = dict()
 for p in i_pol.values():
-    stride = NTIM * NREG * NSEC ** d_dim[p]
+    stride = NTIM * NREG * (NSEC ** d_dim[p])
     start = i_pol[p] * stride
     end = start + stride
     d_pol_ind_x[p] = range(len(x))[start : end : 1]
@@ -270,10 +289,15 @@ bnds = [(0.1, 100.0) for _ in range(x0.size)]
 #-*-*-*-*-*-loop/iteration along path starts here 
 res = dict()
 for s in range(1, LPTH):
-    #-------feed in kapital from starting point s-1
-    eq_ctt_fin = eq_ctt_js(state=res[s - 1]["x"][ind("knx", 1)])
-    eq_ctt_jac_fin = eq_ctt_jac_js(state=d[s])
-    eq_ctt_hess_fin = eq_ctt_hess_js(state=d[s])
+    #-------set initial capital for each plan
+    if s == 0:
+        kap = K_INIT
+    else:
+        kap = res[s - 1]["x"][ind("knx", 0)]
+    #-----------feed in kapital from starting point s-1 
+    eq_ctt_fin = eq_ctt_js(kap)
+    eq_ctt_jac_fin = eq_ctt_jac_js(kap)
+    eq_ctt_hess_fin = eq_ctt_hess_js(kap)
     #!!-----create and jit the hessian vector product-more explanation needed!!
     eq_ctt_hessvp = jit(lambda x, v: eq_ctt_hess(x) * v[0]) # hessian vec-prod
     #-------wrap up constraints for cyipopt
