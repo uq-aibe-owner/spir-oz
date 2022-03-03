@@ -11,7 +11,7 @@ from cyipopt import minimize_ipopt
 #==============================================================================
 #-------------economic parameters
 #-----------basic economic parameters
-NREG = 2        # number of regions
+NREG = 2       # number of regions
 NSEC = 1        # number of sectors
 PHZN = NTIM = LFWD = 5# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
@@ -21,7 +21,7 @@ BETA = 95e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
-PHIK = 5e-1     # weight of capital in production # alpha in CJ
+PHIK = 33e-2  # weight of capital in production # alpha in CJ
 TPT = 1e-2      # transition probability of tipping (from state 0 to 1)
 GAMMA = 5e-1    # power utility exponent
 DELTA = 25e-3   # depreciation rate
@@ -166,7 +166,7 @@ for t in range(NTIM):
     for pk in i_pol.keys():
         p = i_pol[pk]
         d = d_dim[pk]
-        stride = NREG #* NSEC ** d
+        stride = NREG * NSEC ** d
         start = (p * NTIM + t) * stride
         end = start + stride
         indlist.extend(range(NVAR)[start : end : 1])
@@ -216,6 +216,7 @@ def sub_ind_x(key1,             # any key of d_ind_x
               ):
     val = np.array(list(set(d[key1]) & set(d[key2])))
     return val
+# possible alternative: ind(ind(ind(range(len(X0)), key1),key2), key3)
 
 #-----------function for intersecting two lists: returns indices as np.array
 #def f_I2L(list1,list2):
@@ -245,7 +246,7 @@ def instant_utility(con,            # consumption vec of vars at given time
                     eh=ETAhat,
                     ):
     #-------log utility
-    #val = np.sum(rho * (np.log(con) - np.log(lab)))
+    #val = np.sum(rho * (np.log(con) - B * np.log(lab)))
     #-------general power utility:
     val = np.sum(rho * (con ** gh / gh - B * lab ** eh / eh))
     return val
@@ -303,8 +304,8 @@ def adjustment_cost(kap,
                     ):
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as
-    val = 0 #phia * kap * np.square(knx / kap - 1)
-    return val
+    val = phia * kap * np.square(knx / kap - 1)
+    return 0
 
 #==============================================================================
 #-----------market clearing/budget constraint as a pure function
@@ -390,7 +391,7 @@ def eq_ctt_hess_js(state):
 
 #==============================================================================
 #-----------variable bounds:
-bnds = [(0.1, 100.0) for _ in range(NVAR)]
+bnds = [(1e-3, 1e+3) for _ in range(NVAR)]
 
 #==============================================================================
 #-*-*-*-*-*-loop/iteration along path starts here 
@@ -399,14 +400,15 @@ for s in range(LPTH):
     #-------set initial capital for each plan
     if s == 0:
         KAP = KAP0
+        x0 = X0
     else:
         X = np.array(res[s - 1]["x"])
         KAP = X[sub_ind_x("knx", 0)]
-
+        x0 = X
     #-----------feed in kapital from starting point s-1 
-    eq_ctt_fin = eq_ctt_js(state=KAP)
-    eq_ctt_jac_fin = eq_ctt_jac_js(state=KAP)
-    eq_ctt_hess_fin = eq_ctt_hess_js(state=KAP)
+    eq_ctt_fin = jit(eq_ctt_js(state=KAP))
+    eq_ctt_jac_fin = jit(eq_ctt_jac_js(state=KAP))
+    eq_ctt_hess_fin = jit(eq_ctt_hess_js(state=KAP))
     #!!-----create and jit the hessian vector product-more explanation needed!!
     eq_ctt_hessvp = jit(lambda x, v: eq_ctt_hess_fin(x) * v[0]) # hessian vec-prod
     #-------wrap up constraints for cyipopt
@@ -430,8 +432,9 @@ for s in range(LPTH):
                                      'timing_statistics': 'yes',
                                      'print_timing_statistics': 'yes',
                                      'constr_viol_tol': 5e-2,
-                                     'max_iter': 1000,
+                                     'max_iter': 1,
                                      'dual_inf_tol': 2.0,
+                                     'acceptable_tol': 1e-4,
                                      #!!how to warm start? see ipopt options page!!
                                      #'warm_start_init_point': 'yes', 
                                      #!!next one for "multiple problems in one nlp"!!
