@@ -13,9 +13,9 @@ from cyipopt import minimize_ipopt
 #-----------basic economic parameters
 NREG = 2       # number of regions
 NSEC = 1        # number of sectors
-PHZN = NTIM = LFWD = 5# look-forward parameter / planning horizon (Delta_s)
+PHZN = NTIM = LFWD = 2# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 4# path length (Tstar): number of random steps along given path
+NITR = LPTH = 2# path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 95e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
@@ -216,26 +216,16 @@ def sub_ind_x(key1,             # any key of d_ind_x
               ):
     val = np.array(list(set(d[key1]) & set(d[key2])))
     return val
+j_sub_ind_x = jit(sub_ind_x)
 # possible alternative: ind(ind(ind(range(len(X0)), key1),key2), key3)
 
 #-----------function for intersecting two lists: returns indices as np.array
 #def f_I2L(list1,list2):
 #    return np.array(list(set(list1) & set(list2)))
-#==============================================================================
-#-----------computational parameters
-#dI_CON = dict()
-#dI_LAB = dict()
-#dI_KNX = dict()
-#for t in range(LFWD):
-#    dI_CON[t] = f_I2L(dI_P["con"], dI_T[t]) # Index set of con
-#    dI_LAB[t] = f_I2L(dI_P["lab"], dI_T[t]) # Index set of lab
-#    dI_KNX[t] = f_I2L(dI_P["knx"], dI_T[t]) # Index set of knx
-#I_CON = np.array(dI_P["con"])]
-#I_LAB = np.array(dI_P["lab"])]
-#I_FNLKNX = f_I2L(dI_P["knx"], dI_T[PHZN])  # Index set for final knx in plan
 
 #==============================================================================
 #---------------economic_functions
+#------------------------------------------------------------------------------
 #-----------instantaneous utility as a pure function
 #-----------requires: "import economic_parameters as par"
 def instant_utility(con,            # consumption vec of vars at given time
@@ -248,9 +238,9 @@ def instant_utility(con,            # consumption vec of vars at given time
     #-------log utility
     #val = np.sum(rho * (np.log(con) - B * np.log(lab)))
     #-------general power utility:
-    val = np.sum(rho * (con ** gh / gh - B * lab ** eh / eh))
+    val = np.sum(rho * (2 * con ** gh / gh - B * lab ** eh / eh))
     return val
-
+j_instant_utility = jit(instant_utility)
 #==============================================================================
 #-----------v-tail as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -268,7 +258,7 @@ def V_tail(kap,             # kapital vec of vars at time t=LFWD
     tail_lab = np.ones(len(kap))
     val = u(tail_con, tail_lab) / (1 - beta)
     return val
-
+j_V_tail = jit(V_tail)
 #==============================================================================
 #-----------probabity of no tip by time t as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -276,7 +266,7 @@ def prob_no_tip(tim, # time step along a path
                tpt=TPT, # transition probability of tipping
                ):
     return (1 - tpt) ** tim
-
+j_prob_no_tip = jit(prob_no_tip)
 #==============================================================================
 #-----------expected output as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -294,7 +284,7 @@ def expected_output(kap,                        # kap vector of vars
     E_zeta = zeta[1] + pnot(tim) * (zeta[0] - zeta[1]) # expected shock
     val = E_zeta * y
     return val
-
+j_expected_output = jit(expected_output)
 #==============================================================================
 #-----------adjustment costs of investment as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -306,7 +296,7 @@ def adjustment_cost(kap,
     # we can therefore rewrite the adjustment cost as
     val = phia * kap * np.square(knx / kap - 1)
     return 0
-
+j_adjustment_cost = jit(adjustment_cost)
 #==============================================================================
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -323,7 +313,7 @@ def market_clearing(kap,
     sav = knx - (1 - delta) * kap
     val = sum(E_f(kap, lab, tim) - con - sav - adjc(kap, sav))
     return val
-
+j_market_clearing = jit(market_clearing)
 #==============================================================================
 #-----------objective function (purified)
 def objective(x,                    # full vector of variables
@@ -343,7 +333,7 @@ def objective(x,                    # full vector of variables
         sum_disc_utl += beta ** t * u(con=CON, lab=LAB)
     val = sum_disc_utl + beta ** lfwd * v(kap=kap_tail)
     return val
-
+j_objective = jit(objective)
 #==============================================================================
 #-----------equality constraints
 def eq_constraints(x,
@@ -373,7 +363,7 @@ obj_hess = jit(jacrev(jacfwd(obj)))                         # hessian
 #-----------then the equality constraints
 eq_ctt = jit(lambda x, state: eq_constraints(x, state))     # eq_ctt two-args
 eq_ctt_jac = jit(jacfwd(eq_ctt))                            # jacobian
-eq_ctt_hess = jacrev(jacfwd(eq_ctt))                        # hessian
+eq_ctt_hess = jit(jacrev(jacfwd(eq_ctt)))                        # hessian
 #-----------then the inequality constraints
 #con_ineq = jit(ineq_constraints)                           # ineq_ctt two-args 
 #ineq_ctt_jac = jit(jacfwd(ineq_ctt))                       # jacobian
@@ -394,7 +384,15 @@ def eq_ctt_hess_js(state):
 bnds = [(1e-3, 1e+3) for _ in range(NVAR)]
 
 #==============================================================================
+# Hessian vector product function
+#def hvp(f, x, v):
+#    return np.jvp(grad(f), primals, tangents)[1]
+#def eq_ctt_hvp(x, v):
+#    return hvp("constraints function", x, v)
+
+#==============================================================================
 #-*-*-*-*-*-loop/iteration along path starts here 
+#------------------------------------------------------------------------------
 res = dict()
 for s in range(LPTH):
     #-------set initial capital for each plan
@@ -405,11 +403,11 @@ for s in range(LPTH):
         X = np.array(res[s - 1]["x"])
         KAP = X[sub_ind_x("knx", 0)]
         x0 = X
-    #-----------feed in kapital from starting point s-1 
+    #-------feed in kapital from starting point s-1 
     eq_ctt_fin = jit(eq_ctt_js(state=KAP))
     eq_ctt_jac_fin = jit(eq_ctt_jac_js(state=KAP))
     eq_ctt_hess_fin = jit(eq_ctt_hess_js(state=KAP))
-    #!!-----create and jit the hessian vector product-more explanation needed!!
+    #-------this returns a hessian for each constraint if v[0] != 0 
     eq_ctt_hessvp = jit(lambda x, v: eq_ctt_hess_fin(x) * v[0]) # hessian vec-prod
     #-------wrap up constraints for cyipopt
     cons = [{'type': 'eq',
@@ -417,8 +415,8 @@ for s in range(LPTH):
              'jac': eq_ctt_jac_fin,
              'hess': eq_ctt_hessvp,
              }]
-    #-----------starting point (absent warm start)
-    x0 = X0
+    #-------starting point (absent warm start)
+    #x0 = X0
 
     #-----------execute solver
     res[s] = minimize_ipopt(obj,
@@ -427,14 +425,15 @@ for s in range(LPTH):
                             x0=x0,
                             bounds=bnds,
                             constraints=cons,
-                            options={'disp': 3, # printout range:0-12, default=5
+                            #nele_jac=30,
+                            options={'disp': 12, # printout range:0-12, default=5
                                      'obj_scaling_factor': -1.0, # maximize obj
                                      'timing_statistics': 'yes',
                                      'print_timing_statistics': 'yes',
                                      'constr_viol_tol': 5e-2,
-                                     'max_iter': 1,
-                                     'dual_inf_tol': 2.0,
+                                     'max_iter': 1000,
                                      'acceptable_tol': 1e-4,
+                                     #'dual_inf_tol': 0.5,
                                      #!!how to warm start? see ipopt options page!!
                                      #'warm_start_init_point': 'yes', 
                                      #!!next one for "multiple problems in one nlp"!!
