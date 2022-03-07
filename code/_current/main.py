@@ -12,7 +12,7 @@ from cyipopt import minimize_ipopt
 #-------------economic parameters
 #-----------basic economic parameters
 NREG = 2       # number of regions
-NSEC = 1        # number of sectors
+NSEC = 2        # number of sectors
 PHZN = NTIM = LFWD = 2# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 2# path length (Tstar): number of random steps along given path
@@ -109,6 +109,7 @@ KAP0 = np.ones(NREG) # how about NSEC ????
 #==============================================================================
 #---------------dicts
 #-----------dimensions for each pol var: 0 : scalar; 1 : vector; 2 : matrix
+
 d_dim = {
     "con": 1,
     "knx": 1,
@@ -126,7 +127,7 @@ i_reg = {
 }
 i_sec = {
     "agr": 0,
-    #"for": 1,
+    "for": 1,
     #"min": 2,
     #"man": 3,
     #"uty": 4,
@@ -206,7 +207,7 @@ for sk in i_sec.keys(): #comment
     d_sec_ind_x[s] = sorted(indlist)
 
 #-----------union of all the "in_x" dicts: those relating to indices of x
-d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x #| d_sec_ind_x
+d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x | d_sec_ind_x
 
 #==============================================================================
 #-----------function for returning index subsets of x for a pair of dict keys
@@ -320,7 +321,7 @@ def objective(x,                    # full vector of variables
               beta=BETA,        # discount factor
               lfwd=LFWD,        # look-forward parameter
               ind=sub_ind_x,    # subindices function for x: req. two keys
-              u=instant_utility,# utility function representing flow per t
+              u=j_instant_utility,# utility function representing flow per t
               v=V_tail,         # tail-sum value function
               ):
     # extract/locate knx at the planning horizon in x
@@ -340,7 +341,7 @@ def eq_constraints(x,
                    state,
                    lfwd=LFWD,
                    ind=sub_ind_x,
-                   mcl=market_clearing,
+                   mcl=j_market_clearing,
                    ):
     eqns = np.zeros(lfwd)
     for t in range(lfwd):
