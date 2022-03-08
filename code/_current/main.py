@@ -1,10 +1,7 @@
-from jax.config import config
-config.update("jax_enable_x64", True)
 
 #-----------global modules
-import jax.numpy as np
-from jax import jit, grad, jacrev, jacfwd
-from cyipopt import minimize_ipopt
+import numpy as np
+import CasADi as c
 #-----------local modules
 #import economic_functions as efcn
 
@@ -32,6 +29,8 @@ TCS=75e-2       # Tail Consumption Share
 #PHIM = 5e-1    # weight of intermediate inputs in production
 #XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
 #MU = np.ones(NRxS) * 1 / NRxS # importance of one sector to another
+
+#------------------------------------------------------------------------------
 #-----------derived economic parameters
 NRxS = NREG * NSEC
 GAMMAhat = 1 - 1 / GAMMA    # utility parameter (consumption denominator)
@@ -52,6 +51,25 @@ KAP0 = np.ones(NREG) # how about NSEC ????
 #IVAR = np.arange(0,NVAR)    # index set (as np.array) for all variables
 
 
+#------------------------------------------------------------------------------
+#-----------probabity of no tip by time t as a pure function
+#-----------requires: "import economic_parameters as par"
+def prob_no_tip(tim, # time step along a path
+               tpt=TPT, # transition probability of tipping
+               ):
+    return (1 - tpt) ** tim
+
+#-----------prob no tip as a vec of parameters
+T = np.array(LPTH)
+PNT = np.ones(LPTH)
+for t in T:
+    PNT[t] = prob_no_tip(t)
+
+
+#-----------if t were a variable, then, for casadi, we could do:
+#t = c.SX.sym('t')
+#pnt = c.Function('cpnt', [t], [prob_no_tip(t)], ['t'], ['p0'])
+#PNT = pnt.map(LPTH)         # row vector 
 #==============================================================================
 #-----------structure of x using latex notation:
 #---x = [
@@ -209,7 +227,7 @@ for sk in i_sec.keys(): #comment
 #-----------union of all the "in_x" dicts: those relating to indices of x
 d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x | d_sec_ind_x
 
-#==============================================================================
+#------------------------------------------------------------------------------
 #-----------function for returning index subsets of x for a pair of dict keys
 def sub_ind_x(key1,             # any key of d_ind_x
               key2,             # any key of d_ind_x
@@ -223,6 +241,10 @@ j_sub_ind_x = jit(sub_ind_x)
 #-----------function for intersecting two lists: returns indices as np.array
 #def f_I2L(list1,list2):
 #    return np.array(list(set(list1) & set(list2)))
+
+#==============================================================================
+#---------------variables
+knx = SX.sym('knx', NSEC, NREG, NTIM)
 
 #==============================================================================
 #---------------economic_functions
@@ -241,7 +263,6 @@ def instant_utility(con,            # consumption vec of vars at given time
     #-------general power utility:
     val = np.sum(rho * (2 * con ** gh / gh - B * lab ** eh / eh))
     return val
-j_instant_utility = jit(instant_utility)
 #==============================================================================
 #-----------v-tail as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -259,15 +280,7 @@ def V_tail(kap,             # kapital vec of vars at time t=LFWD
     tail_lab = np.ones(len(kap))
     val = u(tail_con, tail_lab) / (1 - beta)
     return val
-j_V_tail = jit(V_tail)
-#==============================================================================
-#-----------probabity of no tip by time t as a pure function
-#-----------requires: "import economic_parameters as par"
-def prob_no_tip(tim, # time step along a path
-               tpt=TPT, # transition probability of tipping
-               ):
-    return (1 - tpt) ** tim
-j_prob_no_tip = jit(prob_no_tip)
+
 #==============================================================================
 #-----------expected output as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -285,7 +298,6 @@ def expected_output(kap,                        # kap vector of vars
     E_zeta = zeta[1] + pnot(tim) * (zeta[0] - zeta[1]) # expected shock
     val = E_zeta * y
     return val
-j_expected_output = jit(expected_output)
 #==============================================================================
 #-----------adjustment costs of investment as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -297,8 +309,6 @@ def adjustment_cost(kap,
     # we can therefore rewrite the adjustment cost as
     val = phia * kap * np.square(knx / kap - 1)
     return 0
-j_adjustment_cost = jit(adjustment_cost)
-#==============================================================================
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
@@ -314,7 +324,6 @@ def market_clearing(kap,
     sav = knx - (1 - delta) * kap
     val = sum(E_f(kap, lab, tim) - con - sav - adjc(kap, sav))
     return val
-j_market_clearing = jit(market_clearing)
 #==============================================================================
 #-----------objective function (purified)
 def objective(x,                    # full vector of variables
@@ -334,7 +343,6 @@ def objective(x,                    # full vector of variables
         sum_disc_utl += beta ** t * u(con=CON, lab=LAB)
     val = sum_disc_utl + beta ** lfwd * v(kap=kap_tail)
     return val
-j_objective = jit(objective)
 #==============================================================================
 #-----------equality constraints
 def eq_constraints(x,
