@@ -73,9 +73,9 @@ def E_zeta(t,
     val = zeta[1] + pnot(t) * (zeta[0] - zeta[1])
     return val
 
-EZETA = np.ones(LFWD)
+E_ZETA = np.ones(LFWD)
 for t in range(LFWD)
-    EZETA[t] = E_zeta(t)
+    E_ZETA[t] = E_zeta(t)
 
 #-----------if t were a variable, then, for casadi, we could do:
 #t = c.SX.sym('t')
@@ -98,13 +98,14 @@ knx = SX.sym('knx', NRxSxT)
 #------------------------------------------------------------------------------
 #-----------instantaneous utility as a pure function
 #-----------requires: "import economic_parameters as par"
-def instant_utility(con,            # consumption vec of vars at given time
-                    lab,            # labour vec of vars at given time
-                    B=RWU,      # relative weight of con and lab in util
-                    rho=RHO,    # regional-weights vec at given time
-                    gh=GAMMAhat,
-                    eh=ETAhat,
-                    ):
+def instant_utility(
+        con,            # consumption vec of vars at given time
+        lab,            # labour vec of vars at given time
+        B=RWU,      # relative weight of con and lab in util
+        rho=RHO,    # regional-weights vec at given time
+        gh=GAMMAhat,
+        eh=ETAhat,
+):
     #-------log utility
     #val = np.sum(rho * (np.log(con) - B * np.log(lab)))
     #-------general power utility:
@@ -115,13 +116,14 @@ def instant_utility(con,            # consumption vec of vars at given time
 #-----------v-tail as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
-def V_tail(kap,             # kapital vec of vars at time t=LFWD 
-           A=DPT,       # deterministic productivity trend
-           beta=BETA,   # discount factor
-           phik=PHIK,   # weight of capital in production
-           tcs=TCS,     # tail consumption share
-           u=instant_utility, # utility function
-           ):
+def V_tail(
+        kap,             # kapital vec of vars at time t=LFWD 
+        A=DPT,       # deterministic productivity trend
+        beta=BETA,   # discount factor
+        phik=PHIK,   # weight of capital in production
+        tcs=TCS,     # tail consumption share
+        u=instant_utility, # utility function
+):
     #-------tail consumption vec
     tail_con = tcs * A * kap ** phik
     #-------tail labour vec normalised to one
@@ -133,13 +135,14 @@ def V_tail(kap,             # kapital vec of vars at time t=LFWD
 #-----------expected output as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
-def E_output(kap,                    # kap vector of vars at time t
-           lab,                    # lab vector of vars at time t
-           E_shock,                   # shock or expected shock at time t
-           A=DPT,                  # determistic prod trend
-           phik=PHIK,              # weight of kap in prod
-           phil=PHIL,              # weight of lab in prod
-           ):
+def E_output(
+        kap,                    # kap vector of vars at time t
+        lab,                    # lab vector of vars at time t
+        E_shock,                # shock or expected shock at time t
+        A=DPT,                  # determistic prod trend
+        phik=PHIK,              # weight of kap in prod
+        phil=PHIL,              # weight of lab in prod
+):
     y = A * (kap ** phik) * (lab ** phil)   # output
     val = E_shock * y
     return val
@@ -147,10 +150,11 @@ def E_output(kap,                    # kap vector of vars at time t
 #==============================================================================
 #-----------adjustment costs of investment as a pure function
 #-----------requires: "import economic_parameters as par"
-def adjustment_cost(kap,
-                    knx,
-                    phia=PHIA, # adjustment cost multiplier
-                    ):
+def adjustment_cost(
+        kap,
+        knx,
+        phia=PHIA, # adjustment cost multiplier
+):
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as
     val = phia * kap * np.square(knx / kap - 1)
@@ -158,28 +162,223 @@ def adjustment_cost(kap,
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
-def market_clearing(con,
-                    kap,
-                    knx,
-                    lab,
-                    E_shock,
-                    delta=DELTA,
-                    adjc=adjustment_cost, # Gamma in Cai-Judd
-                    E_f=E_output,
-                    ):
+def market_clearing(
+        con,
+        kap,
+        knx,
+        lab,
+        E_shock,
+        delta=DELTA,
+        adjc=adjustment_cost, # Gamma in Cai-Judd
+        E_f=E_output,
+):
     sav = knx - (1 - delta) * kap
     val = sum(E_f(kap, lab, E_shock) - con - sav - adjc(kap, sav))
     return val
 
 #==============================================================================
-#-----------objective function (purified)
-def objective(x,                    # full vector of variables
-              beta=BETA,        # discount factor
-              lfwd=LFWD,        # look-forward parameter
-              ind=sub_ind_x,    # subindices function for x: req. two keys
-              u=j_instant_utility,# utility function representing flow per t
-              v=V_tail,         # tail-sum value function
+#-----------structure of x using latex notation:
+#---x = [
+#        x_{p0, t0, r0, s0}, x_{p0, t0, r0, s1}, x_{p0, t0, r0, s2},
+#
+#        x_{p0, t0, r1, s0}, x_{p0, t0, r1, s1}, x_{p0, t0, r1, s2},
+#
+#        x_{p0, t1, r0, s0}, x_{p0, t1, r0, s1}, x_{p0, t1, r0, s2},
+#
+#        x_{p0, t1, r1, s0}, x_{p0, t1, r1, s1}, x_{p0, t1, r1, s2},
+#
+#        x_{p1, t0, r0, s0}, x_{p1, t0, r0, s1}, x_{p0, t0, r0, s2},
+#
+#        x_{p1, t0, r1, s0}, x_{p1, t0, r1, s1}, x_{p0, t0, r1, s2},
+#
+#        x_{p1, t1, r0, s0}, x_{p1, t1, r0, s1}, x_{p0, t1, r0, s2},
+#
+#        x_{p1, t1, r1, s0}, x_{p1, t1, r1, s1}, x_{p0, t1, r1, s2},
+#
+#
+#        x_{p2, t0, r0, s00}, x_{p2, t0, r0, s01}, x_{p2, t0, r0, s02},
+#        x_{p2, t0, r0, s10}, x_{p2, t0, r0, s11}, x_{p2, t0, r0, s12},
+#        x_{p2, t0, r0, s20}, x_{p2, t0, r0, s21}, x_{p2, t0, r0, s22},
+#
+#        x_{p2, t0, r1, s00}, x_{p2, t0, r1, s01}, x_{p2, t0, r1, s02},
+#        x_{p2, t0, r1, s10}, x_{p2, t0, r1, s11}, x_{p2, t0, r1, s12},
+#        x_{p2, t0, r1, s20}, x_{p2, t0, r1, s21}, x_{p2, t0, r1, s22},
+#
+#        x_{p2, t1, r0, s00}, x_{p2, t1, r0, s01}, x_{p2, t1, r0, s02},
+#        x_{p2, t1, r0, s10}, x_{p2, t1, r0, s11}, x_{p2, t1, r0, s12},
+#        x_{p2, t1, r0, s20}, x_{p2, t1, r0, s21}, x_{p2, t1, r0, s22},
+#
+#        x_{p2, t1, r1, s00}, x_{p2, t1, r1, s01}, x_{p2, t1, r1, s02},
+#        x_{p2, t1, r1, s10}, x_{p2, t1, r1, s11}, x_{p2, t1, r1, s12},
+#        x_{p2, t1, r1, s20}, x_{p2, t1, r1, s21}, x_{p2, t1, r1, s22},
+#
+#
+#        x_{p3, t0, r0, s00}, x_{p3, t0, r0, s01}, x_{p3, t0, r0, s02},
+#        x_{p3, t0, r0, s10}, x_{p3, t0, r0, s11}, x_{p3, t0, r0, s12},
+#        x_{p3, t0, r0, s20}, x_{p3, t0, r0, s21}, x_{p3, t0, r0, s22},
+#
+#        x_{p3, t0, r1, s00}, x_{p3, t0, r1, s01}, x_{p3, t0, r1, s02},
+#        x_{p3, t0, r1, s10}, x_{p3, t0, r1, s11}, x_{p3, t0, r1, s12},
+#        x_{p3, t0, r1, s20}, x_{p3, t0, r1, s21}, x_{p3, t0, r1, s22},
+#
+#        x_{p3, t1, r0, s00}, x_{p3, t1, r0, s01}, x_{p3, t1, r0, s02},
+#        x_{p3, t1, r0, s10}, x_{p3, t1, r0, s11}, x_{p3, t1, r0, s12},
+#        x_{p3, t1, r0, s20}, x_{p3, t1, r0, s21}, x_{p3, t1, r0, s22},
+#
+#        x_{p3, t1, r1, s00}, x_{p3, t1, r1, s01}, x_{p3, t1, r1, s02},
+#        x_{p3, t1, r1, s10}, x_{p3, t1, r1, s11}, x_{p3, t1, r1, s12},
+#        x_{p3, t1, r1, s20}, x_{p3, t1, r1, s21}, x_{p3, t1, r1, s22},
+#       ]
+#
+#==============================================================================
+#---------------dicts
+#-----------dimensions for each pol var: 0 : scalar; 1 : vector; 2 : matrix
+
+d_dim = {
+    "con": 1,
+    "knx": 1,
+    "lab": 1,
+}
+i_pol = {
+    "con": 0,
+    "knx": 1,
+    "lab": 2,
+}
+i_reg = {
+    "aus": 0,
+    "qld": 1,
+    "wld": 2,
+}
+i_sec = {
+    "agr": 0,
+    "for": 1,
+    #"min": 2,
+    #"man": 3,
+    #"uty": 4,
+    #"ctr": 5,
+    #"com": 6,
+    #"tps": 7,
+    #"res": 8,
+}
+# Warm start
+pol_S = {
+    "con": 4,
+    "lab": 1,
+    "knx": KAP0,
+    #"sav": 2,
+    #"out": 6,
+    #    "itm": 10,
+    #    "ITM": 10,
+    #    "SAV": 10,
+    #"utl": 1,
+    #    "val": -300,
+}
+#-----------dicts of index lists for locating variables in x:
+#-------Dict for locating every variable for a given policy
+d_pol_ind_x = dict()
+for pk in i_pol.keys():
+    p = i_pol[pk]
+    d = d_dim[pk]
+    stride = NTIM * NREG * NSEC ** d
+    start = p * stride
+    end = start + stride
+    d_pol_ind_x[pk] = range(NVAR)[start : end : 1]
+
+#-------Dict for locating every variable at a given time
+d_tim_ind_x = dict()
+for t in range(NTIM):
+    indlist = []
+    for pk in i_pol.keys():
+        p = i_pol[pk]
+        d = d_dim[pk]
+        stride = NREG * NSEC ** d
+        start = (p * NTIM + t) * stride
+        end = start + stride
+        indlist.extend(range(NVAR)[start : end : 1])
+    d_tim_ind_x[t] = sorted(indlist)
+
+#-----------the final one can be done with a slicer with stride NSEC ** d_dim
+#-------Dict for locating every variable in a given region
+d_reg_ind_x = dict()
+for rk in i_reg.keys():
+    r = i_reg[rk]
+    indlist = []
+    for t in range(NTIM):
+        for pk in i_pol.keys():
+            p = i_pol[pk]
+            d = d_dim[pk]
+            stride = NSEC ** d
+            start = (p * NTIM * NREG + t * NREG + r) * stride
+            end = start + stride
+            indlist += range(NVAR)[start : end : 1]
+    d_reg_ind_x[rk] = sorted(indlist)
+
+#-------Dict for locating every variable in a given sector
+d_sec_ind_x = dict()
+for sk in i_sec.keys(): #comment
+    s = i_sec[sk]
+    indlist = []
+    for rk in i_reg.keys():
+        r = i_reg[rk]
+        for t in range(NTIM):
+            for pk in i_pol.keys():
+                p = i_pol[pk]
+                d = d_dim[pk]
+                stride = 1
+                start = (p * NTIM * NREG + t * NREG + r) * NSEC ** d + s
+                end = start + stride
+                indlist += range(NVAR)[start : end : 1]
+    d_sec_ind_x[s] = sorted(indlist)
+
+#-----------union of all the "in_x" dicts: those relating to indices of x
+d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x | d_sec_ind_x
+
+d_ind_p = {
+    'kap'       : range(NRxS),
+    'start'     : range(NRxS),
+    'shock'     : range(NRxS, NRxS + NTIM)
+    t           : [NRxS + t]
+}
+
+#==============================================================================
+#-----------function for returning index subsets of x for a pair of dict keys
+def sub_ind_x(key1,             # any key of d_ind_x
+              key2,             # any key of d_ind_x
+              d=d_ind_x,   # dict of index categories: pol, time, sec, reg
               ):
+    val = np.array(list(set(d[key1]) & set(d[key2])))
+    return val
+j_sub_ind_x = jit(sub_ind_x)
+# possible alternative: ind(ind(ind(range(len(X0)), key1),key2), key3)
+
+#-----------function for intersecting two lists: returns indices as np.array
+#def f_I2L(list1,list2):
+#    return np.array(list(set(list1) & set(list2)))
+
+#-----------function for returning index subsets of p for a pair of dict keys
+def sub_ind_p(key1,             # any key of d_ind_p
+              key2,             # any key of d_ind_p
+              d=d_ind_p,   # dict of index categories: kap and zeta 
+              ):
+    val = np.array(list(set(d[key1]) & set(d[key2])))
+    return val
+j_sub_ind_p = jit(sub_ind_p)
+# possible alternative: ind(ind(ind(range(len(X0)), key1),key2), key3)
+
+#-----------function for intersecting two lists: returns indices as np.array
+#def f_I2L(list1,list2):
+#    return np.array(list(set(list1) & set(list2)))
+
+#==============================================================================
+#-----------objective function (purified)
+def objective(
+        x,                  # full vector of variables
+        beta=BETA,          # discount factor
+        lfwd=LFWD,          # look-forward parameter
+        ind=sub_ind_x,      # subindices function for x: req. two keys
+        u=j_instant_utility,# utility function representing flow per t
+        v=V_tail,           # tail-sum value function
+):
     # extract/locate knx at the planning horizon in x
     kap_tail = x[ind("knx", lfwd - 1)]
     # sum discounted utility over the planning horizon
@@ -193,46 +392,44 @@ def objective(x,                    # full vector of variables
 
 #==============================================================================
 #-----------equality constraints
-def eq_constraints(x,
-                   state,
-                   lfwd=LFWD,
-                   ind=sub_ind_x,
-                   mcl=j_market_clearing,
-                   ):
+def eq_constraints(
+        x,                      #casadi vec of variables
+        p,                      #casadi vec of parameters
+        lfwd=LFWD,
+        ind=sub_ind_x,
+        ind_p=ind_p,
+        mcl=j_market_clearing,
+):
     eqns = np.zeros(lfwd)
     for t in range(lfwd):
         if t == 0:
-            KAP = state
+            KAP = p[ind_p('kap', 'start')]
         else:
-            KAP = x[ind("knx", t-1)]
+            KAP = x[ind("knx", t - 1)]
         KNX = x[ind("knx", t)]
         CON = x[ind("con", t)]
         LAB = x[ind("lab", t)]
-        eqns  = eqns.at[t].set(mcl(kap=KAP, knx=KNX, con=CON, lab=LAB, tim=t))
+        E_SHOCK = p[ind_p("shock", t)]
+        eqns[t] = mcl(
+                    con=CON,
+                    knx=KNX,
+                    lab=LAB,
+                    kap=KAP
+                    E_shock=E_SHOCK
+        )
     return eqns
 
 #==============================================================================
-g0 = z + x + y - 2
-g1 = z + (1 - x) ** p[0] - y
-ctt = Function(
-    'ctt',
-    [x, y, z],
-    [g0, g1]
-)
-G = SX.zeros(NCTT)
-G[0] = g0
-G[1] = g1
-#G = MX(g0, g1)
-
+#-----------dict of arguments for the function casadi.nlpsol
 nlp = {
-    'x' : vertcat(x, y, z),
-    'f' : p[2] * (x ** p[0] + p[1] * z ** p[0]),
-    'g' : G, #[g1, g0], #z + (1 - x) ** p[0] - y, #ctt,
-    'p' : p,
+    'x' : vertcat(con, knx, lab),
+    'p' : vertcat(kap, E_shock),
+    'f' : objective(nlp['x'])
+    'g' : eq_constraints(nlp['x'], nlp['p']),
 }
 
 #==============================================================================
-#-----------options for the ipopt (the solver)  and casadi (the frontend)
+#-----------options for the ipopt (the solver) and casadi (the frontend)
 #------------------------------------------------------------------------------
 ipopt_opts = {
     'ipopt.linear_solver' : 'mumps', #default=Mumps
@@ -265,15 +462,16 @@ opts = ipopt_opts | casadi_opts
 #-----------"when using HSL_MA86 or HSL_MA97 ensure MeTiS ordering is 
 #-----------compiled into Ipopt to maximize parallelism"
 
+#==============================================================================
+#-----------A solver function for us to feed in initial conditions and call:
 solver = nlpsol('solver', 'ipopt', nlp, opts)
 
-X0 = 100 * np.arange(1,4)
-LBX = np.zeros(len(X0))
+LBX = np.ones(len(X0)) * 1e-3
 UBX = np.ones(len(X0)) * 1e+3
 LBG = np.zeros(NCTT)
 UBG = np.zeros(NCTT)
-P0 = np.array([2, 100, 1])
-
+P0 = np.ones(NRxS + NTIM)
+P0 = vertcat(KAP0, E_ZETA)
 arg = dict()
 
 def exclude_keys(d, keys):
