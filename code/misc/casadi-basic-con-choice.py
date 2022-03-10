@@ -1,4 +1,4 @@
-from casadi import SX, MX, DM, Function, nlpsol, vertcat
+from casadi import SX, MX, DM, Function, nlpsol, vertcat, sum1
 import numpy as np
 
 NCTT = 2

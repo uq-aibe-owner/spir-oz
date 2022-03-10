@@ -74,7 +74,7 @@ def E_zeta(t,
     return val
 
 E_ZETA = np.ones(LFWD)
-for t in range(LFWD)
+for t in range(LFWD):
     E_ZETA[t] = E_zeta(t)
 
 #-----------if t were a variable, then, for casadi, we could do:
@@ -85,6 +85,7 @@ for t in range(LFWD)
 #-----------For every look-forward, initial kapital is a parameter. 
 #-----------To speed things up, we feed it in in CasADi-symbolic form:
 kap = SX.sym('kap', NSEC * NREG)
+zeta= SX.sym('zeta', LFWD)
 
 #==============================================================================
 #-----------variables: these are symbolic expressions of casadi type MX or SX
@@ -336,8 +337,8 @@ d_ind_x = d_pol_ind_x | d_tim_ind_x | d_reg_ind_x | d_sec_ind_x
 d_ind_p = {
     'kap'       : range(NRxS),
     'start'     : range(NRxS),
-    'shock'     : range(NRxS, NRxS + NTIM)
-    t           : [NRxS + t]
+    'shock'     : range(NRxS, NRxS + NTIM),
+    t           : [NRxS + t],
 }
 
 #==============================================================================
@@ -348,7 +349,7 @@ def sub_ind_x(key1,             # any key of d_ind_x
               ):
     val = np.array(list(set(d[key1]) & set(d[key2])))
     return val
-j_sub_ind_x = jit(sub_ind_x)
+#j_sub_ind_x = jit(sub_ind_x)
 # possible alternative: ind(ind(ind(range(len(X0)), key1),key2), key3)
 
 #-----------function for intersecting two lists: returns indices as np.array
@@ -362,7 +363,7 @@ def sub_ind_p(key1,             # any key of d_ind_p
               ):
     val = np.array(list(set(d[key1]) & set(d[key2])))
     return val
-j_sub_ind_p = jit(sub_ind_p)
+#j_sub_ind_p = jit(sub_ind_p)
 # possible alternative: ind(ind(ind(range(len(X0)), key1),key2), key3)
 
 #-----------function for intersecting two lists: returns indices as np.array
@@ -376,13 +377,15 @@ def objective(
         beta=BETA,          # discount factor
         lfwd=LFWD,          # look-forward parameter
         ind=sub_ind_x,      # subindices function for x: req. two keys
-        u=j_instant_utility,# utility function representing flow per t
+        ind_p=sub_ind_p,
+        u=instant_utility,# utility function representing flow per t
         v=V_tail,           # tail-sum value function
 ):
     # extract/locate knx at the planning horizon in x
     kap_tail = x[ind("knx", lfwd - 1)]
     # sum discounted utility over the planning horizon
     sum_disc_utl = 0.0
+
     for t in range(lfwd):
         CON = x[ind("con", t)]    # locate consumption at t in x
         LAB = x[ind("lab", t)]    # locate labour at t in x
@@ -397,8 +400,8 @@ def eq_constraints(
         p,                      #casadi vec of parameters
         lfwd=LFWD,
         ind=sub_ind_x,
-        ind_p=ind_p,
-        mcl=j_market_clearing,
+        ind_p=sub_ind_p,
+        mcl=market_clearing,
 ):
     eqns = np.zeros(lfwd)
     for t in range(lfwd):
@@ -414,8 +417,8 @@ def eq_constraints(
                     con=CON,
                     knx=KNX,
                     lab=LAB,
-                    kap=KAP
-                    E_shock=E_SHOCK
+                    kap=KAP,
+                    E_shock=E_SHOCK,
         )
     return eqns
 
@@ -423,8 +426,8 @@ def eq_constraints(
 #-----------dict of arguments for the function casadi.nlpsol
 nlp = {
     'x' : vertcat(con, knx, lab),
-    'p' : vertcat(kap, E_shock),
-    'f' : objective(nlp['x'])
+    'p' : vertcat(kap, zeta),
+    'f' : objective(nlp['x']),
     'g' : eq_constraints(nlp['x'], nlp['p']),
 }
 
@@ -463,9 +466,10 @@ opts = ipopt_opts | casadi_opts
 #-----------compiled into Ipopt to maximize parallelism"
 
 #==============================================================================
-#-----------A solver function for us to feed in initial conditions and call:
+#-----------A casadi function for us to feed in initial conditions and call:
 solver = nlpsol('solver', 'ipopt', nlp, opts)
 
+#==============================================================================
 LBX = np.ones(len(X0)) * 1e-3
 UBX = np.ones(len(X0)) * 1e+3
 LBG = np.zeros(NCTT)
@@ -479,32 +483,29 @@ def exclude_keys(d, keys):
 
 res = dict()
 
-arg[0] = {
-    "x0" : X0,
-    "p" : P0,
+arg = {
     'lbx' : LBX,
     'ubx' : UBX,
     'lbg' : LBG,
     'ubg' : UBG,
 }
-#-----------solve:
-res[0] = solver.call(arg[0])
 
-#-----------obvious speed up when we feed in a similar solution:
-arg[1] = exclude_keys(arg[0], {'p', 'x0', 'lam_g0'})
-arg[1]['x0'] = res[0]['x']
-arg[1]['p'] = P0
-arg[1]['lam_g0'] = res[0]['lam_g']
-#-----------solve:
-res[1] = solver.call(arg[1])
+#-*-*-*-*-*-loop/iteration along path starts here 
+#------------------------------------------------------------------------------
+res = dict()
+for s in range(LPTH):
+    #-------set initial capital and vector of shocks for each plan
+    if s == 0:
+        arg['p'] = P0
+        arg['x0'] = X0
+    else:
+        arg['x0'] = np.array(res[s - 1]["x"])
+        arg['p'] = vertcat(res[s - 1][sub_ind_x("knx", 0)], P0)
+        arg['lam_g0'] = res[s - 1]['lam_g']
 
-#-----------vs when we don't:
-arg[2] = exclude_keys(arg[0], {'p', 'x0', 'lam_g0'})
-arg[2]['p'] = P0
-arg[2]['x0'] = np.repeat(100, len(X0))
-#-----------solve:
-res[2] = solver.call(arg[2])
-
+    #-----------execute solver
+    res[s] = solver.call(arg)
+#-*-*-*-*-*-loop ends here
 #==============================================================================
 #-----------print results
 for s in range(len(res)):
