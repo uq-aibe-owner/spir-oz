@@ -55,10 +55,9 @@ KAP0 = np.ones(NRxS) # how about NSEC ????
 #------------------------------------------------------------------------------
 #-----------probabity of no tip by time t as a pure function
 #-----------requires: "import economic_parameters as par"
-def prob_no_tip(
-    tim, # time step along a path
-    tpt=TPT, # transition probability of tipping
-):
+def prob_no_tip(tim, # time step along a path
+                tpt=TPT, # transition probability of tipping
+                ):
     return (1 - tpt) ** tim
 
 #-----------prob no tip as a vec of parameters
@@ -66,12 +65,17 @@ PNT = np.ones(LPTH)
 for t in range(LPTH):
     PNT[t] = prob_no_tip(t)
 
-def E_zeta(
-    
-):
-
-    val = zeta[1] + pnot(tim) * (zeta[0] - zeta[1]) # expected shock
+#-----------expected shock
+def E_zeta(t,
+           zeta=ZETA,
+           pnot=prob_no_tip,
+           ):
+    val = zeta[1] + pnot(t) * (zeta[0] - zeta[1])
     return val
+
+EZETA = np.ones(LFWD)
+for t in range(LFWD)
+    EZETA[t] = E_zeta(t)
 
 #-----------if t were a variable, then, for casadi, we could do:
 #t = c.SX.sym('t')
@@ -106,6 +110,7 @@ def instant_utility(con,            # consumption vec of vars at given time
     #-------general power utility:
     val = sum1(rho * (2 * con ** gh / gh - B * lab ** eh / eh))
     return val
+
 #==============================================================================
 #-----------v-tail as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -128,18 +133,17 @@ def V_tail(kap,             # kapital vec of vars at time t=LFWD
 #-----------expected output as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
-def expected_output(kap,                    # kap vector of vars
-                    lab,                    # lab vector of vars
-                    tim,                    # time step along a path
-                    A=DPT,                  # determistic prod trend
-                    phik=PHIK,              # weight of kap in prod
-                    phil=PHIL,              # weight of lab in prod
-                    E_zeta=E_ZETA,          # shock-value vector
-                    pnot=prob_no_tip,       # prob no tip by t
-                    ):
+def E_output(kap,                    # kap vector of vars at time t
+           lab,                    # lab vector of vars at time t
+           E_shock,                   # shock or expected shock at time t
+           A=DPT,                  # determistic prod trend
+           phik=PHIK,              # weight of kap in prod
+           phil=PHIL,              # weight of lab in prod
+           ):
     y = A * (kap ** phik) * (lab ** phil)   # output
-    val = E_zeta * y
+    val = E_shock * y
     return val
+
 #==============================================================================
 #-----------adjustment costs of investment as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -154,18 +158,19 @@ def adjustment_cost(kap,
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
-def market_clearing(kap,
+def market_clearing(con,
+                    kap,
                     knx,
-                    con,
                     lab,
-                    tim,
+                    E_shock,
                     delta=DELTA,
                     adjc=adjustment_cost, # Gamma in Cai-Judd
-                    E_f=expected_output,
+                    E_f=E_output,
                     ):
     sav = knx - (1 - delta) * kap
-    val = sum(E_f(kap, lab, tim) - con - sav - adjc(kap, sav))
+    val = sum(E_f(kap, lab, E_shock) - con - sav - adjc(kap, sav))
     return val
+
 #==============================================================================
 #-----------objective function (purified)
 def objective(x,                    # full vector of variables
@@ -185,6 +190,7 @@ def objective(x,                    # full vector of variables
         sum_disc_utl += beta ** t * u(con=CON, lab=LAB)
     val = sum_disc_utl + beta ** lfwd * v(kap=kap_tail)
     return val
+
 #==============================================================================
 #-----------equality constraints
 def eq_constraints(x,
