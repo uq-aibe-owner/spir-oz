@@ -52,6 +52,8 @@ KAP0 = np.ones(NRxS) # how about NSEC ????
 #-----------suppressed derived economic parameters
 #IVAR = np.arange(0,NVAR)    # index set (as np.array) for all variables
 
+#==============================================================================
+#-----------uncertainty
 #------------------------------------------------------------------------------
 #-----------probabity of no tip by time t as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -343,10 +345,11 @@ d_ind_p = {
 
 #==============================================================================
 #-----------function for returning index subsets of x for a pair of dict keys
-def sub_ind_x(key1,             # any key of d_ind_x
-              key2,             # any key of d_ind_x
-              d=d_ind_x,   # dict of index categories: pol, time, sec, reg
-              ):
+def sub_ind_x(
+        key1,             # any key of d_ind_x
+        key2,             # any key of d_ind_x
+        d=d_ind_x,   # dict of index categories: pol, time, sec, reg
+):
     val = np.array(list(set(d[key1]) & set(d[key2])))
     return val
 #j_sub_ind_x = jit(sub_ind_x)
@@ -357,10 +360,11 @@ def sub_ind_x(key1,             # any key of d_ind_x
 #    return np.array(list(set(list1) & set(list2)))
 
 #-----------function for returning index subsets of p for a pair of dict keys
-def sub_ind_p(key1,             # any key of d_ind_p
-              key2,             # any key of d_ind_p
-              d=d_ind_p,   # dict of index categories: kap and zeta 
-              ):
+def sub_ind_p(
+        key1,             # any key of d_ind_p
+        key2,             # any key of d_ind_p
+        d=d_ind_p,   # dict of index categories: kap and zeta 
+):
     val = np.array(list(set(d[key1]) & set(d[key2])))
     return val
 #j_sub_ind_p = jit(sub_ind_p)
@@ -478,8 +482,9 @@ P0 = np.ones(NRxS + NTIM)
 P0 = vertcat(KAP0, E_ZETA)
 arg = dict()
 
-def exclude_keys(d, keys):
-    return {x: d[x] for x in d if x not in keys}
+#-----------a function for removing elements from a dict
+#def exclude_keys(d, keys):
+#    return {x: d[x] for x in d if x not in keys}
 
 res = dict()
 
