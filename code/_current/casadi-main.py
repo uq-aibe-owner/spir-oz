@@ -9,9 +9,9 @@ import numpy as np
 #-----------basic economic parameters
 NREG = 3       # number of regions
 NSEC = 1        # number of sectors
-PHZN = NTIM = LFWD = 2# look-forward parameter / planning horizon (Delta_s)
+PHZN = NTIM = LFWD = 5# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 2# path length (Tstar): number of random steps along given path
+NITR = LPTH = 4# path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 95e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
@@ -482,7 +482,7 @@ def eq_constraints(
         t_ind_pol=tim_ind_pol,
         mcl=market_clearing,
 ):
-    eqns = np.zeros(lfwd)
+    eqns = SX.zeros(lfwd)
     for t in range(lfwd):
         if t == 0:
             KAP = kap
