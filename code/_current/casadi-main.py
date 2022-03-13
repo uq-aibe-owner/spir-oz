@@ -7,23 +7,23 @@ import numpy as np
 #------------------------------------------------------------------------------
 #-----------economic parameters
 #-----------basic economic parameters
-NREG = 3       # number of regions
+NREG = 3        # number of regions
 NSEC = 1        # number of sectors
-PHZN = NTIM = LFWD = 5# look-forward parameter / planning horizon (Delta_s)
+PHZN = NTIM = LFWD = 3# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 4# path length (Tstar): number of random steps along given path
+NITR = LPTH = 2 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 95e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
-PHIK = 33e-2  # weight of capital in production # alpha in CJ
+PHIK = 33e-2    # weight of capital in production # alpha in CJ
 TPT = 1e-2      # transition probability of tipping (from state 0 to 1)
 GAMMA = 5e-1    # power utility exponent
 DELTA = 25e-3   # depreciation rate
 ETA = 5e-1      # Frisch elasticity of labour supply
 RHO = np.ones(NREG) # regional weights (population)
-TCS = 75e-2       # Tail Consumption Share
+TCS = 75e-2     # Tail Consumption Share
 #-----------suppressed basic parameters
 #PHIM = 5e-1    # weight of intermediate inputs in production
 #XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
@@ -350,7 +350,7 @@ def instant_utility(
     #-------log utility
     #val = np.sum(rho * (np.log(con) - B * np.log(lab)))
     #-------general power utility:
-    val = sum1(rho * (2 * con ** gh / gh - B * lab ** eh / eh))
+    val = dot(rho , con ** gh / gh - B * lab ** eh / eh)
     return val
 
 #-----------next utility components for efficient computation of objective
@@ -362,7 +362,7 @@ def utility_vec(
         gh=GAMMA_HAT,
         eh=ETA_HAT,
 ):
-    val = 2 * con ** gh / gh - B * lab ** eh / eh
+    val = con ** gh / gh - B * lab ** eh / eh
     return val
 
 def weights_vec(
@@ -372,15 +372,15 @@ def weights_vec(
         lfwd=LFWD,              # look forward = NTIM
         nrxs=NRxS,              # 
         r_ind_p=reg_ind_pol,    #
-        t_ind_pol=tim_ind_pol,    #
-        i=i_reg
+        t_ind_pol=tim_ind_pol,  #
+        i_r=i_reg
 ):
     beta_vec = np.ones(lpol)
     rho_vec = np.ones(lpol)
     for t in range(lfwd):
         beta_vec[t_ind_pol(pol_key='con', tim_key=t)] *= beta ** t
-    for rk in i.keys():
-        rho_vec[r_ind_p(pol_key='con', reg_key=rk)] = rho[i[rk]]
+    for rk in i_r.keys():
+        rho_vec[r_ind_p(pol_key='con', reg_key=rk)] = rho[i_r[rk]]
     val = beta_vec * rho_vec
     return val
 
@@ -431,7 +431,7 @@ def adjustment_cost(
 ):
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as
-    val = phia * kap * pow(knx / kap - 1, 2)
+    val = phia/2 * kap * pow(knx / kap - 1, 2)
     return val
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -514,6 +514,7 @@ nlp = {
 #-----------options for the ipopt (the solver) and casadi (the frontend)
 #------------------------------------------------------------------------------
 ipopt_opts = {
+    'ipopt.print_level' : 5,          #default 5
     'ipopt.linear_solver' : 'mumps', #default=Mumps
     'ipopt.obj_scaling_factor' : 1.0, #default=1.0
     'ipopt.warm_start_init_point' : 'yes', #default=no
@@ -549,20 +550,18 @@ opts = ipopt_opts | casadi_opts
 solver = nlpsol('solver', 'ipopt', nlp, opts)
 
 #==============================================================================
-LBX = np.ones(len(X0)) * 1e-3
-UBX = np.ones(len(X0)) * 1e+3
+LBX = np.ones(len(X0)) * 1e-5
+UBX = np.ones(len(X0)) * 1e+5
 LBG = np.zeros(NCTT)
 UBG = np.zeros(NCTT)
 #P0 = np.ones(NRxS + NTIM)
 P0 = vertcat(KAP0, E_ZETA)
-arg = dict()
 
 #-----------a function for removing elements from a dict
 #def exclude_keys(d, keys):
 #    return {x: d[x] for x in d if x not in keys}
 
-res = dict()
-
+arg = dict()
 arg = {
     'lbx' : LBX,
     'ubx' : UBX,
@@ -588,5 +587,12 @@ for s in range(LPTH):
 #-*-*-*-*-*-loop ends here
 #==============================================================================
 #-----------print results
-for s in range(len(res)):
-    print('the full dict of results for step', s, 'is\n', res[s])
+x_sol = dict()
+for pk in d_pol_ind_x.keys():
+    print("the solution for", pk, "at steps", range(len(res)), "along path 0 is\n")
+    for s in range(len(res)):
+        x_sol[s] = np.array(res[s]["x"])
+        print(x_sol[s][np.array(d_pol_ind_x[pk])], " ")
+    print(".\n")
+    #print('the full dict of results for step', s, 'is\n', res[s])
+#    print('the vector of variable values for step', s, 'is\n', res[s]['x'])
