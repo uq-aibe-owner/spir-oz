@@ -1,4 +1,4 @@
-from casadi import SX, MX, DM, Function, nlpsol, vertcat, sum1, dot
+from casadi import  MX, SX, DM, Function, nlpsol, vertcat, sum1, dot
 import numpy as np
 
 
@@ -9,11 +9,11 @@ import numpy as np
 #-----------basic economic parameters
 NREG = 3        # number of regions
 NSEC = 1        # number of sectors
-PHZN = NTIM = LFWD = 3# look-forward parameter / planning horizon (Delta_s)
+PHZN = NTIM = LFWD = 100# look-forward parameter / planning horizon (Delta_s)
 NPOL = 3        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 2 # path length (Tstar): number of random steps along given path
+NITR = LPTH = 9 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
-BETA = 95e-2    # discount factor
+BETA = 99e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
@@ -22,7 +22,7 @@ TPT = 1e-2      # transition probability of tipping (from state 0 to 1)
 GAMMA = 5e-1    # power utility exponent
 DELTA = 25e-3   # depreciation rate
 ETA = 5e-1      # Frisch elasticity of labour supply
-RHO = np.ones(NREG) # regional weights (population)
+RHO = DM.ones(NREG) # regional weights (population)
 TCS = 75e-2     # Tail Consumption Share
 #-----------suppressed basic parameters
 #PHIM = 5e-1    # weight of intermediate inputs in production
@@ -34,23 +34,23 @@ TCS = 75e-2     # Tail Consumption Share
 NRxS = NREG * NSEC
 NSxT = NSEC * NTIM
 NRxSxT = NREG * NSEC * NTIM
-NCTT = NSxT # may add more eg. electricity markets are specific
-GAMMA_HAT = 1 - 1 / GAMMA    # utility parameter (consumption denominator)
-ETA_HAT = 1 + 1 / ETA        # utility parameter
+NCTT = 2 * LFWD  # may add more eg. electricity markets are specific
+GAMMA_HAT = 1 - 1 / GAMMA   # utility parameter (consumption denominator)
+ETA_HAT = 1 + 1 / ETA       # utility parameter
 PHIL = 1 - PHIK             # labour's importance in production
 DPT = (1 - (1 - DELTA) * BETA) / (PHIK * BETA) # deterministic prod trend
 RWU = (1 - PHIK) * DPT * (DPT - DELTA) ** (-1 / GAMMA) # Rel Weight in Utility
-ZETA = np.array([ZETA0, ZETA1])
+ZETA = DM([ZETA0, ZETA1])
 NVAR = NPOL * NTIM * NREG * NSEC    # total number of variables
-X0 = np.ones(NVAR)          # our initial warm start 
+X0 = DM.ones(NVAR)          # our initial warm start 
 # k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
-KAP0 = np.ones(NRxS) # how about NSEC ????
+KAP0 = DM.ones(NRxS)        # how about NSEC ????
 #for j in range(n_agt):
 #    KAP0[j] = np.exp(
 #        np.log(kap_L) + (np.log(kap_U) - np.log(kap_L)) * j / (n_agt - 1)
 #    )
 #-----------suppressed derived economic parameters
-#IVAR = np.arange(0,NVAR)    # index set (as np.array) for all variables
+#IVAR = np.arange(0,NVAR)   # index set (as np.array) for all variables
 
 #==============================================================================
 #-----------uncertainty
@@ -64,7 +64,7 @@ def prob_no_tip(
     return (1 - tpt) ** tim
 
 #-----------prob no tip as a vec of parameters
-PNT = np.ones(LPTH)
+PNT = DM.ones(LPTH)
 for t in range(LPTH):
     PNT[t] = prob_no_tip(t)
 
@@ -77,26 +77,26 @@ def E_zeta(
     val = zeta[1] + pnot(t) * (zeta[0] - zeta[1])
     return val
 
-E_ZETA = np.ones(LFWD)
+E_ZETA = DM.ones(LFWD)
 for t in range(LFWD):
     E_ZETA[t] = E_zeta(t)
 
 #-----------if t were a variable, then, for casadi, we could do:
-#t = c.SX.sym('t')
+#t = c.MX.sym('t')
 #pnt = c.Function('cpnt', [t], [prob_no_tip(t)], ['t'], ['p0'])
 #PNT = pnt.map(LPTH)         # row vector 
 
 #-----------For every look-forward, initial kapital is a parameter. 
 #-----------To speed things up, we feed it in in CasADi-symbolic form:
-par_kap  = SX.sym('kap', NRxS)
-par_zeta = SX.sym('zeta', LFWD)
+par_kap  = MX.sym('kap', NRxS)
+par_zeta = MX.sym('zeta', LFWD)
 
 #==============================================================================
 #-----------variables: these are symbolic expressions of casadi type MX or SX
 #------------------------------------------------------------------------------
-var_con = SX.sym('con', NRxSxT)
-var_lab = SX.sym('lab', NRxSxT)
-var_knx = SX.sym('knx', NRxSxT)
+var_con = MX.sym('con', NRxSxT)
+var_lab = MX.sym('lab', NRxSxT)
+var_knx = MX.sym('knx', NRxSxT)
 
 #==============================================================================
 #-----------structure of x using latex notation:
@@ -350,7 +350,7 @@ def instant_utility(
     #-------log utility
     #val = np.sum(rho * (np.log(con) - B * np.log(lab)))
     #-------general power utility:
-    val = dot(rho , con ** gh / gh - B * lab ** eh / eh)
+    val = dot(rho, con ** gh / gh - B * lab ** eh / eh)
     return val
 
 #-----------next utility components for efficient computation of objective
@@ -375,8 +375,8 @@ def weights_vec(
         t_ind_pol=tim_ind_pol,  #
         i_r=i_reg
 ):
-    beta_vec = np.ones(lpol)
-    rho_vec = np.ones(lpol)
+    beta_vec = DM.ones(lpol)
+    rho_vec = DM.ones(lpol)
     for t in range(lfwd):
         beta_vec[t_ind_pol(pol_key='con', tim_key=t)] *= beta ** t
     for rk in i_r.keys():
@@ -390,19 +390,20 @@ WVEC = weights_vec()
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
 def V_tail(
-        kap,             # kapital vec of vars at time t=LFWD 
-        A=DPT,       # deterministic productivity trend
-        beta=BETA,   # discount factor
+        kap,                # kapital vec of vars at time t = LFWD - 1 
+        lab,                # labour vec of vars at time t = LFWD - 1
+        A=DPT,              # deterministic productivity trend
+        beta=BETA,          # discount factor
         nrxs=NRxS,
-        phik=PHIK,   # weight of capital in production
-        tcs=TCS,     # tail consumption share
-        u=instant_utility, # utility function: req. con and lab at t
+        phik=PHIK,          # weight of capital in production
+        tcs=TCS,            # tail consumption share
+        u=instant_utility,  # utility function: req. con and lab at t
 ):
     #-------tail consumption vec
-    CON = tcs * A * kap ** phik
+    con_tail = tcs * A * kap ** phik
+    lab_tail = lab
     #-------tail labour vec normalised to one
-    LAB = np.ones(nrxs)
-    val = u(con=CON, lab=LAB) / (1 - beta)
+    val = u(con=con_tail, lab=lab_tail) / (1 - beta)
     return val
 
 #==============================================================================
@@ -431,7 +432,7 @@ def adjustment_cost(
 ):
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as
-    val = phia/2 * kap * pow(knx / kap - 1, 2)
+    val = 1e+0 * (phia / 2) * kap * pow(knx / kap - 1, 2)
     return val
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -443,11 +444,13 @@ def market_clearing(
         lab,
         E_shock,
         delta=DELTA,
+        nreg=NREG,
         adjc=adjustment_cost, # Gamma in Cai-Judd
         E_f=E_output,
 ):
     sav = knx - (1 - delta) * kap
-    val = sum1(E_f(kap, lab, E_shock) - con - sav - adjc(kap, sav))
+    reg_surplus = E_f(kap, lab, E_shock) - con - sav - adjc(kap, knx)
+    val = dot(reg_surplus, DM.ones(nreg))
     return val
 
 #==============================================================================
@@ -458,31 +461,38 @@ def objective(
         lab=var_lab,            #casadi vec of symbolic variables 
         beta=BETA,              # discount factor
         lfwd=LFWD,              # look-forward parameter
+        nrxs=NRxS,
         wvec=WVEC,              # weight vector: across time and regions
         t_ind_pol=tim_ind_pol,  # function for time indices in policy vectors
         u_vec=utility_vec,      # utility function representing flow per t
         v=V_tail,               # tail-sum value function
 ):
-    # extract/locate knx at the planning horizon in knx
+    #-------set tail kapital: extract/locate knx at the planning horizon in knx
     kap_tail = knx[t_ind_pol('knx', lfwd - 1)]
+    #-------set tail labour
+    lab_tail =  DM.ones(NRxS) # lab[t_ind_pol('lab', lfwd - 1)]
     # sum discounted utility over the planning horizon
-    val = dot(u_vec(con, lab), wvec) + beta ** lfwd * v(kap=kap_tail)
+    val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
     return val
 
 #==============================================================================
-#-----------equality constraints
-def eq_constraints(
+#-----------constraints: both equality and inequality
+def constraints(
         kap=par_kap,            #casadi vec of symbolic parameters 
         shk=par_zeta,           #casadi vec of symbolic parameters
         con=var_con,            #casadi vec of symbolic variables
         knx=var_knx,            #casadi vec of symbolic variables 
         lab=var_lab,            #casadi vec of symbolic variables 
+        delta=DELTA,
         lfwd=LFWD,
+        nrxsxt=NRxSxT,
         ind_p=sub_ind_p,
+        i_r=i_reg,
         t_ind_pol=tim_ind_pol,
         mcl=market_clearing,
 ):
-    eqns = SX.zeros(lfwd)
+    eqns = MX.zeros(lfwd)
+    ineqns = MX.zeros(nrxsxt)
     for t in range(lfwd):
         if t == 0:
             KAP = kap
@@ -499,7 +509,9 @@ def eq_constraints(
                     kap=KAP,
                     E_shock=E_SHOCK,
         )
-    return eqns
+        sav = knx[t_ind_pol('knx', t)] - (1 - delta) * KAP
+        ineqns[t * NRxS: (t + 1) * NRxS ] = sav
+    return vertcat(eqns, ineqns)
 
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
@@ -507,7 +519,7 @@ nlp = {
     'x' : vertcat(var_con, var_knx, var_lab),
     'p' : vertcat(par_kap, par_zeta),
     'f' : objective(),
-    'g' : eq_constraints(),
+    'g' : constraints(),
 }
 
 #==============================================================================
@@ -550,11 +562,11 @@ opts = ipopt_opts | casadi_opts
 solver = nlpsol('solver', 'ipopt', nlp, opts)
 
 #==============================================================================
-LBX = np.ones(len(X0)) * 1e-5
-UBX = np.ones(len(X0)) * 1e+5
-LBG = np.zeros(NCTT)
-UBG = np.zeros(NCTT)
-#P0 = np.ones(NRxS + NTIM)
+LBX = DM.ones(NVAR) * 1e-1
+UBX = DM.ones(NVAR) * 1e+1
+LBG = DM.zeros(NSxT + NRxSxT)
+UBG = vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
+#P0 = DM.ones(NRxS + NTIM)
 P0 = vertcat(KAP0, E_ZETA)
 
 #-----------a function for removing elements from a dict
@@ -578,7 +590,7 @@ for s in range(LPTH):
         arg['p'] = P0
         arg['x0'] = X0
     else:
-        arg['x0'] = np.array(res[s - 1]["x"])
+        arg['x0'] = res[s - 1]["x"]
         arg['p'] = vertcat(res[s - 1]['x'][sub_ind_x("knx", 0)], E_ZETA)
         arg['lam_g0'] = res[s - 1]['lam_g']
 
@@ -592,7 +604,7 @@ for pk in d_pol_ind_x.keys():
     print("the solution for", pk, "at steps", range(len(res)), "along path 0 is\n")
     for s in range(len(res)):
         x_sol[s] = np.array(res[s]["x"])
-        print(x_sol[s][np.array(d_pol_ind_x[pk])], " ")
+        print(x_sol[s][sub_ind_x(pk, s)], " ")
     print(".\n")
     #print('the full dict of results for step', s, 'is\n', res[s])
 #    print('the vector of variable values for step', s, 'is\n', res[s]['x'])
