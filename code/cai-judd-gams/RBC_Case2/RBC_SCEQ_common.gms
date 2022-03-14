@@ -8,12 +8,12 @@
 scalar starttime;
 starttime = jnow;
     
-set j countries /1*10/;
+set j countries /1*3/;
 set t time /1*71/;
 alias(tt,t);
 
 * number of different paths + 1 (the extra one is for error checking at the last period of interest)
-set npath /1*21/;
+set npath /1*10/;
 
 parameters
 beta        discount rate /0.99/
@@ -27,7 +27,7 @@ etahat      utility parameter
 A           technology parameter
 B           relative weight of consumption and leisure
 s           starting period
-DT          number of periods for optimization in SCEQ / 50 /
+DT          number of periods for optimization in SCEQ / 10 /
 Tstar       number of periods of interest 
 tau(j)      weight
 Imin        lower bound of investment 
@@ -38,6 +38,7 @@ zeta1       TFP before shock   / 1 /
 zeta2       TFP after shock   / 0.95 /
 prob1       one period probability of jump of TFP / 0.01 /
 probs(t)    probability of jump of TFP
+TCS         tail consumption share (of output) / .45 /
 ;
 
 Tstar = card(npath)-1;
@@ -51,9 +52,10 @@ Imin = 0.9*delta;
 
 tau(j) = 1;
 *k0(j) = kmin + (kmax-kmin)*(ord(j)-1)/(card(j)-1);
-k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
+*k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
+k0(j) = 1
 
-display A, B, k0;
+display A, B, etahat, k0;
 
 *************
 * define model
@@ -77,8 +79,16 @@ TippedBudgetConstraint(t) budget constraint after jump
 ;
 
 objfun .. 
-obj =e= sum(j, tau(j) * sum(t$(ord(t)>=s and ord(t)<s+DT), beta**(ord(t)-s)*((c(j,t)**gammahat)/gammahat - B * (l(j,t)**etahat)/etahat))) + 
-  sum(j, tau(j) * sum(t$(ord(t)=s+DT), beta**(ord(t)-s)*((( (0.75*A*(k(j,t)**alpha))**gammahat )/gammahat-B)/(1-beta)))) ;
+obj =e= sum(j, tau(j) *
+                    sum(t$(ord(t)>=s and ord(t)<s+DT),
+                        beta**(ord(t)-s)*((c(j,t)**gammahat)/gammahat - B * (l(j,t)**etahat)/etahat)
+                    )
+        )
+        + sum(j, tau(j) *
+                    sum(t$(ord(t)=s+DT),
+                        beta**(ord(t)-s)*((( (TCS*A*(k(j,t)**alpha))**gammahat )/gammahat-B)/(1-beta))
+                    )
+        ) ;
 
 TransitionCapital(j,t)$(ord(t)>=s and ord(t)<s+DT) .. 
 k(j,t+1) =e= (1-delta)*k(j,t) + Inv(j,t);

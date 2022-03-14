@@ -4,25 +4,25 @@ import numpy as np
 NCTT = 2
 p = SX.sym('p', 3)
 
-x = SX.sym('x')
+X = SX.sym('x')
 y = SX.sym('y')
 z = SX.sym('z')
 
-g0 = z + x + y - 2
-g1 = z + (1 - x) ** p[0] - y
-ctt = Function(
-    'ctt',
-    [x, y, z],
-    [g0, g1]
-)
+g0 = z + X + y - 2
+g1 = z + (1 - X) ** p[0] - y
+#ctt = Function(
+#    'ctt',
+#    [x, y, z],
+#    [g0, g1]
+#)
 G = SX.zeros(NCTT)
 G[0] = g0
 G[1] = g1
 #G = MX(g0, g1)
 
 nlp = {
-    'x' : vertcat(x, y, z),
-    'f' : p[2] * (x ** p[0] + p[1] * z ** p[0]),
+    'x' : vertcat(X, y, z),
+    'f' : p[2] * (X ** p[0] + p[1] * z ** p[0]),
     'g' : G, #[g1, g0], #z + (1 - x) ** p[0] - y, #ctt,
     'p' : p,
 }
@@ -72,7 +72,10 @@ P0 = np.array([2, 100, 1])
 
 arg = dict()
 
-def exclude_keys(d, keys):
+def exclude_keys(
+        d,
+        keys
+):
     return {x: d[x] for x in d if x not in keys}
 
 res = dict()
