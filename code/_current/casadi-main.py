@@ -492,6 +492,28 @@ def objective(
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
     return val
+#==============================================================================
+#-----------alt subindex function
+# allows you to take a subset from a set you already have using one key
+def subset(
+        set1, # A set we already have
+        key,  # A key we want to use to subset the data further
+        d=d_ind_x  # combined dict
+):
+    val = np.array(list(set(set1) & set(d[key])))
+    return val
+
+#----------- another alt subindex function
+# could make the 
+# allows you to feed a vector of an arbitrary number of keys to get a subset of X
+def subset_adapt(
+        keys,  # A vector of all the keys we want to use to subset X, can be any length greater than or equal to 1
+        d=d_ind_x  # combined dict
+):
+    inds = d[keys[0]] # get our first indices
+    for i in range(1,len(keys)):
+        inds = np.array(list(set(inds) & set(d[keys[i]]))) # subset what we already have with the next key we want to subset by
+    return inds
 
 #==============================================================================
 #-----------constraints: both equality and inequality
