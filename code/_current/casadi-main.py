@@ -43,14 +43,17 @@ RWU = (1 - PHIK) * DPT * (DPT - DELTA) ** (-1 / GAMMA) # Rel Weight in Utility
 ZETA = DM([ZETA0, ZETA1])
 NVAR = NPOL * NTIM * NREG * NSEC    # total number of variables
 X0 = DM.ones(NVAR)          # our initial warm start 
-# k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
 KAP0 = DM.ones(NRxS)        # how about NSEC ????
+b = np.kron(np.arange(NSxT, dtype=np.uint8), np.ones(NREG, dtype=np.uint8)
+s = Sparsity(NSxT, NRxSxT, range(NRxSxT + 1), b)
+MCL_MATRIX = DM(s)
+#-----------suppressed derived economic parameters
+#--GAMS: k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
+#IVAR = np.arange(0,NVAR)   # index set (as np.array) for all variables
 #for j in range(n_agt):
 #    KAP0[j] = np.exp(
 #        np.log(kap_L) + (np.log(kap_U) - np.log(kap_L)) * j / (n_agt - 1)
 #    )
-#-----------suppressed derived economic parameters
-#IVAR = np.arange(0,NVAR)   # index set (as np.array) for all variables
 
 #==============================================================================
 #-----------uncertainty
@@ -449,16 +452,15 @@ def market_clearing(
         sav,
         kap,
         E_shock,
-        delta=DELTA,
-        nreg=NREG,
-        adj_cost=adjustment_cost, # Gamma in Cai-Judd
+        A=MCL_MATRIX,            # market clearing matrix (pooled across reg)
+        adj_cost=adjustment_cost,   # Gamma in Cai-Judd
         E_f=E_output,
 ):
     #sav = knx - (1 - delta) * kap
     out = E_f(kap=kap, lab=lab, E_shock=E_shock)
     adj = adj_cost(knx=knx, kap=kap)
     reg_surplus = out - con - sav - adj
-    val = dot(reg_surplus, DM.ones(nreg))
+    val = dot(A, reg_surplus)
     return val
 
 #==============================================================================
