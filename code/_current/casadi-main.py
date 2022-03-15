@@ -460,7 +460,7 @@ def market_clearing(
     out = E_f(kap=kap, lab=lab, E_shock=E_shock)
     adj = adj_cost(knx=knx, kap=kap)
     reg_surplus = out - con - sav - adj
-    val = dot(A, reg_surplus)
+    val = A @ reg_surplus
     return val
 
 #==============================================================================
