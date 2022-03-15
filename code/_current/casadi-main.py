@@ -9,8 +9,8 @@ import numpy as np
 #-----------basic economic parameters
 NREG = 3        # number of regions
 NSEC = 1        # number of sectors
-PHZN = NTIM = LFWD = 100# look-forward parameter / planning horizon (Delta_s)
-NPOL = 3        # number of policy types: con, lab, knx, #itm
+PHZN = NTIM = LFWD = 70# look-forward parameter / planning horizon (Delta_s)
+NPOL = 4        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 9 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 99e-2    # discount factor
@@ -34,7 +34,7 @@ TCS = 75e-2     # Tail Consumption Share
 NRxS = NREG * NSEC
 NSxT = NSEC * NTIM
 NRxSxT = NREG * NSEC * NTIM
-NCTT = 2 * LFWD  # may add more eg. electricity markets are specific
+#NCTT = LFWD # may add more eg. electricity markets are specific
 GAMMA_HAT = 1 - 1 / GAMMA   # utility parameter (consumption denominator)
 ETA_HAT = 1 + 1 / ETA       # utility parameter
 PHIL = 1 - PHIK             # labour's importance in production
@@ -97,7 +97,8 @@ par_zeta = MX.sym('zeta', LFWD)
 var_con = MX.sym('con', NRxSxT)
 var_lab = MX.sym('lab', NRxSxT)
 var_knx = MX.sym('knx', NRxSxT)
-
+var_sav = MX.sym('sav', NRxSxT)
+var = vertcat(var_con, var_lab, var_knx, var_sav)
 #==============================================================================
 #-----------structure of x using latex notation:
 #---x = [
@@ -160,11 +161,13 @@ d_dim = {
     "con": 1,
     "knx": 1,
     "lab": 1,
+    'sav': 1,
 }
 i_pol = {
     "con": 0,
     "knx": 1,
     "lab": 2,
+    'sav': 3,
 }
 i_reg = {
     "aus": 0,
@@ -172,22 +175,22 @@ i_reg = {
     "wld": 2,
 }
 i_sec = {
-    "agr": 0,
-    "for": 1,
-    #"min": 2,
-    #"man": 3,
-    #"uty": 4,
-    #"ctr": 5,
-    #"com": 6,
-    #"tps": 7,
-    #"res": 8,
+    "agri": 0,          # agriculture
+    "fori": 1,          # forestry
+    #"ming": 2,         # mining
+    #"manu": 3,         # manufacturing
+    #"util": 4,         # utilities
+    #"cnst": 5,          # construction
+    #"coms": 6,         # commercial services
+    #"tpts": 7,          # transport
+    #"hhld": 8,          # residential/household
 }
 # Warm start
 pol_S = {
     "con": 4,
     "lab": 1,
     "knx": KAP0,
-    #"sav": 2,
+    "sav": 2,
     #"out": 6,
     #    "itm": 10,
     #    "ITM": 10,
@@ -411,8 +414,8 @@ def V_tail(
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
 def E_output(
-        kap,                    # kap vector of vars at time t
         lab,                    # lab vector of vars at time t
+        kap,                    # kap vector of vars at time t
         E_shock,                # shock or expected shock at time t
         A=DPT,                  # determistic prod trend
         phik=PHIK,              # weight of kap in prod
@@ -426,33 +429,48 @@ def E_output(
 #-----------adjustment costs of investment as a pure function
 #-----------requires: "import economic_parameters as par"
 def adjustment_cost(
-        kap,
         knx,
+        kap,
         phia=PHIA, # adjustment cost multiplier
 ):
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as
-    val = 1e+0 * (phia / 2) * kap * pow(knx / kap - 1, 2)
+    val = 1e+2 * (phia / 2) * kap * pow(knx / kap - 1, 2)
     return val
+
+#==============================================================================
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
 def market_clearing(
         con,
-        kap,
         knx,
         lab,
+        sav,
+        kap,
         E_shock,
         delta=DELTA,
         nreg=NREG,
-        adjc=adjustment_cost, # Gamma in Cai-Judd
+        adj_cost=adjustment_cost, # Gamma in Cai-Judd
         E_f=E_output,
 ):
-    sav = knx - (1 - delta) * kap
-    reg_surplus = E_f(kap, lab, E_shock) - con - sav - adjc(kap, knx)
+    #sav = knx - (1 - delta) * kap
+    out = E_f(kap=kap, lab=lab, E_shock=E_shock)
+    adj = adj_cost(knx=knx, kap=kap)
+    reg_surplus = out - con - sav - adj
     val = dot(reg_surplus, DM.ones(nreg))
     return val
 
+#==============================================================================
+#-----------dynamic equations
+def dynamics(
+        knx,
+        sav,
+        kap,
+        delta=DELTA,
+):
+    val = knx - sav - (1 - delta) * kap
+    return val
 #==============================================================================
 #-----------objective function (purified)
 def objective(
@@ -470,7 +488,7 @@ def objective(
     #-------set tail kapital: extract/locate knx at the planning horizon in knx
     kap_tail = knx[t_ind_pol('knx', lfwd - 1)]
     #-------set tail labour
-    lab_tail =  DM.ones(NRxS) # lab[t_ind_pol('lab', lfwd - 1)]
+    lab_tail = DM.ones(NRxS)    # lab[t_ind_pol('lab', lfwd - 1)] 
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
     return val
@@ -478,11 +496,12 @@ def objective(
 #==============================================================================
 #-----------constraints: both equality and inequality
 def constraints(
-        kap=par_kap,            #casadi vec of symbolic parameters 
-        shk=par_zeta,           #casadi vec of symbolic parameters
         con=var_con,            #casadi vec of symbolic variables
-        knx=var_knx,            #casadi vec of symbolic variables 
-        lab=var_lab,            #casadi vec of symbolic variables 
+        knx=var_knx,            #casadi vec of symbolic var 
+        lab=var_lab,            #casadi vec of symbolic var 
+        sav=var_sav,            #casadi vec of symbolic var
+        kap=par_kap,            #casadi vec of symbolic parameters 
+        shk=par_zeta,           #casadi vec of symbolic par
         delta=DELTA,
         lfwd=LFWD,
         nrxsxt=NRxSxT,
@@ -490,9 +509,10 @@ def constraints(
         i_r=i_reg,
         t_ind_pol=tim_ind_pol,
         mcl=market_clearing,
+        dyn=dynamics
 ):
-    eqns = MX.zeros(lfwd)
-    ineqns = MX.zeros(nrxsxt)
+    mcl_eqns = MX.zeros(lfwd)
+    dyn_eqns = MX.zeros(nrxsxt)
     for t in range(lfwd):
         if t == 0:
             KAP = kap
@@ -502,21 +522,22 @@ def constraints(
         CON = con[t_ind_pol('con', t)]
         KNX = knx[t_ind_pol('knx', t)]
         LAB = lab[t_ind_pol('lab', t)]
-        eqns[t] = mcl(
+        SAV = sav[t_ind_pol('sav', t)]
+        mcl_eqns[t] = mcl(
                     con=CON,
                     knx=KNX,
                     lab=LAB,
                     kap=KAP,
+                    sav=SAV,
                     E_shock=E_SHOCK,
         )
-        sav = knx[t_ind_pol('knx', t)] - (1 - delta) * KAP
-        ineqns[t * NRxS: (t + 1) * NRxS ] = sav
-    return vertcat(eqns, ineqns)
+        dyn_eqns[t * NRxS: (t + 1) * NRxS ] = dyn(knx=KNX, sav=SAV, kap=KAP)
+    return vertcat(mcl_eqns,  dyn_eqns)
 
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
-    'x' : vertcat(var_con, var_knx, var_lab),
+    'x' : var,
     'p' : vertcat(par_kap, par_zeta),
     'f' : objective(),
     'g' : constraints(),
@@ -565,7 +586,7 @@ solver = nlpsol('solver', 'ipopt', nlp, opts)
 LBX = DM.ones(NVAR) * 1e-1
 UBX = DM.ones(NVAR) * 1e+1
 LBG = DM.zeros(NSxT + NRxSxT)
-UBG = vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
+UBG = DM.zeros(NSxT + NRxSxT) #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
 #P0 = DM.ones(NRxS + NTIM)
 P0 = vertcat(KAP0, E_ZETA)
 
@@ -573,38 +594,42 @@ P0 = vertcat(KAP0, E_ZETA)
 #def exclude_keys(d, keys):
 #    return {x: d[x] for x in d if x not in keys}
 
-arg = dict()
-arg = {
-    'lbx' : LBX,
-    'ubx' : UBX,
-    'lbg' : LBG,
-    'ubg' : UBG,
-}
-
 #-*-*-*-*-*-loop/iteration along path starts here 
 #------------------------------------------------------------------------------
 res = dict()
+arg = dict()
 for s in range(LPTH):
+    arg[s] = dict()
+    arg[s] = {
+        'lbx' : LBX,
+        'ubx' : UBX,
+        'lbg' : LBG,
+        'ubg' : UBG,
+    }
     #-------set initial capital and vector of shocks for each plan
     if s == 0:
-        arg['p'] = P0
-        arg['x0'] = X0
+        arg[s]['p'] = P0
+        arg[s]['x0'] = X0
     else:
-        arg['x0'] = res[s - 1]["x"]
-        arg['p'] = vertcat(res[s - 1]['x'][sub_ind_x("knx", 0)], E_ZETA)
-        arg['lam_g0'] = res[s - 1]['lam_g']
+        arg[s]['x0'] = res[s - 1]["x"]
+        arg[s]['p'] = vertcat(res[s - 1]['x'][sub_ind_x("knx", 0)], E_ZETA)
+        arg[s]['lam_g0'] = res[s - 1]['lam_g']
 
     #-----------execute solver
-    res[s] = solver.call(arg)
+    res[s] = solver.call(arg[s])
 #-*-*-*-*-*-loop ends here
 #==============================================================================
 #-----------print results
 x_sol = dict()
+g_sol = dict()
+for s in range(len(res)):
+    x_sol[s] = np.array(res[s]["x"])
+    g_sol[s] = np.array(res[s]['g'])
+    print(max(abs(g_sol[s])))
 for pk in d_pol_ind_x.keys():
     print("the solution for", pk, "at steps", range(len(res)), "along path 0 is\n")
     for s in range(len(res)):
-        x_sol[s] = np.array(res[s]["x"])
         print(x_sol[s][sub_ind_x(pk, s)], " ")
     print(".\n")
-    #print('the full dict of results for step', s, 'is\n', res[s])
+#print('the full dict of results for step', s, 'is\n', res[s])
 #    print('the vector of variable values for step', s, 'is\n', res[s]['x'])
