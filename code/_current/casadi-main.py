@@ -1,4 +1,5 @@
-from casadi import  MX, SX, DM, Function, nlpsol, vertcat, sum1, dot
+from casadi import  MX, SX, DM, Function, nlpsol, vertcat, sum1, dot, \
+    Sparsity, transpose
 import numpy as np
 
 
@@ -9,11 +10,11 @@ import numpy as np
 #-----------basic economic parameters
 NREG = 3        # number of regions
 NSEC = 1        # number of sectors
-PHZN = NTIM = LFWD = 70# look-forward parameter / planning horizon (Delta_s)
+PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 4        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 9 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
-BETA = 99e-2    # discount factor
+BETA = 90e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
@@ -43,10 +44,17 @@ RWU = (1 - PHIK) * DPT * (DPT - DELTA) ** (-1 / GAMMA) # Rel Weight in Utility
 ZETA = DM([ZETA0, ZETA1])
 NVAR = NPOL * NTIM * NREG * NSEC    # total number of variables
 X0 = DM.ones(NVAR)          # our initial warm start 
-KAP0 = DM.ones(NRxS)        # how about NSEC ????
-b = np.kron(np.arange(NSxT, dtype=np.uint8), np.ones(NREG, dtype=np.uint8)
+
+#==============================================================================
+#-----------some efficient matrices for constructing constraints, shocks, etc. 
+#-----------market clearing matrix
+b = np.kron(np.arange(NSxT, dtype=np.uint8), np.ones(NREG, dtype=np.uint8))
 s = Sparsity(NSxT, NRxSxT, range(NRxSxT + 1), b)
 MCL_MATRIX = DM(s)
+
+#-----------shock matrix (for the case with uniform shocks across reg)
+SHK_MATRIX = DM(transpose(s))
+
 #-----------suppressed derived economic parameters
 #--GAMS: k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
 #IVAR = np.arange(0,NVAR)   # index set (as np.array) for all variables
@@ -56,7 +64,15 @@ MCL_MATRIX = DM(s)
 #    )
 
 #==============================================================================
-#-----------uncertainty
+#-----------initial kapital: a casadi parameter 
+KAP0 = dict()
+KAP0[0] = DM.ones(NRxS)        # initial kapital (at t=0)
+#-----------extend with zeros to a vector of length NRxSxT:
+sk = Sparsity(NRxSxT, NREG, range(NREG + 1), range(NREG))
+KAP0_MATRIX = DM(sk)
+KAP0[0] = KAP0_MATRIX @ KAP0[0]
+#==============================================================================
+#-----------uncertainty: a casadi parameter
 #------------------------------------------------------------------------------
 #-----------probabity of no tip by time t as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -83,7 +99,7 @@ def E_zeta(
 E_ZETA = DM.ones(LFWD)
 for t in range(LFWD):
     E_ZETA[t] = E_zeta(t)
-
+E_ZETA = SHK_MATRIX @ E_ZETA
 #-----------if t were a variable, then, for casadi, we could do:
 #t = c.MX.sym('t')
 #pnt = c.Function('cpnt', [t], [prob_no_tip(t)], ['t'], ['p0'])
@@ -91,8 +107,9 @@ for t in range(LFWD):
 
 #-----------For every look-forward, initial kapital is a parameter. 
 #-----------To speed things up, we feed it in in CasADi-symbolic form:
-par_kap  = MX.sym('kap', NRxS)
-par_zeta = MX.sym('zeta', LFWD)
+spar_KAP0 = Sparsity(NRxSxT, 1, [0, NRxS], range(NRxS))
+par_kap  = MX.sym('kap', spar_KAP0)
+par_zeta = MX.sym('zeta', NRxSxT)
 
 #==============================================================================
 #-----------variables: these are symbolic expressions of casadi type MX or SX
@@ -341,6 +358,29 @@ def sub_ind_p(
     return val
 
 #==============================================================================
+#-----------alt subindex function
+# allows you to take a subset from a set you already have using one key
+def subset(
+        set1, # A set we already have
+        key,  # A key we want to use to subset the data further
+        d=d_ind_x  # combined dict
+):
+    val = np.array(list(set(set1) & set(d[key])))
+    return val
+
+#----------- another alt subindex function
+# could make the 
+# allows you to feed a vector of an arbitrary number of keys to get a subset of X
+def subset_adapt(
+        keys,  # A vector of all the keys we want to use to subset X, can be any length greater than or equal to 1
+        d=d_ind_x  # combined dict
+):
+    inds = d[keys[0]] # get our first indices
+    for i in range(1,len(keys)):
+        inds = np.array(list(set(inds) & set(d[keys[i]]))) # subset what we already have with the next key we want to subset by
+    return inds
+
+#==============================================================================
 #---------------economic_functions
 #------------------------------------------------------------------------------
 #-----------instantaneous utility as a pure function
@@ -453,7 +493,7 @@ def market_clearing(
         kap,
         E_shock,
         A=MCL_MATRIX,            # market clearing matrix (pooled across reg)
-        adj_cost=adjustment_cost,   # Gamma in Cai-Judd
+        adj_cost=adjustment_cost,# Gamma in Cai-Judd
         E_f=E_output,
 ):
     #sav = knx - (1 - delta) * kap
@@ -494,28 +534,6 @@ def objective(
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
     return val
-#==============================================================================
-#-----------alt subindex function
-# allows you to take a subset from a set you already have using one key
-def subset(
-        set1, # A set we already have
-        key,  # A key we want to use to subset the data further
-        d=d_ind_x  # combined dict
-):
-    val = np.array(list(set(set1) & set(d[key])))
-    return val
-
-#----------- another alt subindex function
-# could make the 
-# allows you to feed a vector of an arbitrary number of keys to get a subset of X
-def subset_adapt(
-        keys,  # A vector of all the keys we want to use to subset X, can be any length greater than or equal to 1
-        d=d_ind_x  # combined dict
-):
-    inds = d[keys[0]] # get our first indices
-    for i in range(1,len(keys)):
-        inds = np.array(list(set(inds) & set(d[keys[i]]))) # subset what we already have with the next key we want to subset by
-    return inds
 
 #==============================================================================
 #-----------constraints: both equality and inequality
@@ -524,38 +542,28 @@ def constraints(
         knx=var_knx,            #casadi vec of symbolic var 
         lab=var_lab,            #casadi vec of symbolic var 
         sav=var_sav,            #casadi vec of symbolic var
-        kap=par_kap,            #casadi vec of symbolic parameters 
+        kap0=par_kap,            #casadi vec of symbolic parameters 
         shk=par_zeta,           #casadi vec of symbolic par
         delta=DELTA,
         lfwd=LFWD,
-        nrxsxt=NRxSxT,
+        nreg=NREG,
         ind_p=sub_ind_p,
         i_r=i_reg,
         t_ind_pol=tim_ind_pol,
         mcl=market_clearing,
         dyn=dynamics
 ):
-    mcl_eqns = MX.zeros(lfwd)
-    dyn_eqns = MX.zeros(nrxsxt)
-    for t in range(lfwd):
-        if t == 0:
-            KAP = kap
-        else:
-            KAP = knx[t_ind_pol("knx", t - 1)]
-        E_SHOCK = shk[t]
-        CON = con[t_ind_pol('con', t)]
-        KNX = knx[t_ind_pol('knx', t)]
-        LAB = lab[t_ind_pol('lab', t)]
-        SAV = sav[t_ind_pol('sav', t)]
-        mcl_eqns[t] = mcl(
-                    con=CON,
-                    knx=KNX,
-                    lab=LAB,
-                    kap=KAP,
-                    sav=SAV,
-                    E_shock=E_SHOCK,
-        )
-        dyn_eqns[t * NRxS: (t + 1) * NRxS ] = dyn(knx=KNX, sav=SAV, kap=KAP)
+    #-------generate the vector of current capital for each t:
+    KAP = vertcat(kap0[: nreg], knx[: -nreg])  #KAP[0]=kap0, kap[t] = knx[t-1] 
+    mcl_eqns = mcl(
+                con=con,
+                knx=knx,
+                lab=lab,
+                kap=KAP,
+                sav=sav,
+                E_shock=shk,
+    )
+    dyn_eqns = dyn(knx=knx, sav=sav, kap=KAP)
     return vertcat(mcl_eqns,  dyn_eqns)
 
 #==============================================================================
@@ -612,7 +620,6 @@ UBX = DM.ones(NVAR) * 1e+1
 LBG = DM.zeros(NSxT + NRxSxT)
 UBG = DM.zeros(NSxT + NRxSxT) #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
 #P0 = DM.ones(NRxS + NTIM)
-P0 = vertcat(KAP0, E_ZETA)
 
 #-----------a function for removing elements from a dict
 #def exclude_keys(d, keys):
@@ -632,13 +639,16 @@ for s in range(LPTH):
     }
     #-------set initial capital and vector of shocks for each plan
     if s == 0:
-        arg[s]['p'] = P0
         arg[s]['x0'] = X0
+        P0 = vertcat(KAP0[s], E_ZETA)
+        arg[s]['p'] = P0
     else:
-        arg[s]['x0'] = res[s - 1]["x"]
-        arg[s]['p'] = vertcat(res[s - 1]['x'][sub_ind_x("knx", 0)], E_ZETA)
+        arg[s]['x0'] = res[s - 1]['x']
+        KAP0[s] = KAP0_MATRIX @ res[s - 1]['x'][sub_ind_x('knx', 0)]
+        P = vertcat(KAP0[s], E_ZETA)
+        arg[s]['p'] = P
         arg[s]['lam_g0'] = res[s - 1]['lam_g']
-
+    print('Initial kapital at the next step', s, 'is', KAP0[s][range(NRxS)])
     #-----------execute solver
     res[s] = solver.call(arg[s])
 #-*-*-*-*-*-loop ends here
@@ -647,7 +657,7 @@ for s in range(LPTH):
 x_sol = dict()
 g_sol = dict()
 for s in range(len(res)):
-    x_sol[s] = np.array(res[s]["x"])
+    x_sol[s] = np.array(res[s]['x'])
     g_sol[s] = np.array(res[s]['g'])
     print(max(abs(g_sol[s])))
 for pk in d_pol_ind_x.keys():
