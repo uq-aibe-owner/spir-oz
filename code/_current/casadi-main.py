@@ -1,5 +1,5 @@
 from casadi import  MX, SX, DM, Function, nlpsol, vertcat, sum1, dot, \
-    Sparsity, transpose
+    Sparsity, transpose, mac
 import numpy as np
 
 
@@ -12,7 +12,7 @@ NREG = 3        # number of regions
 NSEC = 1        # number of sectors
 PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 4        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 9 # path length (Tstar): number of random steps along given path
+NITR = LPTH = 10 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 90e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
@@ -533,7 +533,7 @@ def objective(
     lab_tail = DM.ones(NRxS)    # lab[t_ind_pol('lab', lfwd - 1)] 
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
-    return val
+    return val / 12017.48
 
 #==============================================================================
 #-----------constraints: both equality and inequality
@@ -554,16 +554,17 @@ def constraints(
         dyn=dynamics
 ):
     #-------generate the vector of current capital for each t:
-    KAP = vertcat(kap0[: nreg], knx[: -nreg])  #KAP[0]=kap0, kap[t] = knx[t-1] 
+    full_kap = vertcat(kap0[: nreg], knx[: -nreg])  #KAP[0]=kap0, kap[t] = knx[t-1] 
     mcl_eqns = mcl(
                 con=con,
                 knx=knx,
                 lab=lab,
-                kap=KAP,
+                kap=full_kap,
                 sav=sav,
                 E_shock=shk,
     )
-    dyn_eqns = dyn(knx=knx, sav=sav, kap=KAP)
+    print(mcl_eqns)
+    dyn_eqns = dyn(knx=knx, sav=sav, kap=full_kap)
     return vertcat(mcl_eqns,  dyn_eqns)
 
 #==============================================================================
@@ -579,9 +580,9 @@ nlp = {
 #-----------options for the ipopt (the solver) and casadi (the frontend)
 #------------------------------------------------------------------------------
 ipopt_opts = {
-    'ipopt.print_level' : 5,          #default 5
+    'ipopt.print_level' : 1,          #default 5
     'ipopt.linear_solver' : 'mumps', #default=Mumps
-    'ipopt.obj_scaling_factor' : 1.0, #default=1.0
+    'ipopt.obj_scaling_factor' : -1.0, #default=1.0
     'ipopt.warm_start_init_point' : 'yes', #default=no
     'ipopt.warm_start_bound_push' : 1e-9,
     'ipopt.warm_start_bound_frac' : 1e-9,
@@ -596,7 +597,7 @@ ipopt_opts = {
 casadi_opts = {
     'calc_lam_p' : False,
 }
-opts = ipopt_opts | casadi_opts
+opts = casadi_opts # | ipopt_opts  
 #-----------when HSL is available, we should also be able to run:
 #opts = {"ipopt.linear_solver" : "MA27"}
 #-----------or:
@@ -612,7 +613,7 @@ opts = ipopt_opts | casadi_opts
 
 #==============================================================================
 #-----------A casadi function for us to feed in initial conditions and call:
-solver = nlpsol('solver', 'ipopt', nlp, opts)
+solver = nlpsol('solver', 'bonmin', nlp, opts)
 
 #==============================================================================
 LBX = DM.ones(NVAR) * 1e-1
@@ -656,14 +657,22 @@ for s in range(LPTH):
 #-----------print results
 x_sol = dict()
 g_sol = dict()
+polt_sol = dict()
+pol_sol = dict()
 for s in range(len(res)):
     x_sol[s] = np.array(res[s]['x'])
     g_sol[s] = np.array(res[s]['g'])
     print(max(abs(g_sol[s])))
+    polt_sol[s] = dict()
 for pk in d_pol_ind_x.keys():
+    pol_sol[pk] = []
     print("the solution for", pk, "at steps", range(len(res)), "along path 0 is\n")
     for s in range(len(res)):
-        print(x_sol[s][sub_ind_x(pk, s)], " ")
+        polt_sol[s][pk] = x_sol[s][sub_ind_x(pk, s)]
+        print(polt_sol[s][pk])
+        pol_sol[pk].append(polt_sol[s][pk])
+
     print(".\n")
+
 #print('the full dict of results for step', s, 'is\n', res[s])
 #    print('the vector of variable values for step', s, 'is\n', res[s]['x'])
