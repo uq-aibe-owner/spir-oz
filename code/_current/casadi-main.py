@@ -1,5 +1,6 @@
+import casadi as cas
 from casadi import  MX, SX, DM, Function, nlpsol, vertcat, sum1, dot, \
-    Sparsity, transpose, mac
+    Sparsity, transpose, mac, external
 import numpy as np
 
 
@@ -110,15 +111,22 @@ E_ZETA = SHK_MATRIX @ E_ZETA
 spar_KAP0 = Sparsity(NRxSxT, 1, [0, NRxS], range(NRxS))
 par_kap  = MX.sym('kap', spar_KAP0)
 par_zeta = MX.sym('zeta', NRxSxT)
-
+v_par = vertcat(par_kap, par_zeta)
+l_par = [par_kap, par_zeta]
+d_par = {'kap' : par_kap, 'zeta' : par_zeta}
 #==============================================================================
 #-----------variables: these are symbolic expressions of casadi type MX or SX
 #------------------------------------------------------------------------------
 var_con = MX.sym('con', NRxSxT)
-var_lab = MX.sym('lab', NRxSxT)
 var_knx = MX.sym('knx', NRxSxT)
+var_lab = MX.sym('lab', NRxSxT)
 var_sav = MX.sym('sav', NRxSxT)
-var = vertcat(var_con, var_lab, var_knx, var_sav)
+v_var = vertcat(var_con, var_lab, var_knx, var_sav)
+l_var = [var_con, var_knx, var_lab, var_sav]
+d_var = {'con' : var_con, 'knx' : var_knx, 'lab' : var_lab, 'sav' : var_sav}
+
+l_var_par = [v_var, v_par]
+
 #==============================================================================
 #-----------structure of x using latex notation:
 #---x = [
@@ -464,6 +472,7 @@ def E_output(
         phik=PHIK,              # weight of kap in prod
         phil=PHIL,              # weight of lab in prod
 ):
+    print(kap, lab)
     y = A * (kap ** phik) * (lab ** phil)   # output
     val = E_shock * y
     return val
@@ -516,9 +525,9 @@ def dynamics(
 #==============================================================================
 #-----------objective function (purified)
 def objective(
-        con=var_con,            #casadi vec of symbolic variables
-        knx=var_knx,            #casadi vec of symbolic variables 
-        lab=var_lab,            #casadi vec of symbolic variables 
+        con,                    #casadi vec of symbolic variables
+        knx,                    #casadi vec of symbolic variables 
+        lab,                    #casadi vec of symbolic variables 
         beta=BETA,              # discount factor
         lfwd=LFWD,              # look-forward parameter
         nrxs=NRxS,
@@ -535,6 +544,14 @@ def objective(
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
     return val / 12017.48
 
+cas_obj = Function(
+        'cas_obj',
+        [var_con, var_knx, var_lab],
+        [objective(var_con, var_knx, var_lab)],
+        ['con', 'knx', 'lab'],
+        ['obj'],
+)
+cas_obj_ext = external('cas_obj', './cas_obj.so')
 #==============================================================================
 #-----------constraints: both equality and inequality
 def constraints(
@@ -542,7 +559,7 @@ def constraints(
         knx=var_knx,            #casadi vec of symbolic var 
         lab=var_lab,            #casadi vec of symbolic var 
         sav=var_sav,            #casadi vec of symbolic var
-        kap0=par_kap,            #casadi vec of symbolic parameters 
+        kap=par_kap,            #casadi vec of symbolic parameters 
         shk=par_zeta,           #casadi vec of symbolic par
         delta=DELTA,
         lfwd=LFWD,
@@ -554,7 +571,7 @@ def constraints(
         dyn=dynamics
 ):
     #-------generate the vector of current capital for each t:
-    full_kap = vertcat(kap0[: nreg], knx[: -nreg])  #KAP[0]=kap0, kap[t] = knx[t-1] 
+    full_kap = vertcat(kap[: nreg], knx[: -nreg])  #KAP[0]=kap0, kap[t] = knx[t-1] 
     mcl_eqns = mcl(
                 con=con,
                 knx=knx,
@@ -566,14 +583,30 @@ def constraints(
     print(mcl_eqns)
     dyn_eqns = dyn(knx=knx, sav=sav, kap=full_kap)
     return vertcat(mcl_eqns,  dyn_eqns)
+cas_ctt = Function(
+        'cas_ctt',
+    [var_con, var_knx, var_lab, var_sav, par_kap, par_zeta],
+        [constraints(
+            con=var_con,
+            knx=var_knx,
+            lab=var_lab,
+            sav=var_sav,
+            kap=par_kap,
+            shk=par_zeta,
+        )],
+        ['con', 'knx', 'lab', 'sav', 'kap', 'shk'],
+        ['ctt'],
+)
 
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
-    'x' : var,
-    'p' : vertcat(par_kap, par_zeta),
-    'f' : objective(),
-    'g' : constraints(),
+    'x' : v_var,
+    'p' : v_par,
+    'f' : cas_obj(var_con, var_knx, var_lab), #objective(var_con, var_knx,
+    #-------the following two are seemingly identical:
+    #'g' : constraints()
+    'g' : cas_ctt(var_con, var_knx, var_lab, var_sav, par_kap, par_zeta),
 }
 
 #==============================================================================
