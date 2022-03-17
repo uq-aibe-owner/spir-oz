@@ -1,0 +1,13 @@
+Transportation Model Factors
+
+Freight cost         90.00
+
+
+Plant capacity
+  seattle           350.00
+  san-diego         600.00
+
+Market demand
+  new-york          325.00
+  chicago           300.00
+  topeka            275.00
