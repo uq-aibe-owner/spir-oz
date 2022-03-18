@@ -1,4 +1,6 @@
-from casadi import  MX, SX, DM, Function, nlpsol, vertcat, sum1, dot
+import casadi as cas
+from casadi import  MX, SX, DM, Function, nlpsol, vertcat, sum1, dot, \
+    Sparsity, transpose, mac, external
 import numpy as np
 
 
@@ -9,11 +11,11 @@ import numpy as np
 #-----------basic economic parameters
 NREG = 3        # number of regions
 NSEC = 1        # number of sectors
-PHZN = NTIM = LFWD = 100# look-forward parameter / planning horizon (Delta_s)
-NPOL = 3        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 9 # path length (Tstar): number of random steps along given path
+PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
+NPOL = 4        # number of policy types: con, lab, knx, #itm
+NITR = LPTH = 10 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
-BETA = 99e-2    # discount factor
+BETA = 90e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
@@ -34,7 +36,7 @@ TCS = 75e-2     # Tail Consumption Share
 NRxS = NREG * NSEC
 NSxT = NSEC * NTIM
 NRxSxT = NREG * NSEC * NTIM
-NCTT = 2 * LFWD  # may add more eg. electricity markets are specific
+#NCTT = LFWD # may add more eg. electricity markets are specific
 GAMMA_HAT = 1 - 1 / GAMMA   # utility parameter (consumption denominator)
 ETA_HAT = 1 + 1 / ETA       # utility parameter
 PHIL = 1 - PHIK             # labour's importance in production
@@ -43,17 +45,35 @@ RWU = (1 - PHIK) * DPT * (DPT - DELTA) ** (-1 / GAMMA) # Rel Weight in Utility
 ZETA = DM([ZETA0, ZETA1])
 NVAR = NPOL * NTIM * NREG * NSEC    # total number of variables
 X0 = DM.ones(NVAR)          # our initial warm start 
-# k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
-KAP0 = DM.ones(NRxS)        # how about NSEC ????
+
+#==============================================================================
+#-----------some efficient matrices for constructing constraints, shocks, etc. 
+#-----------market clearing matrix
+b = np.kron(np.arange(NSxT, dtype=np.uint8), np.ones(NREG, dtype=np.uint8))
+s = Sparsity(NSxT, NRxSxT, range(NRxSxT + 1), b)
+MCL_MATRIX = DM(s)
+
+#-----------shock matrix (for the case with uniform shocks across reg)
+SHK_MATRIX = DM(transpose(s))
+
+#-----------suppressed derived economic parameters
+#--GAMS: k0(j) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(j)-1)/(card(j)-1));
+#IVAR = np.arange(0,NVAR)   # index set (as np.array) for all variables
 #for j in range(n_agt):
 #    KAP0[j] = np.exp(
 #        np.log(kap_L) + (np.log(kap_U) - np.log(kap_L)) * j / (n_agt - 1)
 #    )
-#-----------suppressed derived economic parameters
-#IVAR = np.arange(0,NVAR)   # index set (as np.array) for all variables
 
 #==============================================================================
-#-----------uncertainty
+#-----------initial kapital: a casadi parameter 
+KAP0 = dict()
+KAP0[0] = DM.ones(NRxS)        # initial kapital (at t=0)
+#-----------extend with zeros to a vector of length NRxSxT:
+sk = Sparsity(NRxSxT, NREG, range(NREG + 1), range(NREG))
+KAP0_MATRIX = DM(sk)
+KAP0[0] = KAP0_MATRIX @ KAP0[0]
+#==============================================================================
+#-----------uncertainty: a casadi parameter
 #------------------------------------------------------------------------------
 #-----------probabity of no tip by time t as a pure function
 #-----------requires: "import economic_parameters as par"
@@ -80,7 +100,7 @@ def E_zeta(
 E_ZETA = DM.ones(LFWD)
 for t in range(LFWD):
     E_ZETA[t] = E_zeta(t)
-
+E_ZETA = SHK_MATRIX @ E_ZETA
 #-----------if t were a variable, then, for casadi, we could do:
 #t = c.MX.sym('t')
 #pnt = c.Function('cpnt', [t], [prob_no_tip(t)], ['t'], ['p0'])
@@ -88,15 +108,24 @@ for t in range(LFWD):
 
 #-----------For every look-forward, initial kapital is a parameter. 
 #-----------To speed things up, we feed it in in CasADi-symbolic form:
-par_kap  = MX.sym('kap', NRxS)
-par_zeta = MX.sym('zeta', LFWD)
-
+spar_KAP0 = Sparsity(NRxSxT, 1, [0, NRxS], range(NRxS))
+par_kap  = MX.sym('kap', spar_KAP0)
+par_zeta = MX.sym('zeta', NRxSxT)
+v_par = vertcat(par_kap, par_zeta)
+l_par = [par_kap, par_zeta]
+d_par = {'kap' : par_kap, 'zeta' : par_zeta}
 #==============================================================================
 #-----------variables: these are symbolic expressions of casadi type MX or SX
 #------------------------------------------------------------------------------
 var_con = MX.sym('con', NRxSxT)
-var_lab = MX.sym('lab', NRxSxT)
 var_knx = MX.sym('knx', NRxSxT)
+var_lab = MX.sym('lab', NRxSxT)
+var_sav = MX.sym('sav', NRxSxT)
+v_var = vertcat(var_con, var_lab, var_knx, var_sav)
+l_var = [var_con, var_knx, var_lab, var_sav]
+d_var = {'con' : var_con, 'knx' : var_knx, 'lab' : var_lab, 'sav' : var_sav}
+
+l_var_par = [v_var, v_par]
 
 #==============================================================================
 #-----------structure of x using latex notation:
@@ -160,11 +189,13 @@ d_dim = {
     "con": 1,
     "knx": 1,
     "lab": 1,
+    'sav': 1,
 }
 i_pol = {
     "con": 0,
     "knx": 1,
     "lab": 2,
+    'sav': 3,
 }
 i_reg = {
     "aus": 0,
@@ -172,22 +203,22 @@ i_reg = {
     "wld": 2,
 }
 i_sec = {
-    "agr": 0,
-    "for": 1,
-    #"min": 2,
-    #"man": 3,
-    #"uty": 4,
-    #"ctr": 5,
-    #"com": 6,
-    #"tps": 7,
-    #"res": 8,
+    "agri": 0,          # agriculture
+    "fori": 1,          # forestry
+    #"ming": 2,         # mining
+    #"manu": 3,         # manufacturing
+    #"util": 4,         # utilities
+    #"cnst": 5,          # construction
+    #"coms": 6,         # commercial services
+    #"tpts": 7,          # transport
+    #"hhld": 8,          # residential/household
 }
 # Warm start
 pol_S = {
     "con": 4,
     "lab": 1,
     "knx": KAP0,
-    #"sav": 2,
+    "sav": 2,
     #"out": 6,
     #    "itm": 10,
     #    "ITM": 10,
@@ -335,6 +366,29 @@ def sub_ind_p(
     return val
 
 #==============================================================================
+#-----------alt subindex function
+# allows you to take a subset from a set you already have using one key
+def subset(
+        set1, # A set we already have
+        key,  # A key we want to use to subset the data further
+        d=d_ind_x  # combined dict
+):
+    val = np.array(list(set(set1) & set(d[key])))
+    return val
+
+#----------- another alt subindex function
+# could make the 
+# allows you to feed a vector of an arbitrary number of keys to get a subset of X
+def subset_adapt(
+        keys,  # A vector of all the keys we want to use to subset X, can be any length greater than or equal to 1
+        d=d_ind_x  # combined dict
+):
+    inds = d[keys[0]] # get our first indices
+    for i in range(1,len(keys)):
+        inds = np.array(list(set(inds) & set(d[keys[i]]))) # subset what we already have with the next key we want to subset by
+    return inds
+
+#==============================================================================
 #---------------economic_functions
 #------------------------------------------------------------------------------
 #-----------instantaneous utility as a pure function
@@ -411,13 +465,14 @@ def V_tail(
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
 def E_output(
-        kap,                    # kap vector of vars at time t
         lab,                    # lab vector of vars at time t
+        kap,                    # kap vector of vars at time t
         E_shock,                # shock or expected shock at time t
         A=DPT,                  # determistic prod trend
         phik=PHIK,              # weight of kap in prod
         phil=PHIL,              # weight of lab in prod
 ):
+    print(kap, lab)
     y = A * (kap ** phik) * (lab ** phil)   # output
     val = E_shock * y
     return val
@@ -426,39 +481,53 @@ def E_output(
 #-----------adjustment costs of investment as a pure function
 #-----------requires: "import economic_parameters as par"
 def adjustment_cost(
-        kap,
         knx,
+        kap,
         phia=PHIA, # adjustment cost multiplier
 ):
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as
-    val = 1e+0 * (phia / 2) * kap * pow(knx / kap - 1, 2)
+    val = 1e+2 * (phia / 2) * kap * pow(knx / kap - 1, 2)
     return val
+
+#==============================================================================
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
 def market_clearing(
         con,
-        kap,
         knx,
         lab,
+        sav,
+        kap,
         E_shock,
-        delta=DELTA,
-        nreg=NREG,
-        adjc=adjustment_cost, # Gamma in Cai-Judd
+        A=MCL_MATRIX,            # market clearing matrix (pooled across reg)
+        adj_cost=adjustment_cost,# Gamma in Cai-Judd
         E_f=E_output,
 ):
-    sav = knx - (1 - delta) * kap
-    reg_surplus = E_f(kap, lab, E_shock) - con - sav - adjc(kap, knx)
-    val = dot(reg_surplus, DM.ones(nreg))
+    #sav = knx - (1 - delta) * kap
+    out = E_f(kap=kap, lab=lab, E_shock=E_shock)
+    adj = adj_cost(knx=knx, kap=kap)
+    reg_surplus = out - con - sav - adj
+    val = A @ reg_surplus
     return val
 
 #==============================================================================
+#-----------dynamic equations
+def dynamics(
+        knx,
+        sav,
+        kap,
+        delta=DELTA,
+):
+    val = knx - sav - (1 - delta) * kap
+    return val
+#==============================================================================
 #-----------objective function (purified)
 def objective(
-        con=var_con,            #casadi vec of symbolic variables
-        knx=var_knx,            #casadi vec of symbolic variables 
-        lab=var_lab,            #casadi vec of symbolic variables 
+        con,                    #casadi vec of symbolic variables
+        knx,                    #casadi vec of symbolic variables 
+        lab,                    #casadi vec of symbolic variables 
         beta=BETA,              # discount factor
         lfwd=LFWD,              # look-forward parameter
         nrxs=NRxS,
@@ -470,87 +539,83 @@ def objective(
     #-------set tail kapital: extract/locate knx at the planning horizon in knx
     kap_tail = knx[t_ind_pol('knx', lfwd - 1)]
     #-------set tail labour
-    lab_tail =  DM.ones(NRxS) # lab[t_ind_pol('lab', lfwd - 1)]
+    lab_tail = DM.ones(NRxS)    # lab[t_ind_pol('lab', lfwd - 1)] 
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
-    return val
-#==============================================================================
-#-----------alt subindex function
-# allows you to take a subset from a set you already have using one key
-def subset(
-        set1, # A set we already have
-        key,  # A key we want to use to subset the data further
-        d=d_ind_x  # combined dict
-):
-    val = np.array(list(set(set1) & set(d[key])))
-    return val
+    return val / 12017.48
 
-#----------- another alt subindex function
-# could make the 
-# allows you to feed a vector of an arbitrary number of keys to get a subset of X
-def subset_adapt(
-        keys,  # A vector of all the keys we want to use to subset X, can be any length greater than or equal to 1
-        d=d_ind_x  # combined dict
-):
-    inds = d[keys[0]] # get our first indices
-    for i in range(1,len(keys)):
-        inds = np.array(list(set(inds) & set(d[keys[i]]))) # subset what we already have with the next key we want to subset by
-    return inds
-
+cas_obj = Function(
+        'cas_obj',
+        [var_con, var_knx, var_lab],
+        [objective(var_con, var_knx, var_lab)],
+        ['con', 'knx', 'lab'],
+        ['obj'],
+)
+cas_obj_ext = external('cas_obj', './cas_obj.so')
 #==============================================================================
 #-----------constraints: both equality and inequality
 def constraints(
-        kap=par_kap,            #casadi vec of symbolic parameters 
-        shk=par_zeta,           #casadi vec of symbolic parameters
         con=var_con,            #casadi vec of symbolic variables
-        knx=var_knx,            #casadi vec of symbolic variables 
-        lab=var_lab,            #casadi vec of symbolic variables 
+        knx=var_knx,            #casadi vec of symbolic var 
+        lab=var_lab,            #casadi vec of symbolic var 
+        sav=var_sav,            #casadi vec of symbolic var
+        kap=par_kap,            #casadi vec of symbolic parameters 
+        shk=par_zeta,           #casadi vec of symbolic par
         delta=DELTA,
         lfwd=LFWD,
-        nrxsxt=NRxSxT,
+        nreg=NREG,
         ind_p=sub_ind_p,
         i_r=i_reg,
         t_ind_pol=tim_ind_pol,
         mcl=market_clearing,
+        dyn=dynamics
 ):
-    eqns = MX.zeros(lfwd)
-    ineqns = MX.zeros(nrxsxt)
-    for t in range(lfwd):
-        if t == 0:
-            KAP = kap
-        else:
-            KAP = knx[t_ind_pol("knx", t - 1)]
-        E_SHOCK = shk[t]
-        CON = con[t_ind_pol('con', t)]
-        KNX = knx[t_ind_pol('knx', t)]
-        LAB = lab[t_ind_pol('lab', t)]
-        eqns[t] = mcl(
-                    con=CON,
-                    knx=KNX,
-                    lab=LAB,
-                    kap=KAP,
-                    E_shock=E_SHOCK,
-        )
-        sav = knx[t_ind_pol('knx', t)] - (1 - delta) * KAP
-        ineqns[t * NRxS: (t + 1) * NRxS ] = sav
-    return vertcat(eqns, ineqns)
+    #-------generate the vector of current capital for each t:
+    full_kap = vertcat(kap[: nreg], knx[: -nreg])  #KAP[0]=kap0, kap[t] = knx[t-1] 
+    mcl_eqns = mcl(
+                con=con,
+                knx=knx,
+                lab=lab,
+                kap=full_kap,
+                sav=sav,
+                E_shock=shk,
+    )
+    print(mcl_eqns)
+    dyn_eqns = dyn(knx=knx, sav=sav, kap=full_kap)
+    return vertcat(mcl_eqns,  dyn_eqns)
+cas_ctt = Function(
+        'cas_ctt',
+    [var_con, var_knx, var_lab, var_sav, par_kap, par_zeta],
+        [constraints(
+            con=var_con,
+            knx=var_knx,
+            lab=var_lab,
+            sav=var_sav,
+            kap=par_kap,
+            shk=par_zeta,
+        )],
+        ['con', 'knx', 'lab', 'sav', 'kap', 'shk'],
+        ['ctt'],
+)
 
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
-    'x' : vertcat(var_con, var_knx, var_lab),
-    'p' : vertcat(par_kap, par_zeta),
-    'f' : objective(),
-    'g' : constraints(),
+    'x' : v_var,
+    'p' : v_par,
+    'f' : cas_obj(var_con, var_knx, var_lab), #objective(var_con, var_knx,
+    #-------the following two are seemingly identical:
+    #'g' : constraints()
+    'g' : cas_ctt(var_con, var_knx, var_lab, var_sav, par_kap, par_zeta),
 }
 
 #==============================================================================
 #-----------options for the ipopt (the solver) and casadi (the frontend)
 #------------------------------------------------------------------------------
 ipopt_opts = {
-    'ipopt.print_level' : 5,          #default 5
+    'ipopt.print_level' : 1,          #default 5
     'ipopt.linear_solver' : 'mumps', #default=Mumps
-    'ipopt.obj_scaling_factor' : 1.0, #default=1.0
+    'ipopt.obj_scaling_factor' : -1.0, #default=1.0
     'ipopt.warm_start_init_point' : 'yes', #default=no
     'ipopt.warm_start_bound_push' : 1e-9,
     'ipopt.warm_start_bound_frac' : 1e-9,
@@ -565,7 +630,7 @@ ipopt_opts = {
 casadi_opts = {
     'calc_lam_p' : False,
 }
-opts = ipopt_opts | casadi_opts
+opts = casadi_opts # | ipopt_opts  
 #-----------when HSL is available, we should also be able to run:
 #opts = {"ipopt.linear_solver" : "MA27"}
 #-----------or:
@@ -581,52 +646,66 @@ opts = ipopt_opts | casadi_opts
 
 #==============================================================================
 #-----------A casadi function for us to feed in initial conditions and call:
-solver = nlpsol('solver', 'ipopt', nlp, opts)
+solver = nlpsol('solver', 'bonmin', nlp, opts)
 
 #==============================================================================
 LBX = DM.ones(NVAR) * 1e-1
 UBX = DM.ones(NVAR) * 1e+1
 LBG = DM.zeros(NSxT + NRxSxT)
-UBG = vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
+UBG = DM.zeros(NSxT + NRxSxT) #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
 #P0 = DM.ones(NRxS + NTIM)
-P0 = vertcat(KAP0, E_ZETA)
 
 #-----------a function for removing elements from a dict
 #def exclude_keys(d, keys):
 #    return {x: d[x] for x in d if x not in keys}
 
-arg = dict()
-arg = {
-    'lbx' : LBX,
-    'ubx' : UBX,
-    'lbg' : LBG,
-    'ubg' : UBG,
-}
-
 #-*-*-*-*-*-loop/iteration along path starts here 
 #------------------------------------------------------------------------------
 res = dict()
+arg = dict()
 for s in range(LPTH):
+    arg[s] = dict()
+    arg[s] = {
+        'lbx' : LBX,
+        'ubx' : UBX,
+        'lbg' : LBG,
+        'ubg' : UBG,
+    }
     #-------set initial capital and vector of shocks for each plan
     if s == 0:
-        arg['p'] = P0
-        arg['x0'] = X0
+        arg[s]['x0'] = X0
+        P0 = vertcat(KAP0[s], E_ZETA)
+        arg[s]['p'] = P0
     else:
-        arg['x0'] = res[s - 1]["x"]
-        arg['p'] = vertcat(res[s - 1]['x'][sub_ind_x("knx", 0)], E_ZETA)
-        arg['lam_g0'] = res[s - 1]['lam_g']
-
+        arg[s]['x0'] = res[s - 1]['x']
+        KAP0[s] = KAP0_MATRIX @ res[s - 1]['x'][sub_ind_x('knx', 0)]
+        P = vertcat(KAP0[s], E_ZETA)
+        arg[s]['p'] = P
+        arg[s]['lam_g0'] = res[s - 1]['lam_g']
+    print('Initial kapital at the next step', s, 'is', KAP0[s][range(NRxS)])
     #-----------execute solver
-    res[s] = solver.call(arg)
+    res[s] = solver.call(arg[s])
 #-*-*-*-*-*-loop ends here
 #==============================================================================
 #-----------print results
 x_sol = dict()
+g_sol = dict()
+polt_sol = dict()
+pol_sol = dict()
+for s in range(len(res)):
+    x_sol[s] = np.array(res[s]['x'])
+    g_sol[s] = np.array(res[s]['g'])
+    print(max(abs(g_sol[s])))
+    polt_sol[s] = dict()
 for pk in d_pol_ind_x.keys():
+    pol_sol[pk] = []
     print("the solution for", pk, "at steps", range(len(res)), "along path 0 is\n")
     for s in range(len(res)):
-        x_sol[s] = np.array(res[s]["x"])
-        print(x_sol[s][sub_ind_x(pk, s)], " ")
+        polt_sol[s][pk] = x_sol[s][sub_ind_x(pk, s)]
+        print(polt_sol[s][pk])
+        pol_sol[pk].append(polt_sol[s][pk])
+
     print(".\n")
-    #print('the full dict of results for step', s, 'is\n', res[s])
+
+#print('the full dict of results for step', s, 'is\n', res[s])
 #    print('the vector of variable values for step', s, 'is\n', res[s]['x'])
