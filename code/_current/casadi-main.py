@@ -3,7 +3,6 @@ from casadi import  MX, SX, DM, Function, nlpsol, vertcat, sum1, dot, \
     Sparsity, transpose, mac, external
 import numpy as np
 
-
 #==============================================================================
 #-----------parameters
 #------------------------------------------------------------------------------
@@ -13,7 +12,7 @@ NREG = 3        # number of regions
 NSEC = 1        # number of sectors
 PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 4        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 10 # path length (Tstar): number of random steps along given path
+NITR = LPTH = 1 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 99e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
@@ -109,11 +108,20 @@ E_ZETA = SHK_MATRIX @ E_ZETA
 #-----------For every look-forward, initial kapital is a parameter. 
 #-----------To speed things up, we feed it in in CasADi-symbolic form:
 spar_KAP0 = Sparsity(NRxSxT, 1, [0, NRxS], range(NRxS))
-par_kap  = MX.sym('kap', spar_KAP0)
+#par_kap  = MX.sym('kap', spar_KAP0)
 par_zet = MX.sym('zet', NRxSxT)
-v_par = vertcat(par_kap, par_zet)
-l_par = [par_kap, par_zet]
-d_par = {'kap' : par_kap, 'zet' : par_zet}
+v_par = vertcat(
+            #par_kap,
+            par_zet,
+)
+l_par = [
+    #par_kap, 
+    par_zet
+]
+d_par = {
+    #'kap' : par_kap, 
+    'zet' : par_zet
+}
 #==============================================================================
 #-----------variables: these are symbolic expressions of casadi type MX or SX
 #------------------------------------------------------------------------------
@@ -126,7 +134,13 @@ l_var = [var_con, var_knx, var_lab, var_sav]
 d_var = {'con' : var_con, 'knx' : var_knx, 'lab' : var_lab, 'sav' : var_sav}
 
 v_var_par = vertcat(v_var, v_par)
-l_var_par = [var_con, var_knx, var_lab, var_sav, par_kap, par_zet]
+l_var_par = [var_con,
+             var_knx,
+             var_lab,
+             var_sav,
+             #par_kap,
+             par_zet
+             ]
 d_var_par = d_var | d_par
 #==============================================================================
 #-----------structure of x using latex notation:
@@ -490,7 +504,7 @@ def adjustment_cost(
     # we can therefore rewrite the adjustment cost as
     print(knx, kap)
     val = 1e+2 * (phia / 2) * kap * pow(knx / kap - 1, 2)
-    return 0 #val
+    return val
 
 #==============================================================================
 #-----------market clearing/budget constraint as a pure function
@@ -559,7 +573,8 @@ def constraints(
         knx=var_knx,            #casadi vec of symbolic var 
         lab=var_lab,            #casadi vec of symbolic var 
         sav=var_sav,            #casadi vec of symbolic var
-        kap=par_kap,            #casadi vec of symbolic parameters 
+        kap=KAP0[0],
+        #kap=par_kap,            #casadi vec of symbolic parameters 
         zet=par_zet,           #casadi vec of symbolic par
         delta=DELTA,
         lfwd=LFWD,
@@ -600,20 +615,26 @@ cas_ctt = Function(
 nlp = {
     'x' : v_var,
     'p' : v_par,
-    'f' : objective(),
-    #cas_obj(var_con, var_knx, var_lab),
+    #'f' : objective(),
+    'f' : cas_obj(var_con, var_knx, var_lab),
     #-------the following two are seemingly identical:
-    'g' : constraints(),
-    #'g' : cas_ctt(var_con, var_knx, var_lab, var_sav, par_kap, par_zet),
+    #'g' : constraints(),
+    'g' : cas_ctt(var_con,
+                  var_knx,
+                  var_lab,
+                  var_sav,
+                  #par_kap, 
+                  par_zet
+                  ),
 }
 
 #==============================================================================
 #-----------options for the ipopt (the solver) and casadi (the frontend)
 #------------------------------------------------------------------------------
 ipopt_opts = {
-    'ipopt.print_level' : 1,          #default 5
+    'print_level' : 1,          #default 5
     'ipopt.linear_solver' : 'mumps', #default=Mumps
-    'ipopt.obj_scaling_factor' : -1.0, #default=1.0
+    'obj_scaling_factor' : -1.0, #default=1.0
     'ipopt.warm_start_init_point' : 'yes', #default=no
     'ipopt.warm_start_bound_push' : 1e-9,
     'ipopt.warm_start_bound_frac' : 1e-9,
@@ -673,7 +694,9 @@ for s in range(LPTH):
     #-------set initial capital and vector of shocks for each plan
     if s == 0:
         arg[s]['x0'] = X0
-        P0 = vertcat(KAP0[s], E_ZETA)
+        P0 = vertcat(
+                #KAP0[s],
+            E_ZETA)
         arg[s]['p'] = P0
     else:
         arg[s]['x0'] = res[s - 1]['x']
@@ -692,7 +715,7 @@ g_sol = dict()
 polt_sol = dict()
 pol_sol = dict()
 for s in range(len(res)):
-    x_sol[s] = np.array(res[s]['x'])
+    x_sol[s] = res[s]['x']
     g_sol[s] = res[s]['g']
     print('max of absolute values of constraints', max(abs(np.array(g_sol[s]))))
     polt_sol[s] = dict()
