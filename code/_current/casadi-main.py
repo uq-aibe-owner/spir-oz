@@ -15,7 +15,7 @@ PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 4        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 10 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
-BETA = 90e-2    # discount factor
+BETA = 99e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
@@ -110,10 +110,10 @@ E_ZETA = SHK_MATRIX @ E_ZETA
 #-----------To speed things up, we feed it in in CasADi-symbolic form:
 spar_KAP0 = Sparsity(NRxSxT, 1, [0, NRxS], range(NRxS))
 par_kap  = MX.sym('kap', spar_KAP0)
-par_zeta = MX.sym('zeta', NRxSxT)
-v_par = vertcat(par_kap, par_zeta)
-l_par = [par_kap, par_zeta]
-d_par = {'kap' : par_kap, 'zeta' : par_zeta}
+par_zet = MX.sym('zet', NRxSxT)
+v_par = vertcat(par_kap, par_zet)
+l_par = [par_kap, par_zet]
+d_par = {'kap' : par_kap, 'zet' : par_zet}
 #==============================================================================
 #-----------variables: these are symbolic expressions of casadi type MX or SX
 #------------------------------------------------------------------------------
@@ -125,8 +125,9 @@ v_var = vertcat(var_con, var_lab, var_knx, var_sav)
 l_var = [var_con, var_knx, var_lab, var_sav]
 d_var = {'con' : var_con, 'knx' : var_knx, 'lab' : var_lab, 'sav' : var_sav}
 
-l_var_par = [v_var, v_par]
-
+v_var_par = vertcat(v_var, v_par)
+l_var_par = [var_con, var_knx, var_lab, var_sav, par_kap, par_zet]
+d_var_par = d_var | d_par
 #==============================================================================
 #-----------structure of x using latex notation:
 #---x = [
@@ -360,7 +361,7 @@ def sub_ind_x(
 def sub_ind_p(
         key1,             # any key of d_ind_p
         key2,             # any key of d_ind_p
-        d=d_ind_p,   # dict of index categories: kap and zeta 
+        d=d_ind_p,   # dict of index categories: kap and zet 
 ):
     val = np.array(list(sorted(set(d[key1]) & set(d[key2]))))
     return val
@@ -455,7 +456,7 @@ def V_tail(
 ):
     #-------tail consumption vec
     con_tail = tcs * A * kap ** phik
-    lab_tail = lab
+    lab_tail = DM.ones(NRxS)#lab
     #-------tail labour vec normalised to one
     val = u(con=con_tail, lab=lab_tail) / (1 - beta)
     return val
@@ -467,14 +468,14 @@ def V_tail(
 def E_output(
         lab,                    # lab vector of vars at time t
         kap,                    # kap vector of vars at time t
-        E_shock,                # shock or expected shock at time t
+        zet,                # shock or expected shock at time t
         A=DPT,                  # determistic prod trend
         phik=PHIK,              # weight of kap in prod
         phil=PHIL,              # weight of lab in prod
 ):
-    print(kap, lab)
+    print(lab, kap, zet)
     y = A * (kap ** phik) * (lab ** phil)   # output
-    val = E_shock * y
+    val = zet * y
     return val
 
 #==============================================================================
@@ -487,8 +488,9 @@ def adjustment_cost(
 ):
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as
+    print(knx, kap)
     val = 1e+2 * (phia / 2) * kap * pow(knx / kap - 1, 2)
-    return val
+    return 0 #val
 
 #==============================================================================
 #-----------market clearing/budget constraint as a pure function
@@ -500,16 +502,14 @@ def market_clearing(
         lab,
         sav,
         kap,
-        E_shock,
-        A=MCL_MATRIX,            # market clearing matrix (pooled across reg)
+        zet,
         adj_cost=adjustment_cost,# Gamma in Cai-Judd
         E_f=E_output,
 ):
     #sav = knx - (1 - delta) * kap
-    out = E_f(kap=kap, lab=lab, E_shock=E_shock)
+    out = E_f(kap=kap, lab=lab, zet=zet)
     adj = adj_cost(knx=knx, kap=kap)
-    reg_surplus = out - con - sav - adj
-    val = A @ reg_surplus
+    val = out - con - sav - adj
     return val
 
 #==============================================================================
@@ -525,9 +525,9 @@ def dynamics(
 #==============================================================================
 #-----------objective function (purified)
 def objective(
-        con,                    #casadi vec of symbolic variables
-        knx,                    #casadi vec of symbolic variables 
-        lab,                    #casadi vec of symbolic variables 
+        con=var_con,                    #casadi vec of symbolic variables
+        knx=var_knx,                    #casadi vec of symbolic variables 
+        lab=var_lab,                    #casadi vec of symbolic variables 
         beta=BETA,              # discount factor
         lfwd=LFWD,              # look-forward parameter
         nrxs=NRxS,
@@ -542,7 +542,7 @@ def objective(
     lab_tail = DM.ones(NRxS)    # lab[t_ind_pol('lab', lfwd - 1)] 
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
-    return val / 12017.48
+    return val / 12017.48/8.787
 
 cas_obj = Function(
         'cas_obj',
@@ -560,10 +560,11 @@ def constraints(
         lab=var_lab,            #casadi vec of symbolic var 
         sav=var_sav,            #casadi vec of symbolic var
         kap=par_kap,            #casadi vec of symbolic parameters 
-        shk=par_zeta,           #casadi vec of symbolic par
+        zet=par_zet,           #casadi vec of symbolic par
         delta=DELTA,
         lfwd=LFWD,
         nreg=NREG,
+        A=MCL_MATRIX,            # market clearing matrix (pooled across reg)
         ind_p=sub_ind_p,
         i_r=i_reg,
         t_ind_pol=tim_ind_pol,
@@ -571,30 +572,26 @@ def constraints(
         dyn=dynamics
 ):
     #-------generate the vector of current capital for each t:
-    full_kap = vertcat(kap[: nreg], knx[: -nreg])  #KAP[0]=kap0, kap[t] = knx[t-1] 
+    full_kap = vertcat(kap[: nreg], knx[: -nreg])  #time shifted knx = kap
     mcl_eqns = mcl(
                 con=con,
                 knx=knx,
                 lab=lab,
                 kap=full_kap,
                 sav=sav,
-                E_shock=shk,
+                zet=zet,
     )
+    mcl_eqns = A @ mcl_eqns
     print(mcl_eqns)
     dyn_eqns = dyn(knx=knx, sav=sav, kap=full_kap)
+    print(dyn_eqns)
     return vertcat(mcl_eqns,  dyn_eqns)
+ctt = constraints()
 cas_ctt = Function(
         'cas_ctt',
-    [var_con, var_knx, var_lab, var_sav, par_kap, par_zeta],
-        [constraints(
-            con=var_con,
-            knx=var_knx,
-            lab=var_lab,
-            sav=var_sav,
-            kap=par_kap,
-            shk=par_zeta,
-        )],
-        ['con', 'knx', 'lab', 'sav', 'kap', 'shk'],
+        l_var_par,
+        [constraints(**d_var_par)],
+        [key for key in d_var_par.keys()],
         ['ctt'],
 )
 
@@ -603,10 +600,11 @@ cas_ctt = Function(
 nlp = {
     'x' : v_var,
     'p' : v_par,
-    'f' : cas_obj(var_con, var_knx, var_lab), #objective(var_con, var_knx,
+    'f' : objective(),
+    #cas_obj(var_con, var_knx, var_lab),
     #-------the following two are seemingly identical:
-    #'g' : constraints()
-    'g' : cas_ctt(var_con, var_knx, var_lab, var_sav, par_kap, par_zeta),
+    'g' : constraints(),
+    #'g' : cas_ctt(var_con, var_knx, var_lab, var_sav, par_kap, par_zet),
 }
 
 #==============================================================================
@@ -646,13 +644,14 @@ opts = casadi_opts # | ipopt_opts
 
 #==============================================================================
 #-----------A casadi function for us to feed in initial conditions and call:
-solver = nlpsol('solver', 'bonmin', nlp, opts)
+#solver = nlpsol('solver', 'bonmin', nlp, opts)
+solver = nlpsol('solver', 'ipopt', nlp, opts)
 
 #==============================================================================
 LBX = DM.ones(NVAR) * 1e-1
 UBX = DM.ones(NVAR) * 1e+1
-LBG = DM.zeros(NSxT + NRxSxT)
-UBG = DM.zeros(NSxT + NRxSxT) #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
+LBG = np.zeros(NSxT + NRxSxT)
+UBG = np.zeros(NSxT + NRxSxT) #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
 #P0 = DM.ones(NRxS + NTIM)
 
 #-----------a function for removing elements from a dict
@@ -694,8 +693,8 @@ polt_sol = dict()
 pol_sol = dict()
 for s in range(len(res)):
     x_sol[s] = np.array(res[s]['x'])
-    g_sol[s] = np.array(res[s]['g'])
-    print(max(abs(g_sol[s])))
+    g_sol[s] = res[s]['g']
+    print('max of absolute values of constraints', max(abs(np.array(g_sol[s]))))
     polt_sol[s] = dict()
 for pk in d_pol_ind_x.keys():
     pol_sol[pk] = []
