@@ -602,7 +602,7 @@ def constraints(
     print(dyn_eqns)
     return vertcat(mcl_eqns,  dyn_eqns)
 ctt = constraints()
-#------------------------------------------------------------------------------
+
 #-----------casadi function equivalents of contraints()
 cas_ctt = Function(
         'cas_ctt',
@@ -611,31 +611,44 @@ cas_ctt = Function(
         [key for key in d_var_par.keys()],
         ['ctt'],
 )
+#==============================================================================
+#-----------raw functions:
+#------------------------------------------------------------------------------
+#-----------current kapital
+raw_kap = vertcat(KAP0[0][:NRxS], var_knx[:-NRxS])
 
-KAP = vertcat(KAP0[0][:NRxS], var_knx[:-NRxS])
+raw_tl_con = TCS * DPT * var_knx[(LFWD - 1) * NREG : LFWD * NREG] ** PHIK
+raw_tl_lab = DM.ones(NRxS)#lab
 
-mcl_mac = mac(
+raw_obj = (dot(WVEC, utility_vec(var_con, var_lab)) \
+        + BETA ** LFWD * instant_utility(raw_tl_con, raw_tl_lab)) / 1e+11
+
+
+raw_mcl = mac(
     MCL_MATRIX,
     ((((E_ZETA \
-        * 0.412458 * pow(KAP,0.33) \
+        * 0.412458 * pow(raw_kap,0.33) \
          * pow(var_lab, 0.67)) \
        - var_con) \
       - var_sav) \
-     -(25 * KAP * pow(var_knx / KAP - 1, 2))), np.ones(10)
+     -(25 * raw_kap * pow(var_knx / raw_kap - 1, 2))), np.ones(10)
 )
-print(mcl_mac)
+print(raw_mcl)
 
-ctt_dyn = ((var_knx-var_sav)-(0.975*vertcat(KAP)))
+raw_dyn = ((var_knx-var_sav)-(0.975*vertcat(raw_kap)))
+
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
     'x' : v_var,
     'p' : v_par,
     #'f' : objective(),
-    'f' : cas_obj(var_con, var_knx, var_lab),
+    #'f' : cas_obj(var_con, var_knx, var_lab),
+    'f' : raw_obj,
     #-------the following two are seemingly identical:
-    'g' : vertcat(mcl_mac, ctt_dyn)
+    'g' : vertcat(raw_mcl, raw_dyn)
     #'g' : vertcat(mcl_mac, dynamics(knx=var_knx, sav=var_sav, kap=KAP))
+    #-------the following are seemingly identical:
     #'g' : constraints(),
     #'g' : cas_ctt(var_con,
     #              var_knx,
@@ -650,19 +663,19 @@ nlp = {
 #-----------options for the ipopt (the solver) and casadi (the frontend)
 #------------------------------------------------------------------------------
 ipopt_opts = {
-    'print_level' : 1,          #default 5
+    'ipopt.print_level' : 1,          #default 5
     'ipopt.linear_solver' : 'mumps', #default=Mumps
-    'obj_scaling_factor' : -1.0, #default=1.0
-    'ipopt.warm_start_init_point' : 'yes', #default=no
-    'ipopt.warm_start_bound_push' : 1e-9,
-    'ipopt.warm_start_bound_frac' : 1e-9,
-    'ipopt.warm_start_slack_bound_push' : 1e-9,
-    'ipopt.warm_start_slack_bound_frac' : 1e-9,
-    'ipopt.warm_start_mult_bound_push' : 1e-9,
-    'ipopt.fixed_variable_treatment' : 'relax_bounds', #default=
-    'ipopt.print_info_string' : 'yes', #default=no
-    'ipopt.accept_every_trial_step' : 'no', #default=no
-    'ipopt.alpha_for_y' : 'primal', #default=primal, try 'full'?
+    'ipopt.obj_scaling_factor' : -1.0, #default=1.0
+    #'ipopt.warm_start_init_point' : 'yes', #default=no
+    #'ipopt.warm_start_bound_push' : 1e-9,
+    #'ipopt.warm_start_bound_frac' : 1e-9,
+    #'ipopt.warm_start_slack_bound_push' : 1e-9,
+    #'ipopt.warm_start_slack_bound_frac' : 1e-9,
+    #'ipopt.warm_start_mult_bound_push' : 1e-9,
+    #'ipopt.fixed_variable_treatment' : 'relax_bounds', #default=
+    #'ipopt.print_info_string' : 'yes', #default=no
+    #'ipopt.accept_every_trial_step' : 'no', #default=no
+    #'ipopt.alpha_for_y' : 'primal', #default=primal, try 'full'?
 }
 casadi_opts = {
     'calc_lam_p' : False,
