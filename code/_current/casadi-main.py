@@ -14,7 +14,7 @@ PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 4        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 10 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
-BETA = 99e-2    # discount factor
+BETA = 98e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
@@ -24,7 +24,7 @@ GAMMA = 5e-1    # power utility exponent
 DELTA = 25e-3   # depreciation rate
 ETA = 5e-1      # Frisch elasticity of labour supply
 RHO = DM.ones(NREG) # regional weights (population)
-TCS = 75e-2     # Tail Consumption Share
+TCS = 45e-2     # Tail Consumption Share
 #-----------suppressed basic parameters
 #PHIM = 5e-1    # weight of intermediate inputs in production
 #XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
@@ -555,7 +555,7 @@ def objective(
     lab_tail = DM.ones(NRxS)    # lab[t_ind_pol('lab', lfwd - 1)] 
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
-    return val / 12017.48/8.787
+    return val / 1.0869755e+10
 
 cas_obj = Function(
         'cas_obj',
@@ -620,9 +620,9 @@ mcl_mac = mac(
          * pow(var_lab, 0.67)) \
        - var_con) \
       - var_sav) \
-     -(25 * KAP0[0] * pow(var_knx / KAP - 1, 2))), np.ones(10)
+     -(25 * KAP * pow(var_knx / KAP - 1, 2))), np.ones(10)
 )
-
+print(mcl_mac)
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
