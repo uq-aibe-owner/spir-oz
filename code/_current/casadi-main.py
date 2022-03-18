@@ -132,7 +132,6 @@ var_sav = MX.sym('sav', NRxSxT)
 v_var = vertcat(var_con, var_lab, var_knx, var_sav)
 l_var = [var_con, var_knx, var_lab, var_sav]
 d_var = {'con' : var_con, 'knx' : var_knx, 'lab' : var_lab, 'sav' : var_sav}
-
 v_var_par = vertcat(v_var, v_par)
 l_var_par = [var_con,
              var_knx,
