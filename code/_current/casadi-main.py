@@ -12,7 +12,7 @@ NREG = 3        # number of regions
 NSEC = 1        # number of sectors
 PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 4        # number of policy types: con, lab, knx, #itm
-NITR = LPTH = 1 # path length (Tstar): number of random steps along given path
+NITR = LPTH = 10 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
 BETA = 99e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
@@ -90,8 +90,7 @@ for t in range(LPTH):
 #-----------expected shock
 def E_zeta(
         t,
-        zeta=ZETA,
-        pnot=prob_no_tip,
+        zeta=ZETA, pnot=prob_no_tip,
 ):
     val = zeta[1] + pnot(t) * (zeta[0] - zeta[1])
     return val
@@ -108,18 +107,18 @@ E_ZETA = SHK_MATRIX @ E_ZETA
 #-----------For every look-forward, initial kapital is a parameter. 
 #-----------To speed things up, we feed it in in CasADi-symbolic form:
 spar_KAP0 = Sparsity(NRxSxT, 1, [0, NRxS], range(NRxS))
-#par_kap  = MX.sym('kap', spar_KAP0)
+par_kap  = MX.sym('kap', spar_KAP0)
 par_zet = MX.sym('zet', NRxSxT)
 v_par = vertcat(
-            #par_kap,
+            par_kap,
             par_zet,
 )
 l_par = [
-    #par_kap, 
+    par_kap,
     par_zet
 ]
 d_par = {
-    #'kap' : par_kap, 
+    'kap' : par_kap,
     'zet' : par_zet
 }
 #==============================================================================
@@ -132,14 +131,15 @@ var_sav = MX.sym('sav', NRxSxT)
 v_var = vertcat(var_con, var_lab, var_knx, var_sav)
 l_var = [var_con, var_knx, var_lab, var_sav]
 d_var = {'con' : var_con, 'knx' : var_knx, 'lab' : var_lab, 'sav' : var_sav}
+
 v_var_par = vertcat(v_var, v_par)
 l_var_par = [var_con,
              var_knx,
              var_lab,
              var_sav,
-             #par_kap,
-             par_zet
-             ]
+             par_kap,
+             par_zet,
+]
 d_var_par = d_var | d_par
 #==============================================================================
 #-----------structure of x using latex notation:
@@ -572,8 +572,8 @@ def constraints(
         knx=var_knx,            #casadi vec of symbolic var 
         lab=var_lab,            #casadi vec of symbolic var 
         sav=var_sav,            #casadi vec of symbolic var
-        kap=KAP0[0],
-        #kap=par_kap,            #casadi vec of symbolic parameters 
+        #kap=KAP0[0],
+        kap=par_kap,            #casadi vec of symbolic parameters 
         zet=par_zet,           #casadi vec of symbolic par
         delta=DELTA,
         lfwd=LFWD,
@@ -601,12 +601,26 @@ def constraints(
     print(dyn_eqns)
     return vertcat(mcl_eqns,  dyn_eqns)
 ctt = constraints()
+#------------------------------------------------------------------------------
+#-----------casadi function equivalents of contraints()
 cas_ctt = Function(
         'cas_ctt',
         l_var_par,
         [constraints(**d_var_par)],
         [key for key in d_var_par.keys()],
         ['ctt'],
+)
+
+KAP = vertcat(KAP0[0][:NRxS], var_knx[:-NRxS])
+
+mcl_mac = mac(
+    MCL_MATRIX,
+    ((((E_ZETA \
+        * 0.412458 * pow(KAP,0.33) \
+         * pow(var_lab, 0.67)) \
+       - var_con) \
+      - var_sav) \
+     -(25 * KAP0[0] * pow(var_knx / KAP - 1, 2))), np.ones(10)
 )
 
 #==============================================================================
@@ -617,14 +631,15 @@ nlp = {
     #'f' : objective(),
     'f' : cas_obj(var_con, var_knx, var_lab),
     #-------the following two are seemingly identical:
+    'g' : vertcat(mcl_mac, dynamics(knx=var_knx, sav=var_sav, kap=KAP))
     #'g' : constraints(),
-    'g' : cas_ctt(var_con,
-                  var_knx,
-                  var_lab,
-                  var_sav,
-                  #par_kap, 
-                  par_zet
-                  ),
+    #'g' : cas_ctt(var_con,
+    #              var_knx,
+    #              var_lab,
+    #              var_sav,
+    #              par_kap,
+    #              par_zet
+    #              ),
 }
 
 #==============================================================================
@@ -694,8 +709,9 @@ for s in range(LPTH):
     if s == 0:
         arg[s]['x0'] = X0
         P0 = vertcat(
-                #KAP0[s],
-            E_ZETA)
+                KAP0[s],
+                E_ZETA
+        )
         arg[s]['p'] = P0
     else:
         arg[s]['x0'] = res[s - 1]['x']
