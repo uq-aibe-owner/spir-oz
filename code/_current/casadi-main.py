@@ -535,6 +535,7 @@ def dynamics(
 ):
     val = knx - sav - (1 - delta) * kap
     return val
+
 #==============================================================================
 #-----------objective function (purified)
 def objective(
@@ -555,7 +556,7 @@ def objective(
     lab_tail = DM.ones(NRxS)    # lab[t_ind_pol('lab', lfwd - 1)] 
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
-    return val / 1.0869755e+10
+    return val / 1.0869755e+11
 
 cas_obj = Function(
         'cas_obj',
@@ -623,6 +624,8 @@ mcl_mac = mac(
      -(25 * KAP * pow(var_knx / KAP - 1, 2))), np.ones(10)
 )
 print(mcl_mac)
+
+ctt_dyn = ((var_knx-var_sav)-(0.975*vertcat(KAP)))
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
@@ -631,7 +634,8 @@ nlp = {
     #'f' : objective(),
     'f' : cas_obj(var_con, var_knx, var_lab),
     #-------the following two are seemingly identical:
-    'g' : vertcat(mcl_mac, dynamics(knx=var_knx, sav=var_sav, kap=KAP))
+    'g' : vertcat(mcl_mac, ctt_dyn)
+    #'g' : vertcat(mcl_mac, dynamics(knx=var_knx, sav=var_sav, kap=KAP))
     #'g' : constraints(),
     #'g' : cas_ctt(var_con,
     #              var_knx,
