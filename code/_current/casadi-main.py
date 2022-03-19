@@ -14,7 +14,7 @@ PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 4        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 10 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
-BETA = 99e-2    # discount factor
+BETA = 97e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
@@ -264,6 +264,17 @@ for t in range(NTIM):
         indlist.extend(range(NVAR)[start : end : 1])
     d_tim_ind_x[t] = indlist
 
+def s_tim(
+        tim_key,
+        nreg=NREG,
+        nsec=NSEC,
+        ntim=NTIM,
+        d=d_dim,
+):
+    dim = 1                             #= 2 for 2-d variables
+    lpol_t = nreg * nsec ** dim         #length of pol at time t
+    val = slice(int(tim_key) * lpol_t, (int(tim_key) + 1) * lpol_t, 1)
+    return val
 def f_eval(
         vec,
         tim_key,
@@ -275,6 +286,7 @@ def f_eval(
     dim = 1                             #= 2 for 2-d variables
     lpol_t = nreg * nsec ** dim         #length of pol at time t
     val = vec[slice(int(tim_key) * lpol_t, (int(tim_key) + 1) * lpol_t, 1)]
+    return val
     #d_eval = dict()
     #for t in range(NTIM):
     #    indlist = []
@@ -285,7 +297,7 @@ def f_eval(
     #    indlist += range(NVAR)[start : end : 1]
     #    d_eval[t] = sorted(indlist))
     #val = d_eval[tim_key]
-    return val
+
 #-----------the final one can be done with a slicer with stride NSEC ** d_dim
 #-------Dict for locating every variable in a given region
 d_reg_ind_x = dict()
@@ -440,15 +452,15 @@ def weights_vec(
         lfwd=LFWD,              # look forward = NTIM
         nrxs=NRxS,              # 
         r_ind_p=reg_ind_pol,    #
-        ev=f_eval,              #
+        sl=s_tim,              #
         i_r=i_reg
 ):
     beta_vec = np.ones(lpol)
     rho_vec = np.ones(lpol)
     for t in range(lfwd):
-        ev(beta_vec, t) = ev(beta_vec, t) * beta ** t
+        beta_vec[sl(t)] *= beta ** t
     for rk in i_r.keys():
-        rho_vec[r_ind_p(pol_key='con', reg_key=rk)] = rho[i_r[rk]]
+        rho_vec[r_ind_p('con', rk)] = rho[i_r[rk]]
     val = beta_vec * rho_vec
     return val
 
