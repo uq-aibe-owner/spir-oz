@@ -14,7 +14,7 @@ PHZN = NTIM = LFWD = 10# look-forward parameter / planning horizon (Delta_s)
 NPOL = 4        # number of policy types: con, lab, knx, #itm
 NITR = LPTH = 10 # path length (Tstar): number of random steps along given path
 NPTH = 1        # number of paths (in basic example Tstar + 1)
-BETA = 98e-2    # discount factor
+BETA = 99e-2    # discount factor
 ZETA0 = 1       # output multiplier in status quo state 0
 ZETA1 = 95e-2   # output multiplier in tipped state 1
 PHIA = 5e-1     # adjustment cost multiplier
@@ -24,7 +24,7 @@ GAMMA = 5e-1    # power utility exponent
 DELTA = 25e-3   # depreciation rate
 ETA = 5e-1      # Frisch elasticity of labour supply
 RHO = DM.ones(NREG) # regional weights (population)
-TCS = 45e-2     # Tail Consumption Share
+TCS = 75e-2     # Tail Consumption Share
 #-----------suppressed basic parameters
 #PHIM = 5e-1    # weight of intermediate inputs in production
 #XI = np.ones(NRxS) * 1 / NRxS # importance of kapital input to another
@@ -264,18 +264,18 @@ for t in range(NTIM):
         indlist.extend(range(NVAR)[start : end : 1])
     d_tim_ind_x[t] = indlist
 
-def tim_ind_pol(
-        pol_key,
+def f_eval(
+        vec,
         tim_key,
         nreg=NREG,
         nsec=NSEC,
         ntim=NTIM,
-        d=d_dim
+        d=d_dim,
 ):
-    dim = d[pol_key]                #= 2 for 2-d variables
-    lpol_t = nreg * nsec ** dim     #length of pol at time t
-    val = slice(int(tim_key) * lpol_t, (int(tim_key) + 1) * lpol_t, 1)
-    #d_tim_ind_pol = dict()
+    dim = 1                             #= 2 for 2-d variables
+    lpol_t = nreg * nsec ** dim         #length of pol at time t
+    val = vec[slice(int(tim_key) * lpol_t, (int(tim_key) + 1) * lpol_t, 1)]
+    #d_eval = dict()
     #for t in range(NTIM):
     #    indlist = []
     #    d = d_dim[pol_key]
@@ -283,8 +283,8 @@ def tim_ind_pol(
     #    start = t * stride
     #    end = start + stride
     #    indlist += range(NVAR)[start : end : 1]
-    #    d_tim_ind_pol[t] = sorted(indlist))
-    #val = d_tim_ind_pol[tim_key]
+    #    d_eval[t] = sorted(indlist))
+    #val = d_eval[tim_key]
     return val
 #-----------the final one can be done with a slicer with stride NSEC ** d_dim
 #-------Dict for locating every variable in a given region
@@ -440,13 +440,13 @@ def weights_vec(
         lfwd=LFWD,              # look forward = NTIM
         nrxs=NRxS,              # 
         r_ind_p=reg_ind_pol,    #
-        t_ind_pol=tim_ind_pol,  #
+        ev=f_eval,              #
         i_r=i_reg
 ):
-    beta_vec = DM.ones(lpol)
-    rho_vec = DM.ones(lpol)
+    beta_vec = np.ones(lpol)
+    rho_vec = np.ones(lpol)
     for t in range(lfwd):
-        beta_vec[t_ind_pol(pol_key='con', tim_key=t)] *= beta ** t
+        ev(beta_vec, t) * beta ** t
     for rk in i_r.keys():
         rho_vec[r_ind_p(pol_key='con', reg_key=rk)] = rho[i_r[rk]]
     val = beta_vec * rho_vec
@@ -469,7 +469,7 @@ def V_tail(
 ):
     #-------tail consumption vec
     con_tail = tcs * A * kap ** phik
-    lab_tail = DM.ones(NRxS)#lab
+    lab_tail = lab
     #-------tail labour vec normalised to one
     val = u(con=con_tail, lab=lab_tail) / (1 - beta)
     return val
@@ -502,7 +502,7 @@ def adjustment_cost(
     # since sav/kap - delta = (knx - (1 - delta) * kap)/kap - delta = ..
     # we can therefore rewrite the adjustment cost as
     print(knx, kap)
-    val = 1e+2 * (phia / 2) * kap * pow(knx / kap - 1, 2)
+    val = (phia / 2) * kap * pow(knx / kap - 1, 2)
     return val
 
 #==============================================================================
@@ -546,18 +546,20 @@ def objective(
         lfwd=LFWD,              # look-forward parameter
         nrxs=NRxS,
         wvec=WVEC,              # weight vector: across time and regions
-        t_ind_pol=tim_ind_pol,  # function for time indices in policy vectors
+        ev=f_eval,              # evaluate policy vectors at  time t
         u_vec=utility_vec,      # utility function representing flow per t
         v=V_tail,               # tail-sum value function
 ):
     #-------set tail kapital: extract/locate knx at the planning horizon in knx
-    kap_tail = knx[t_ind_pol('knx', lfwd - 1)]
+    kap_tail = ev(knx, lfwd - 1)
     #-------set tail labour
-    lab_tail = DM.ones(NRxS)    # lab[t_ind_pol('lab', lfwd - 1)] 
+    lab_tail = DM.ones(NRxS)    # lab[ev('lab', lfwd - 1)] 
     # sum discounted utility over the planning horizon
     val = dot(wvec, u_vec(con, lab)) + beta ** lfwd * v(kap_tail, lab_tail)
-    return val / 1.0869755e+11
+    return val #/ 1.0869755e+11
 
+#==============================================================================
+#-----------casadi function equivalents of objective():
 cas_obj = Function(
         'cas_obj',
         [var_con, var_knx, var_lab],
@@ -573,16 +575,10 @@ def constraints(
         knx=var_knx,            #casadi vec of symbolic var 
         lab=var_lab,            #casadi vec of symbolic var 
         sav=var_sav,            #casadi vec of symbolic var
-        #kap=KAP0[0],
         kap=par_kap,            #casadi vec of symbolic parameters 
         zet=par_zet,           #casadi vec of symbolic par
-        delta=DELTA,
-        lfwd=LFWD,
         nreg=NREG,
         A=MCL_MATRIX,            # market clearing matrix (pooled across reg)
-        ind_p=sub_ind_p,
-        i_r=i_reg,
-        t_ind_pol=tim_ind_pol,
         mcl=market_clearing,
         dyn=dynamics
 ):
@@ -603,6 +599,7 @@ def constraints(
     return vertcat(mcl_eqns,  dyn_eqns)
 ctt = constraints()
 
+#==============================================================================
 #-----------casadi function equivalents of contraints()
 cas_ctt = Function(
         'cas_ctt',
@@ -618,33 +615,32 @@ cas_ctt = Function(
 raw_kap = vertcat(KAP0[0][:NRxS], var_knx[:-NRxS])
 
 raw_tl_con = TCS * DPT * var_knx[(LFWD - 1) * NREG : LFWD * NREG] ** PHIK
-raw_tl_lab = DM.ones(NRxS)#lab
+raw_tl_lab = var_lab[(LFWD - 1) * NREG : LFWD * NREG] #DM.ones(NRxS)
 
 raw_obj = (dot(WVEC, utility_vec(var_con, var_lab)) \
-        + BETA ** LFWD * instant_utility(raw_tl_con, raw_tl_lab)) / 1e+11
+        + BETA ** LFWD * instant_utility(raw_tl_con, raw_tl_lab)) / (1 - BETA)
 
+#raw_obj *= 0
+
+print('raw_obj', raw_obj)
 
 raw_mcl = mac(
     MCL_MATRIX,
-    ((((E_ZETA \
-        * 0.412458 * pow(raw_kap,0.33) \
-         * pow(var_lab, 0.67)) \
-       - var_con) \
-      - var_sav) \
-     -(25 * raw_kap * pow(var_knx / raw_kap - 1, 2))), np.ones(10)
+    E_output(raw_kap, var_lab, E_ZETA) - var_con - var_sav \
+        - adjustment_cost(var_knx, raw_kap), np.ones(10)
 )
 print(raw_mcl)
 
-raw_dyn = ((var_knx-var_sav)-(0.975*vertcat(raw_kap)))
+raw_dyn = ((var_knx-var_sav)-((1 - DELTA) * vertcat(raw_kap)))
 
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
     'x' : v_var,
     'p' : v_par,
-    #'f' : objective(),
+    'f' : objective(),
     #'f' : cas_obj(var_con, var_knx, var_lab),
-    'f' : raw_obj,
+    #'f' : raw_obj,
     #-------the following two are seemingly identical:
     'g' : vertcat(raw_mcl, raw_dyn)
     #'g' : vertcat(mcl_mac, dynamics(knx=var_knx, sav=var_sav, kap=KAP))
