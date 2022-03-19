@@ -446,7 +446,7 @@ def weights_vec(
     beta_vec = np.ones(lpol)
     rho_vec = np.ones(lpol)
     for t in range(lfwd):
-        ev(beta_vec, t) * beta ** t
+        ev(beta_vec, t) = ev(beta_vec, t) * beta ** t
     for rk in i_r.keys():
         rho_vec[r_ind_p(pol_key='con', reg_key=rk)] = rho[i_r[rk]]
     val = beta_vec * rho_vec
