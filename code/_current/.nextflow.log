@@ -1,0 +1,60 @@
+Mar.-18 13:39:32.653 [main] DEBUG nextflow.cli.Launcher - $> nextflow run hello
+Mar.-18 13:39:32.715 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 21.10.6
+Mar.-18 13:39:32.755 [main] DEBUG nextflow.scm.AssetManager - Listing projects in folder: /Users/patrickocal_mchome/.nextflow/assets
+Mar.-18 13:39:33.388 [main] DEBUG nextflow.scm.AssetManager - Git config: /Users/patrickocal_mchome/.nextflow/assets/nextflow-io/hello/.git/config; branch: master; remote: origin; url: https://github.com/nextflow-io/hello.git
+Mar.-18 13:39:33.403 [main] DEBUG nextflow.scm.AssetManager - Git config: /Users/patrickocal_mchome/.nextflow/assets/nextflow-io/hello/.git/config; branch: master; remote: origin; url: https://github.com/nextflow-io/hello.git
+Mar.-18 13:39:33.551 [main] INFO  nextflow.cli.CmdRun - Launching `nextflow-io/hello` [sharp_bassi] - revision: 4eab81bd42 [master]
+Mar.-18 13:39:34.271 [main] DEBUG nextflow.config.ConfigBuilder - Found config base: /Users/patrickocal_mchome/.nextflow/assets/nextflow-io/hello/nextflow.config
+Mar.-18 13:39:34.273 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /Users/patrickocal_mchome/.nextflow/assets/nextflow-io/hello/nextflow.config
+Mar.-18 13:39:34.280 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Mar.-18 13:39:34.337 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; plugins-dir=/Users/patrickocal_mchome/.nextflow/plugins
+Mar.-18 13:39:34.340 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Mar.-18 13:39:34.353 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Mar.-18 13:39:34.354 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Mar.-18 13:39:34.359 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Mar.-18 13:39:34.369 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Mar.-18 13:39:34.452 [main] DEBUG nextflow.Session - Session uuid: d874ff37-98d7-4bbd-a319-982f9df1a66f
+Mar.-18 13:39:34.452 [main] DEBUG nextflow.Session - Run name: sharp_bassi
+Mar.-18 13:39:34.453 [main] DEBUG nextflow.Session - Executor pool size: 6
+Mar.-18 13:39:34.512 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 21.10.6 build 5660
+  Created: 21-12-2021 16:55 UTC (22-12-2021 02:55 AEDT)
+  System: Mac OS X 10.16
+  Runtime: Groovy 3.0.9 on Java HotSpot(TM) 64-Bit Server VM 12.0.2+10
+  Encoding: UTF-8 (UTF-8)
+  Process: 99811@homemac.modem [192.168.0.219]
+  CPUs: 6 - Mem: 24 GB (540.3 MB) - Swap: 2 GB (1.7 GB)
+Mar.-18 13:39:34.531 [main] DEBUG nextflow.Session - Work-dir: /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/_current/work [Mac OS X]
+Mar.-18 13:39:34.531 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /Users/patrickocal_mchome/.nextflow/assets/nextflow-io/hello/bin
+Mar.-18 13:39:34.544 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Mar.-18 13:39:34.559 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Mar.-18 13:39:34.620 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 7; maxThreads: 1000
+Mar.-18 13:39:34.730 [main] DEBUG nextflow.Session - Session start invoked
+Mar.-18 13:39:34.944 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Mar.-18 13:39:35.066 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Mar.-18 13:39:35.066 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Mar.-18 13:39:35.074 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Mar.-18 13:39:35.082 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=6; memory=24 GB; capacity=6; pollInterval=100ms; dumpInterval=5m
+Mar.-18 13:39:35.115 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 7; maxThreads: 1000
+Mar.-18 13:39:35.244 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: sayHello
+Mar.-18 13:39:35.245 [main] DEBUG nextflow.Session - Ignite dataflow network (2)
+Mar.-18 13:39:35.245 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > sayHello
+Mar.-18 13:39:35.246 [main] DEBUG nextflow.script.ScriptRunner - > Await termination 
+Mar.-18 13:39:35.246 [main] DEBUG nextflow.Session - Session await
+Mar.-18 13:39:35.390 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar.-18 13:39:35.396 [Task submitter] INFO  nextflow.Session - [6b/ea8b7c] Submitted process > sayHello (3)
+Mar.-18 13:39:35.419 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar.-18 13:39:35.419 [Task submitter] INFO  nextflow.Session - [f3/ba246e] Submitted process > sayHello (4)
+Mar.-18 13:39:35.425 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar.-18 13:39:35.425 [Task submitter] INFO  nextflow.Session - [78/0e5c5f] Submitted process > sayHello (2)
+Mar.-18 13:39:35.429 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Mar.-18 13:39:35.430 [Task submitter] INFO  nextflow.Session - [63/cc2c8e] Submitted process > sayHello (1)
+Mar.-18 13:39:35.470 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: sayHello (3); status: COMPLETED; exit: 0; error: -; workDir: /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/_current/work/6b/ea8b7ccf29516144bda838d16af66f]
+Mar.-18 13:39:35.486 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: sayHello (4); status: COMPLETED; exit: 0; error: -; workDir: /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/_current/work/f3/ba246eb1e731b68b9ea3c9e3f4a7a9]
+Mar.-18 13:39:35.488 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: sayHello (2); status: COMPLETED; exit: 0; error: -; workDir: /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/_current/work/78/0e5c5f36d33237c3d4a9f0580a52bb]
+Mar.-18 13:39:35.493 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: sayHello (1); status: COMPLETED; exit: 0; error: -; workDir: /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/_current/work/63/cc2c8eb0a3cfe34c2bd7e3e867d63f]
+Mar.-18 13:39:35.498 [main] DEBUG nextflow.Session - Session await > all process finished
+Mar.-18 13:39:35.594 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Mar.-18 13:39:35.601 [main] DEBUG nextflow.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=4; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=185ms; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=4; peakCpus=4; peakMemory=0; ]
+Mar.-18 13:39:35.625 [main] DEBUG nextflow.CacheDB - Closing CacheDB done
+Mar.-18 13:39:35.649 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
