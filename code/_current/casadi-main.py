@@ -763,29 +763,30 @@ for s in range(len(res)):
     print('max of absolute values of constraints', max(abs(np.array(g_sol[s]))))
     polt_sol[s] = dict()
 for pk in d_pol_ind_x.keys():
-    pol_sol[pk] = []
+    pol_sol[pk] = dict()
     print("the solution for", pk, "at steps", range(len(res)), "along path 0 is\n")
     for s in range(len(res)):
         polt_sol[s][pk] = x_sol[s][sub_ind_x(pk, s)]
         print(polt_sol[s][pk])
-        pol_sol[pk].append(polt_sol[s][pk])
-
+        pol_sol[pk][s] = polt_sol[s][pk]
     print(".\n")
 
 #print('the full dict of results for step', s, 'is\n', res[s])
 #    print('the vector of variable values for step', s, 'is\n', res[s]['x'])
 
-con_sol = np.concatenate(pol_sol['con'])
-knx_sol = np.concatenate(pol_sol['knx'])
-lab_sol = np.concatenate(pol_sol['lab'])
-kap_sol = np.concatenate([3 * np.ones(NREG),
-                          np.reshape(knx_sol[:-NREG], (NRxSxT - NREG, 1))])
-sav_sol = np.concatenate(pol_sol['con'])
+con_sol = np.concatenate([np.concatenate(np.array(pol_sol['con'][i])) \
+                          for i in pol_sol['con'].keys()])
+knx_sol = np.concatenate([np.concatenate(np.array(pol_sol['knx'][i])) \
+                          for i in pol_sol['knx'].keys()])
+lab_sol = np.concatenate([np.concatenate(np.array(pol_sol['lab'][i])) \
+                          for i in pol_sol['lab'].keys()])
+sav_sol = np.concatenate([np.concatenate(np.array(pol_sol['sav'][i])) \
+                          for i in pol_sol['sav'].keys()])
+kap_sol = np.concatenate([[3, 3, 3], knx_sol[:-NREG]])
 out_sol = E_output(lab=lab_sol, kap=kap_sol, zet=E_ZETA)
 out_sol_sec = MCL_MATRIX @ out_sol
 mcl_sol = MCL_MATRIX @ (out_sol - con_sol - sav_sol \
                              - adjustment_cost(knx=knx_sol, kap=kap_sol))
 dyn_sol = np.reshape(dynamics(knx=knx_sol, sav=sav_sol, kap=kap_sol), (10, 3)) 
 print('out_sol_sec:\n', np.transpose(out_sol_sec))
-print('mcl_sol:\n' , np.transpose(mcl_sol))
-print('dyn_sol:\n', dyn_sol)
+
