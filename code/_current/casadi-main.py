@@ -635,30 +635,56 @@ raw_obj = (dot(WVEC, utility_vec(var_con, var_lab)) \
 #raw_obj *= 0
 
 print('raw_obj', raw_obj)
-adj = 0 # MX(.25 * raw_kap * pow(var_knx / raw_kap - 1, 2))
-out = E_ZETA * DPT * pow(raw_kap, .33) * pow(var_lab, .66)
+
+f_raw_adj = Function(
+            'raw_adj',
+            [var_knx],
+            [MX((PHIA / 2) * raw_kap * pow(var_knx / raw_kap - 1, 2))],
+            ['knx'],
+            ['adj'],
+            )
+f_raw_out = Function(
+            'raw_out',
+            [var_lab],
+            [E_ZETA * DPT * pow(raw_kap, .33) * pow(var_lab, .66)],
+            ['lab'],
+            ['out'],
+            )
+
 raw_mcl = mac(
     MCL_MATRIX,
-    E_output(kap=raw_kap, lab=var_lab, zet=E_ZETA) - var_con - var_sav \
-        - adj, np.ones(10)
+    f_raw_out(var_lab) - var_con - var_sav - f_raw_adj(var_knx), DM.ones(LFWD)
 )
-print(raw_mcl)
+G=[]
+for t in range(LFWD):
+    G.append(
+        dot(
+            np.ones(NRxS),
+            (f_raw_out(var_lab) - var_con - var_sav
+             - f_raw_adj(var_knx))[t * NRxS : (t + 1) * NRxS]
+        )
+    )
+#raw_mcl = MCL_MATRIX @ (f_raw_out(var_lab) - var_con - var_sav - f_raw_adj(var_knx))
+print('raw_mcl:\n', raw_mcl)
 #-----------for checking:
 #raw_mcl = market_clearing()
 
 raw_dyn = var_knx - (var_sav + (1 - DELTA) * raw_kap)
 
+G.append(raw_dyn)
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
     'x' : v_var,
-    'p' : v_par,
-    'f' : objective(),
-    'g' : constraints(),
+    #'p' : v_par,
+    #'f' : objective(),
+    #'g' : constraints(),
     #'f' : cas_obj(var_con, var_knx, var_lab),
     #-------the following two are seemingly identical:
     #'f' : raw_obj,
+    'g' : vertcat(*G),
     #'g' : vertcat(raw_mcl, raw_dyn)
+    #'g' : vertcat(G, raw_dyn)
     #'g' : vertcat(raw_mcl, dynamics(knx=var_knx, sav=var_sav, kap=raw_kap)),
     #-------the following are seemingly identical:
     #'g' : cas_ctt(var_con,
@@ -713,8 +739,8 @@ solver = nlpsol('solver', 'ipopt', nlp, opts)
 #==============================================================================
 LBX = DM.ones(NVAR) * 1e-6
 UBX = DM.ones(NVAR) * 1e+1
-LBG = np.zeros(NSxT + NRxSxT)
-UBG = np.zeros(NSxT + NRxSxT) #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
+LBG = np.zeros(NSxT + NRxSxT) - 1e-1
+UBG = np.zeros(NSxT + NRxSxT) + 1e-1 #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
 #P0 = DM.ones(NRxS + NTIM)
 
 #-----------a function for removing elements from a dict
@@ -784,9 +810,10 @@ sav_sol = np.concatenate([np.concatenate(np.array(pol_sol['sav'][i])) \
                           for i in pol_sol['sav'].keys()])
 kap_sol = np.concatenate([[3, 3, 3], knx_sol[:-NREG]])
 out_sol = E_output(lab=lab_sol, kap=kap_sol, zet=E_ZETA)
+adj_sol = adjustment_cost(knx=knx_sol, kap=kap_sol)
 out_sol_sec = MCL_MATRIX @ out_sol
-mcl_sol = MCL_MATRIX @ (out_sol - con_sol - sav_sol \
-                             - adjustment_cost(knx=knx_sol, kap=kap_sol))
+mcl_sol = MCL_MATRIX @ (out_sol - con_sol - sav_sol - adj_sol)
 dyn_sol = np.reshape(dynamics(knx=knx_sol, sav=sav_sol, kap=kap_sol), (10, 3)) 
 print('out_sol_sec:\n', np.transpose(out_sol_sec))
-
+print('mcl_sol:\n', mcl_sol)
+print('dyn_sol:\n', dyn_sol)
