@@ -11,24 +11,24 @@ $include RBC_SCEQ_common.gms
 * run SCEQ
 
 parameter 
-    Cpath(j,tt,npath) simulated consumption paths
-    Ipath(j,tt,npath) simulated investment paths
-    Lpath(j,tt,npath) simulated labor supply paths
-    Kpath(j,tt,npath) simulated capital paths
-    lampath(j,tt,npath) shadow prices for capital transition
+    Cpath(reg,tt,npath) simulated consumption paths
+    Ipath(reg,tt,npath) simulated investment paths
+    Lpath(reg,tt,npath) simulated labor supply paths
+    Kpath(reg,tt,npath) simulated capital paths
+    lampath(reg,tt,npath) shadow prices for capital transition
     mupath(tt,npath) shadow prices for budget constraint
 ;
 
-Cpath(j,tt,npath) = 1;
-Ipath(j,tt,npath) = 1;
-Lpath(j,tt,npath) = 1;
-Kpath(j,tt,npath) = 1;
-lampath(j,tt,npath) = 1;
+Cpath(reg,tt,npath) = 1;
+Ipath(reg,tt,npath) = 1;
+Lpath(reg,tt,npath) = 1;
+Kpath(reg,tt,npath) = 1;
+lampath(reg,tt,npath) = 1;
 mupath(tt,npath) = 1;
     
 set niter / 1*10 /;
 
-Kpath(j,'1',npath) = K0(j);
+Kpath(reg,'1',npath) = K0(reg);
 
 ************************
 * solve the pre-tipping path
@@ -42,7 +42,7 @@ loop(npath$(ord(npath)=1),
 * optimization step
 
 * fix the state variable at s
-    K.fx(j,tt) = Kpath(j,tt,npath);
+    K.fx(reg,tt) = Kpath(reg,tt,npath);
     
 * if tipping event has not happened by the beginning of the current period
     Probs(t)$(ord(t)>=s) = (1-prob1)**(ord(t)-s);
@@ -55,19 +55,19 @@ loop(npath$(ord(npath)=1),
     );
     abort$(busc.MODELSTAT>2 or busc.SOLVESTAT<>1) "FAILED in solving!";
 
-    Cpath(j,tt,npath) = C.l(j,tt);
-    Ipath(j,tt,npath) = Inv.l(j,tt);
-    Lpath(j,tt,npath) = L.l(j,tt);
-    lampath(j,tt,npath) = TransitionCapital.m(j,tt);
+    Cpath(reg,tt,npath) = C.l(reg,tt);
+    Ipath(reg,tt,npath) = Inv.l(reg,tt);
+    Lpath(reg,tt,npath) = L.l(reg,tt);
+    lampath(reg,tt,npath) = TransitionCapital.m(reg,tt);
     mupath(tt,npath) = BudgetConstraint.m(tt);
 
 * simulation step    
-    Kpath(j,tt+1,npath) = (1-delta)*Kpath(j,tt,npath) + Ipath(j,tt,npath);
+    Kpath(reg,tt+1,npath) = (1-delta)*Kpath(reg,tt,npath) + Ipath(reg,tt,npath);
   );
   
 * relax the fixed constraints on the state variables
-  K.lo(j,t) = 0.001;
-  K.up(j,t) = 1000;  
+  K.lo(reg,t) = 0.001;
+  K.up(reg,t) = 1000;  
 );
 
 
@@ -79,7 +79,7 @@ loop(npath$(ord(npath)>1),
     s = ord(npath);
 
 * fix the state variable at s: the tipping event happens at s but the capital at s has not been impacted 
-    K.fx(j,tt)$(ord(tt)=s) = Kpath(j,tt,'1');
+    K.fx(reg,tt)$(ord(tt)=s) = Kpath(reg,tt,'1');
     
     loop(niter,
         solve busc_tipped using nlp maximizing obj;
@@ -89,35 +89,35 @@ loop(npath$(ord(npath)>1),
     );
     abort$(busc_tipped.MODELSTAT>2 or busc_tipped.SOLVESTAT<>1) "FAILED in solving!";
 
-    Cpath(j,tt,npath) = C.l(j,tt);
-    Ipath(j,tt,npath) = Inv.l(j,tt);
-    Lpath(j,tt,npath) = L.l(j,tt);
-    Kpath(j,tt,npath) = K.l(j,tt);
-    lampath(j,tt,npath) = TransitionCapital.m(j,tt);
+    Cpath(reg,tt,npath) = C.l(reg,tt);
+    Ipath(reg,tt,npath) = Inv.l(reg,tt);
+    Lpath(reg,tt,npath) = L.l(reg,tt);
+    Kpath(reg,tt,npath) = K.l(reg,tt);
+    lampath(reg,tt,npath) = TransitionCapital.m(reg,tt);
     mupath(tt,npath) = BudgetConstraint.m(tt);
     
 * relax the fixed constraints on the state variables
-    K.lo(j,t) = 0.001;
-    K.up(j,t) = 1000;  
+    K.lo(reg,t) = 0.001;
+    K.up(reg,t) = 1000;  
 );
 
 ************************
 * compute Euler errors at the pre-tipping path
 
-parameter integrand(j,tt,npath)
-    errs(j,tt);
+parameter integrand(reg,tt,npath)
+    errs(reg,tt);
 
-integrand(j,tt,'1')$(ord(tt)<=Tstar+1) = lampath(j,tt,'1')*(1-delta) + 
-    mupath(tt,'1') * ( A*alpha*((Kpath(j,tt,'1')/Lpath(j,tt,'1'))**(alpha-1)) -
-    phi/2*sqr(Ipath(j,tt,'1')/Kpath(j,tt,'1')-delta) +
-    phi*(Ipath(j,tt,'1')/Kpath(j,tt,'1')-delta)*Ipath(j,tt,'1')/Kpath(j,tt,'1') );
-integrand(j,tt,npath)$(ord(npath)>1 and ord(tt)<=Tstar+1) = lampath(j,tt,npath)*(1-delta) + 
-    mupath(tt,npath) * ( A*alpha*((Kpath(j,tt,npath)/Lpath(j,tt,npath))**(alpha-1)) -
-    phi/2*sqr(Ipath(j,tt,npath)/Kpath(j,tt,npath)-delta) +
-    phi*(Ipath(j,tt,npath)/Kpath(j,tt,npath)-delta)*Ipath(j,tt,npath)/Kpath(j,tt,npath) );
+integrand(reg,tt,'1')$(ord(tt)<=Tstar+1) = lampath(reg,tt,'1')*(1-delta) + 
+    mupath(tt,'1') * ( A*alpha*((Kpath(reg,tt,'1')/Lpath(reg,tt,'1'))**(alpha-1)) -
+    phi/2*sqr(Ipath(reg,tt,'1')/Kpath(reg,tt,'1')-delta) +
+    phi*(Ipath(reg,tt,'1')/Kpath(reg,tt,'1')-delta)*Ipath(reg,tt,'1')/Kpath(reg,tt,'1') );
+integrand(reg,tt,npath)$(ord(npath)>1 and ord(tt)<=Tstar+1) = lampath(reg,tt,npath)*(1-delta) + 
+    mupath(tt,npath) * ( A*alpha*((Kpath(reg,tt,npath)/Lpath(reg,tt,npath))**(alpha-1)) -
+    phi/2*sqr(Ipath(reg,tt,npath)/Kpath(reg,tt,npath)-delta) +
+    phi*(Ipath(reg,tt,npath)/Kpath(reg,tt,npath)-delta)*Ipath(reg,tt,npath)/Kpath(reg,tt,npath) );
    
-errs(j,tt)$(ord(tt)<=Tstar) = abs(1 - beta*( (1-prob1)*integrand(j,tt+1,'1') +
-    prob1*sum(npath$(ord(npath)=ord(tt)+1),integrand(j,tt+1,npath)) ) / lampath(j,tt,'1'));
+errs(reg,tt)$(ord(tt)<=Tstar) = abs(1 - beta*( (1-prob1)*integrand(reg,tt+1,'1') +
+    prob1*sum(npath$(ord(npath)=ord(tt)+1),integrand(reg,tt+1,npath)) ) / lampath(reg,tt,'1'));
     
 ************************
 * Output solutions 
@@ -131,8 +131,8 @@ Put sol_SCEQ_RBC_C;
 loop(npath,
   loop(tt$(ord(tt)<=Tstar),
     put tt.tl::4;    
-    loop(j,
-      put Cpath(j,tt,npath)::6;
+    loop(reg,
+      put Cpath(reg,tt,npath)::6;
     );
     put /;
   );
@@ -147,8 +147,8 @@ Put sol_SCEQ_RBC_K;
 loop(npath,
   loop(tt$(ord(tt)<=Tstar),
     put tt.tl::4;
-    loop(j,
-      put Kpath(j,tt,npath)::6;
+    loop(reg,
+      put Kpath(reg,tt,npath)::6;
     );    
     put /;
   );
@@ -163,8 +163,8 @@ Put sol_SCEQ_RBC_I;
 loop(npath,
   loop(tt$(ord(tt)<=Tstar),
     put tt.tl::4;
-    loop(j,
-      put Ipath(j,tt,npath)::6;
+    loop(reg,
+      put Ipath(reg,tt,npath)::6;
     );    
     put /;
   );
@@ -179,8 +179,8 @@ Put sol_SCEQ_RBC_L;
 loop(npath,
   loop(tt$(ord(tt)<=Tstar),
     put tt.tl::4;
-    loop(j,
-      put Lpath(j,tt,npath)::6;
+    loop(reg,
+      put Lpath(reg,tt,npath)::6;
     );    
     put /;
   );
@@ -194,8 +194,8 @@ Put sol_SCEQ_RBC_err;
 
 loop(tt$(ord(tt)<=Tstar),
     put tt.tl::4;
-    loop(j,
-      put errs(j,tt)::6;
+    loop(reg,
+      put errs(reg,tt)::6;
     ); 
     put /;
 );
