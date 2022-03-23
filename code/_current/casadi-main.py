@@ -125,7 +125,7 @@ d_par = {
 #-----------variables: these are symbolic expressions of casadi type MX or SX
 #------------------------------------------------------------------------------
 var_con = MX.sym('con', NRxSxT)
-var_knx = MX.sym('knx', NRxSxT)
+var_knx = SX.sym('knx', NRxSxT)
 var_lab = MX.sym('lab', NRxSxT)
 var_sav = MX.sym('sav', NRxSxT)
 v_var = vertcat(var_con, var_lab, var_knx, var_sav)
@@ -624,7 +624,8 @@ cas_ctt = Function(
 #-----------raw functions:
 #------------------------------------------------------------------------------
 #-----------current kapital
-raw_kap = np.ones(NRxSxT) #vertcat(par_kap[:NRxS], var_knx[:-NRxS])
+raw_kap = vertcat(par_kap[:NRxS], var_knx[:-NRxS])
+#raw_kap[:NRxS] = 3
 #-----------tail consumption and tail labour for the value function
 raw_tl_con = TCS * DPT * var_knx[(LFWD - 1) * NREG : LFWD * NREG] ** PHIK
 raw_tl_lab = np.ones(NRxS)#var_lab[(LFWD - 1) * NREG : LFWD * NREG]
@@ -635,37 +636,59 @@ raw_obj = (dot(WVEC, utility_vec(var_con, var_lab)) \
 #raw_obj *= 0
 
 print('raw_obj', raw_obj)
-adj = 0 # MX(.25 * raw_kap * pow(var_knx / raw_kap - 1, 2))
-out = E_ZETA * DPT * pow(raw_kap, .33) * pow(var_lab, .66)
+
+f_raw_adj = Function(
+            'raw_adj',
+            [var_knx, raw_kap],
+            [(PHIA / 2) * raw_kap * pow(var_knx / raw_kap - 1, 2)],
+            ['knx', 'kap'],
+            ['adj'],
+            )
+f_raw_out = Function(
+            'raw_out',
+            [var_lab, raw_kap],
+            [E_ZETA * DPT * pow(raw_kap, PHIK) * pow(var_lab, PHIL)],
+            ['lab', 'kap'],
+            ['out'],
+            )
+
 raw_mcl = mac(
     MCL_MATRIX,
-    E_output(kap=raw_kap, lab=var_lab, zet=E_ZETA) - var_con - var_sav \
-        - adj, np.ones(10)
+    f_raw_out(var_lab, raw_kap) - var_con - var_sav - f_raw_adj(var_knx, raw_kap),
+    DM.ones(LFWD),
 )
-print(raw_mcl)
+G=[]
+for t in range(LFWD):
+    net_demand = (f_raw_out(var_lab, raw_kap) - var_con - var_sav \
+                  - f_raw_adj(var_knx, raw_kap))[t * NRxS : (t + 1) * NRxS]
+    G.append(dot(net_demand, np.ones(NRxS)))
+#raw_mcl = MCL_MATRIX @ (f_raw_out(var_lab) - var_con - var_sav - f_raw_adj(var_knx))
+print('raw_mcl:\n', raw_mcl)
 #-----------for checking:
 #raw_mcl = market_clearing()
 
 raw_dyn = var_knx - (var_sav + (1 - DELTA) * raw_kap)
-
+G.append(raw_dyn)
 #==============================================================================
 #-----------dict of arguments for the casadi function nlpsol
 nlp = {
     'x' : v_var,
     'p' : v_par,
-    'f' : objective(),
-    'g' : constraints(),
+    #'f' : objective(),
+    #'g' : constraints(),
     #'f' : cas_obj(var_con, var_knx, var_lab),
     #-------the following two are seemingly identical:
     #'f' : raw_obj,
+    'g' : vertcat(*G),
     #'g' : vertcat(raw_mcl, raw_dyn)
+    #'g' : vertcat(G, raw_dyn)
     #'g' : vertcat(raw_mcl, dynamics(knx=var_knx, sav=var_sav, kap=raw_kap)),
     #-------the following are seemingly identical:
     #'g' : cas_ctt(var_con,
     #              var_knx,
     #              var_lab,
     #              var_sav,
-    #              par_kap,
+    #              raw_kap,
     #              par_zet
     #              ),
 }
@@ -713,8 +736,8 @@ solver = nlpsol('solver', 'ipopt', nlp, opts)
 #==============================================================================
 LBX = DM.ones(NVAR) * 1e-6
 UBX = DM.ones(NVAR) * 1e+1
-LBG = np.zeros(NSxT + NRxSxT)
-UBG = np.zeros(NSxT + NRxSxT) #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
+LBG = np.zeros(NSxT + NRxSxT) - 1e-1
+UBG = np.zeros(NSxT + NRxSxT) + 1e-1 #vertcat(DM.zeros(NSxT), DM.ones(NRxSxT) * 1e+1)
 #P0 = DM.ones(NRxS + NTIM)
 
 #-----------a function for removing elements from a dict
@@ -740,12 +763,12 @@ for s in range(LPTH):
                 KAP0[s],
                 E_ZETA
         )
-        #arg[s]['p'] = P0
+        arg[s]['p'] = P0
     else:
         arg[s]['x0'] = res[s - 1]['x']
         KAP0[s] = KAP0_MATRIX @ res[s - 1]['x'][sub_ind_x('knx', 0)]
         P = vertcat(KAP0[s], E_ZETA)
-        #arg[s]['p'] = P
+        arg[s]['p'] = P
         arg[s]['lam_g0'] = res[s - 1]['lam_g']
     print('Initial kapital at the next step', s, 'is', KAP0[s][range(NRxS)])
     #-----------execute solver
@@ -774,19 +797,20 @@ for pk in d_pol_ind_x.keys():
 #print('the full dict of results for step', s, 'is\n', res[s])
 #    print('the vector of variable values for step', s, 'is\n', res[s]['x'])
 
-con_sol = np.concatenate([np.concatenate(np.array(pol_sol['con'][i])) \
+sol_con = np.concatenate([np.concatenate(np.array(pol_sol['con'][i])) \
                           for i in pol_sol['con'].keys()])
-knx_sol = np.concatenate([np.concatenate(np.array(pol_sol['knx'][i])) \
+sol_knx = np.concatenate([np.concatenate(np.array(pol_sol['knx'][i])) \
                           for i in pol_sol['knx'].keys()])
-lab_sol = np.concatenate([np.concatenate(np.array(pol_sol['lab'][i])) \
+sol_lab = np.concatenate([np.concatenate(np.array(pol_sol['lab'][i])) \
                           for i in pol_sol['lab'].keys()])
-sav_sol = np.concatenate([np.concatenate(np.array(pol_sol['sav'][i])) \
+sol_sav = np.concatenate([np.concatenate(np.array(pol_sol['sav'][i])) \
                           for i in pol_sol['sav'].keys()])
-kap_sol = np.concatenate([[3, 3, 3], knx_sol[:-NREG]])
-out_sol = E_output(lab=lab_sol, kap=kap_sol, zet=E_ZETA)
-out_sol_sec = MCL_MATRIX @ out_sol
-mcl_sol = MCL_MATRIX @ (out_sol - con_sol - sav_sol \
-                             - adjustment_cost(knx=knx_sol, kap=kap_sol))
-dyn_sol = np.reshape(dynamics(knx=knx_sol, sav=sav_sol, kap=kap_sol), (10, 3)) 
-print('out_sol_sec:\n', np.transpose(out_sol_sec))
-
+sol_kap = np.concatenate([[3, 3, 3], sol_knx[:-NREG]])
+sol_out = E_output(lab=sol_lab, kap=sol_kap, zet=E_ZETA)
+sol_adj = adjustment_cost(knx=sol_knx, kap=sol_kap)
+sol_out_sec = MCL_MATRIX @ sol_out
+sol_mcl = MCL_MATRIX @ (sol_out - sol_con - sol_sav - sol_adj)
+sol_dyn = np.reshape(dynamics(knx=sol_knx, sav=sol_sav, kap=sol_kap), (10, 3)) 
+print('sol_out_sec:\n', np.transpose(sol_out_sec))
+print('sol_mcl:\n', sol_mcl)
+print('sol_dyn:\n', sol_dyn)
