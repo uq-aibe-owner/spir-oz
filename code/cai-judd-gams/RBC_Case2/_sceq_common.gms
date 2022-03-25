@@ -126,21 +126,21 @@ Equations
 *==============================================================================
 If ((s <= ord(t) <= DT + s),
 *-----------definitions for intermediate-variables
-  con_sec_eq.. 
+  con_sec_eq(r, t).. 
     con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
   ;
-  lab_sec_eq.. 
+  lab_sec_eq(r, t).. 
     lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
   ;
-  kap_sec_eq.. 
+  kap_sec_eq(r, t).. 
     kap_sec(r, t) =e= (sum(i, KAP_SHR(i) * kap(r, i, t) ** RHO)) ** RHO_INV
   ;
-  out_eq(r, i, t) $ (s <= ord(t) and ord(t) <= s + DT)..
+  out_eq(r, i, t).. 
     out(r, i, t) =e= A * kap(r, i, t) ** ALPH * lab(r, i, t) ** (1 - ALPH)
   ;
   adj_eq(r, i, t)..
     adj(r, i, t) =e= (PHI_ADJ/2) * k(r, i, t) 
-        * sqr(inv(r, i, t) / k(r,t) - DELT))
+      * sqr(inv(r, i, t) / k(r,t) - DELT)
   ;
 *------------------------------------------------------------------------------
 *-----------the sequence of utility flows per region and time period
@@ -162,7 +162,7 @@ If ((s <= ord(t) <= DT + s),
     ;
     );
   ;
-
+);
 *------------------------------------------------------------------------------
 *-----------the objective function
 *------------------------------------------------------------------------------
