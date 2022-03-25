@@ -1,4 +1,4 @@
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 1
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 17:59:31 Page 1
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 C o m p i l a t i o n
 
@@ -21,18 +21,18 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   16  scalar starttime;
   17  starttime = jnow;
   18   
-  19  set reg regions /1*2/;
-  20  alias(r, reg);
+  19  set r rions /1*2/;
+  20  alias(rr, r);
   21  set t time /1*71/;
   22  alias(tt,t);
   23   
-  24  set sec sectors /1*2/;
-  25  alias(j, sec);
+  24  set j sectors /1*2/;
+  25  alias(i, j);
   26  * number of different paths + 1 (the extra one is for error checking at the last period of interest)
   27  set npath /1*10/;
   28   
   29  parameters
-  30  beta        discount rate /0.01/
+  30  beta        discount rate /0.98/
   31  alpha       capital cost share /0.33/
   32  delta       capital stock depreciation /0.5/
   33  phi         adjustment cost parameter /0.5/
@@ -45,14 +45,14 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   40  s           starting period
   41  DT          number of periods for optimization in SCEQ / 10 /
   42  Tstar       number of periods of interest
-  43  tau(reg)      weight
+  43  tau(r)      weight
   44  Imin        lower bound of investment
-  45  k0(reg)       initial capital
+  45  k0(r)       initial capital
   46  kmin        smallest capital    / 0.1 /
   47  kmax        largest capital     / 10 /
   48  zeta1       TFP before shock   / 1 /
   49  zeta2       TFP after shock   / 0.95 /
-  50  prob1       one period probability of regump of TFP / 0.01 /
+  50  prob1       one period probability of jump of TFP / 0.01 /
   51  probs(t)    probability of jump of TFP
   52  TCS         tail consumption share (of output) / .45 /
   53  ;
@@ -67,12 +67,21 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   62  Imin = 0.9*delta;
   63   
   64  *the following is the vector of population weights: it will enter the objective and determine demand
-  65  tau(reg) = 1;
+  65  tau(r) = 1;
   66   
-  67  *the following is initial kapital: it will vary across regions
-  68  *k0(reg) = kmin + (kmax-kmin)*(ord(reg)-1)/(card(reg)-1);
-  69  *k0(reg) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(reg)-1)/(card(reg)-1));
-  70  k0(reg) = 1
+  67  *the following is initial kapital: it will vary across rions
+  68  *k0(r) = kmin + (kmax-kmin)*(ord(r)-1)/(card(r)-1);
+  69  *k0(r) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(r)-1)/(card(r)-1));
+  70  k0(r, sec) = 1
+****          $120,340,148
+**** LINE     62 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 120  Unknown identifier entered as set
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 340  A label/element with the same name exist. You may have forgotten
+****         to quote a label/element reference. For example,
+****         set i / a,b,c /; parameter x(i); x('a') = 10;
   71   
   72  display A, B, etahat, k0;
   73   
@@ -81,271 +90,486 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   76   
   77  Variables
   78  obj objective criterion
-  79  Inv(reg,t) investment
+  79  Inv(r, sec,t) investment
   80  ;
   81   
   82  Positive variables
-  83  k(reg,t) capital stock
-  84  c(reg,t) consumption
-  85  l(reg,t) labor supply
-  86  ;
-  87   
-  88  Equations
-  89  objfun Obregective function
-  90  TransitionCapital(reg,t) Law of Motion for Capital Stock
-  91  BudgetConstraint(t) budget constraint before regump
-  92  TippedBudgetConstraint(t) budget constraint after regump
-  93  ;
-  94   
-  95  objfun ..
-  96  obj =e= sum(reg, tau(reg) *
-  97                      sum(t$(ord(t)>=s and ord(t)<s+DT),
-  98                          beta**(ord(t)-s)*((c(reg,t)**gammahat)/gammahat - B * (l(reg,t)**etahat)/etahat)
-  99                      )
- 100          )
- 101          + sum(reg, tau(reg) *
- 102                      sum(t$(ord(t)=s+DT),
- 103                          beta**(ord(t)-s)*((( (TCS*A*(k(reg,t)**alpha))**gammahat )/gammahat-B)/(1-beta))
- 104                      )
- 105          ) ;
- 106   
- 107  TransitionCapital(reg,t)$(ord(t)>=s and ord(t)<s+DT) ..
- 108  k(reg,t+1) =e= (1-delta)*k(reg,t) + Inv(reg,t);
+  83   
+  84  c(r, sec, t) consumption
+  85  c_agg_sec(r, t) consumption aggregate (across sectors)
+  86  k(r, sec, t) kapital stock
+  87  k_agg_sec(r, t) kapital aggregate (across sectors)
+  88  l(r, sec, t) labor supply
+  89  ;
+  90   
+  91  Equations
+  92  objfun Objective function
+  93  TransitionCapital(r, sec, t) Law of Motion for Capital Stock
+  94  BudgetConstraint(t) budget constraint before jump
+  95  TippedBudgetConstraint(t) budget constraint after jump
+  96  ;
+  97   
+  98  objfun ..
+  99  obj =e= sum(r, tau(r) *
+ 100                      sum(t$(ord(t)>=s and ord(t)<s+DT),
+ 101                          beta**(ord(t)-s)*((c(r, sec, t) )**gammahat)/gammahat - B * (l(r, sec, t)**etahat)/etahat)
+****                                                     $149                                      $149
+**** LINE     93 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 149  Uncontrolled set entered as constant
+ 102                      )
+ 103          )
+****          $408
+**** LINE     95 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 408  Too many ),] or }
+ 104          + sum(r, tau(r) *
+****          $409
+**** LINE     96 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 409  Unrecognizable item - skip to find a new statement
+****        looking for a ';' or a key word to get started again
+ 105                      sum(t$(ord(t)=s+DT),
+ 106                          beta**(ord(t)-s)*((( (TCS*A*(k(r,t)**alpha))**gammahat )/gammahat-B)/(1-beta))
+ 107                      )
+ 108          ) ;
  109   
- 110  BudgetConstraint(t)$(ord(t)>=s and ord(t)<s+DT) ..
- 111  sum(reg, c(reg,t) + Inv(reg,t) + (phi/2)*k(reg,t)*sqr(Inv(reg,t)/k(reg,t)-delta)) =e= sum(reg, (zeta2 + Probs(t)*(zeta1-zeta2))*A*(k(reg,t)**alpha) * (l(reg,t)**(1-alpha)));
+ 110  TransitionCapital(r,t)$(ord(t)>=s and ord(t)<s+DT) ..
+****                       $171,148
+**** LINE    102 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 111  k(r,t+1) =e= (1-delta)*k(r,t) + Inv(r,t);
+****       $171,148               $171,148   $171,148
+**** LINE    103 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
  112   
- 113  TippedBudgetConstraint(t)$(ord(t)>=s and ord(t)<s+DT) ..
- 114  sum(reg, c(reg,t) + Inv(reg,t) + (phi/2)*k(reg,t)*sqr(Inv(reg,t)/k(reg,t)-delta)) =e= sum(reg, zeta2*A*(k(reg,t)**alpha) * (l(reg,t)**(1-alpha)));
+ 113  BudgetConstraint(t)$(ord(t)>=s and ord(t)<s+DT) ..
+ 114  sum(r, c(r,t) + Inv(r,t) + (phi/2)*k(r,t)*sqr(Inv(r,t)/k(r,t)-delta)) =e= sum(r, (zeta2 + Probs(t)*(zeta1-zeta2))*A*(k(r,t)**alpha) * (l(r,t)**(1-alpha)));
+****              $171,148   $171,148         $171,148     $171,148,171,300
+**** LINE    106 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+**** 300  Remaining errors not printed for this line
  115   
- 116  * Bound Constraints
- 117  k.lo(reg,t) = 0.001;
- 118  k.up(reg,t) = 1000;
- 119  c.lo(reg,t) = 0.001;
- 120  c.up(reg,t) = 1000;
- 121  l.lo(reg,t) = 0.001;
- 122  l.up(reg,t) = 1000;
- 123  Inv.lo(reg,t) = Imin;
- 124   
- 125  * Initial Guess
- 126  s = 1;
- 127  Inv.l(reg,t) = delta;
- 128  k.l(reg,t) = 1;
- 129  l.l(reg,t) = 1;
- 130  c.l(reg,t) = A-delta;
- 131  obj.l = sum(reg, tau(reg) * sum(t$(ord(t)>=s and ord(t)<s+DT), beta**(ord(t)-s)*((c.l(reg,t)**gammahat)/gammahat - B * (l.l(reg,t)**etahat)/etahat))) +
- 132    sum(reg, tau(reg) * sum(t$(ord(t)=s+DT), beta**(ord(t)-s)*((((0.75*A*(k.l(reg,t)**alpha))**gammahat)/gammahat-B)/(1-beta))));
- 133   
- 134   
- 135  options limrow = 0, limcol = 0;
- 136  option reslim = 10000;
- 137  option iterlim = 10000;
- 138  option solprint = off;
- 139  option nlp = conopt;
- 140   
- 141  model busc /objfun, TransitionCapital, BudgetConstraint/;
- 142  model busc_tipped /objfun, TransitionCapital, TippedBudgetConstraint/;
+ 116  TippedBudgetConstraint(t)$(ord(t)>=s and ord(t)<s+DT) ..
+ 117  sum(r, c(r,t) + Inv(r,t) + (phi/2)*k(r,t)*sqr(Inv(r,t)/k(r,t)-delta)) =e= sum(r, zeta2*A*(k(r,t)**alpha) * (l(r,t)**(1-alpha)));
+****              $171,148   $171,148         $171,148     $171,148,171,300
+**** LINE    109 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+**** 300  Remaining errors not printed for this line
+ 118   
+ 119  * Bound Constraints
+ 120  k.lo(r,t) = 0.001;
+****          $171,148
+**** LINE    112 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 121  k.up(r,t) = 1000;
+****          $171,148
+**** LINE    113 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 122  c.lo(r,t) = 0.001;
+****          $171,148
+**** LINE    114 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 123  c.up(r,t) = 1000;
+****          $171,148
+**** LINE    115 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 124  l.lo(r,t) = 0.001;
+****          $171,148
+**** LINE    116 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 125  l.up(r,t) = 1000;
+****          $171,148
+**** LINE    117 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 126  Inv.lo(r,t) = Imin;
+****            $171,148
+**** LINE    118 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 127   
+ 128  * Initial Guess
+ 129  s = 1;
+ 130  Inv.l(r,t) = delta;
+****           $171,148
+**** LINE    122 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 131  k.l(r,t) = 1;
+****         $171,148
+**** LINE    123 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 132  l.l(r,t) = 1;
+****         $171,148
+**** LINE    124 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 133  c.l(r,t) = A-delta;
+****         $171,148
+**** LINE    125 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 134  obj.l = sum(r, tau(r) * sum(t$(ord(t)>=s and ord(t)<s+DT), beta**(ord(t)-s)*((c.l(r,t)**gammahat)/gammahat - B * (l.l(r,t)**etahat)/etahat))) +
+****                                                                                       $171,148                            $171,148
+**** LINE    126 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 135    sum(r, tau(r) * sum(t$(ord(t)=s+DT), beta**(ord(t)-s)*((((0.75*A*(k.l(r,t)**alpha))**gammahat)/gammahat-B)/(1-beta))));
+****                                                                             $171,148
+**** LINE    127 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 136   
+ 137   
+ 138  options limrow = 0, limcol = 0;
+ 139  option reslim = 10000;
+ 140  option iterlim = 10000;
+ 141  option solprint = off;
+ 142  option nlp = conopt;
  143   
- 144   
- 145  *********************************************
- 146  * run SCEQ
+ 144  model busc /objfun, TransitionCapital, BudgetConstraint/;
+ 145  model busc_tipped /objfun, TransitionCapital, TippedBudgetConstraint/;
+ 146   
  147   
- 148  parameter
- 149      Cpath(reg,tt,npath) simulated consumption paths
- 150      Ipath(reg,tt,npath) simulated investment paths
- 151      Lpath(reg,tt,npath) simulated labor supply paths
- 152      Kpath(reg,tt,npath) simulated capital paths
- 153      lampath(reg,tt,npath) shadow prices for capital transition
- 154      mupath(tt,npath) shadow prices for budget constraint
- 155  ;
- 156   
- 157  Cpath(reg,tt,npath) = 1;
- 158  Ipath(reg,tt,npath) = 1;
- 159  Lpath(reg,tt,npath) = 1;
- 160  Kpath(reg,tt,npath) = 1;
- 161  lampath(reg,tt,npath) = 1;
- 162  mupath(tt,npath) = 1;
- 163   
- 164  set niter / 1*10 /;
- 165   
- 166  Kpath(reg,'1',npath) = K0(reg);
- 167   
- 168  ************************
- 169  * solve the pre-tipping path
+ 148  *********************************************
+ 149  * run SCEQ
+ 150   
+ 151  parameter
+ 152      Cpath(r,tt,npath) simulated consumption paths
+ 153      Ipath(r,tt,npath) simulated investment paths
+ 154      Lpath(r,tt,npath) simulated labor supply paths
+ 155      Kpath(r,tt,npath) simulated capital paths
+ 156      lampath(r,tt,npath) shadow prices for capital transition
+ 157      mupath(tt,npath) shadow prices for budget constraint
+ 158  ;
+ 159   
+ 160  Cpath(r,tt,npath) = 1;
+ 161  Ipath(r,tt,npath) = 1;
+ 162  Lpath(r,tt,npath) = 1;
+ 163  Kpath(r,tt,npath) = 1;
+ 164  lampath(r,tt,npath) = 1;
+ 165  mupath(tt,npath) = 1;
+ 166   
+ 167  set niter / 1*10 /;
+ 168   
+ 169  Kpath(r,'1',npath) = K0(r);
  170   
- 171  loop(npath$(ord(npath)=1),
- 172  * iterate over periods of interest (the last extra period is for error checking only)
- 173    loop(tt$(ord(tt)<=Tstar+1),
- 174  * starting period
- 175      s = ord(tt);
- 176   
- 177  * optimization step
- 178   
- 179  * fix the state variable at s
- 180      K.fx(reg,tt) = Kpath(reg,tt,npath);
+ 171  ************************
+ 172  * solve the pre-tipping path
+ 173   
+ 174  loop(npath$(ord(npath)=1),
+ 175  * iterate over periods of interest (the last extra period is for error checking only)
+ 176    loop(tt$(ord(tt)<=Tstar+1),
+ 177  * starting period
+ 178      s = ord(tt);
+ 179   
+ 180  * optimization step
  181   
- 182  * if tipping event has not happened by the beginning of the current period
- 183      Probs(t)$(ord(t)>=s) = (1-prob1)**(ord(t)-s);
+ 182  * fix the state variable at s
+ 183      K.fx(r,tt) = Kpath(r,tt,npath);
+****               $171,148
+**** LINE     45 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
  184   
- 185      loop(niter,
- 186          solve busc using nlp maximizing obj;
- 187          if((busc.MODELSTAT<=2 and busc.SOLVESTAT=1),
- 188              break;
- 189          );
- 190      );
- 191      abort$(busc.MODELSTAT>2 or busc.SOLVESTAT<>1) "FAILED in solving!";
- 192   
- 193      Cpath(reg,tt,npath) = C.l(reg,tt);
- 194      Ipath(reg,tt,npath) = Inv.l(reg,tt);
- 195      Lpath(reg,tt,npath) = L.l(reg,tt);
- 196      lampath(reg,tt,npath) = TransitionCapital.m(reg,tt);
- 197      mupath(tt,npath) = BudgetConstraint.m(tt);
- 198   
- 199  * simulation step
- 200      Kpath(reg,tt+1,npath) = (1-delta)*Kpath(reg,tt,npath) + Ipath(reg,tt,npath);
- 201    );
- 202   
- 203  * relax the fixed constraints on the state variables
- 204    K.lo(reg,t) = 0.001;
- 205    K.up(reg,t) = 1000;
- 206  );
- 207   
- 208   
- 209  ************************
- 210  * solve the tipped paths
+ 185  * if tipping event has not happened by the beginning of the current period
+ 186      Probs(t)$(ord(t)>=s) = (1-prob1)**(ord(t)-s);
+ 187   
+ 188      loop(niter,
+ 189          solve busc using nlp maximizing obj;
+****                                             $257
+**** LINE     51 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 257  Solve statement not checked because of previous errors
+ 190          if((busc.MODELSTAT<=2 and busc.SOLVESTAT=1),
+ 191              break;
+ 192          );
+ 193      );
+ 194      abort$(busc.MODELSTAT>2 or busc.SOLVESTAT<>1) "FAILED in solving!";
+ 195   
+ 196      Cpath(r,tt,npath) = C.l(r,tt);
+****                                  $171,148
+**** LINE     58 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 197      Ipath(r,tt,npath) = Inv.l(r,tt);
+****                                    $171,148
+**** LINE     59 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 198      Lpath(r,tt,npath) = L.l(r,tt);
+****                                  $171,148
+**** LINE     60 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 199      lampath(r,tt,npath) = TransitionCapital.m(r,tt);
+****                                              $141  $171,148
+**** LINE     61 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 141  Symbol declared but no values have been assigned. Check for missing
+****         data definition, assignment, data loading or implicit assignment
+****         via a solve statement.
+****         A wild shot: You may have spurious commas in the explanatory
+****         text of a declaration. Check symbol reference list.
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 200      mupath(tt,npath) = BudgetConstraint.m(tt);
+****                                          $141
+**** LINE     62 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 141  Symbol declared but no values have been assigned. Check for missing
+****         data definition, assignment, data loading or implicit assignment
+****         via a solve statement.
+****         A wild shot: You may have spurious commas in the explanatory
+****         text of a declaration. Check symbol reference list.
+ 201   
+ 202  * simulation step
+ 203      Kpath(r,tt+1,npath) = (1-delta)*Kpath(r,tt,npath) + Ipath(r,tt,npath);
+ 204    );
+ 205   
+ 206  * relax the fixed constraints on the state variables
+ 207    K.lo(r,t) = 0.001;
+****            $171,148
+**** LINE     69 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 208    K.up(r,t) = 1000;
+****            $171,148
+**** LINE     70 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 209  );
+ 210   
  211   
- 212  loop(npath$(ord(npath)>1),
- 213  * starting period is also the period that the tipped event happens
- 214      s = ord(npath);
- 215   
- 216  * fix the state variable at s: the tipping event happens at s but the capital at s has not been impacted
- 217      K.fx(reg,tt)$(ord(tt)=s) = Kpath(reg,tt,'1');
+ 212  ************************
+ 213  * solve the tipped paths
+ 214   
+ 215  loop(npath$(ord(npath)>1),
+ 216  * starting period is also the period that the tipped event happens
+ 217      s = ord(npath);
  218   
- 219      loop(niter,
- 220          solve busc_tipped using nlp maximizing obj;
- 221          if((busc_tipped.MODELSTAT<=2 and busc_tipped.SOLVESTAT=1),
- 222              break;
- 223          );
- 224      );
- 225      abort$(busc_tipped.MODELSTAT>2 or busc_tipped.SOLVESTAT<>1) "FAILED in solving!";
- 226   
- 227      Cpath(reg,tt,npath) = C.l(reg,tt);
- 228      Ipath(reg,tt,npath) = Inv.l(reg,tt);
- 229      Lpath(reg,tt,npath) = L.l(reg,tt);
- 230      Kpath(reg,tt,npath) = K.l(reg,tt);
- 231      lampath(reg,tt,npath) = TransitionCapital.m(reg,tt);
- 232      mupath(tt,npath) = BudgetConstraint.m(tt);
- 233   
- 234  * relax the fixed constraints on the state variables
- 235      K.lo(reg,t) = 0.001;
- 236      K.up(reg,t) = 1000;
- 237  );
- 238   
- 239  ************************
- 240  * compute Euler errors at the pre-tipping path
+ 219  * fix the state variable at s: the tipping event happens at s but the capital at s has not been impacted
+ 220      K.fx(r,tt)$(ord(tt)=s) = Kpath(r,tt,'1');
+****               $171,148
+**** LINE     82 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 221   
+ 222      loop(niter,
+ 223          solve busc_tipped using nlp maximizing obj;
+****                                                    $257
+**** LINE     85 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 257  Solve statement not checked because of previous errors
+ 224          if((busc_tipped.MODELSTAT<=2 and busc_tipped.SOLVESTAT=1),
+ 225              break;
+ 226          );
+ 227      );
+ 228      abort$(busc_tipped.MODELSTAT>2 or busc_tipped.SOLVESTAT<>1) "FAILED in solving!";
+ 229   
+ 230      Cpath(r,tt,npath) = C.l(r,tt);
+****                                  $171,148
+**** LINE     92 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 231      Ipath(r,tt,npath) = Inv.l(r,tt);
+****                                    $171,148
+**** LINE     93 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 232      Lpath(r,tt,npath) = L.l(r,tt);
+****                                  $171,148
+**** LINE     94 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 233      Kpath(r,tt,npath) = K.l(r,tt);
+****                                  $171,148
+**** LINE     95 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 234      lampath(r,tt,npath) = TransitionCapital.m(r,tt);
+****                                                    $171,148
+**** LINE     96 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 235      mupath(tt,npath) = BudgetConstraint.m(tt);
+ 236   
+ 237  * relax the fixed constraints on the state variables
+ 238      K.lo(r,t) = 0.001;
+****              $171,148
+**** LINE    100 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 239      K.up(r,t) = 1000;
+****              $171,148
+**** LINE    101 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
+ 240  );
  241   
- 242  parameter integrand(reg,tt,npath)
- 243      errs(reg,tt);
+ 242  ************************
+ 243  * compute Euler errors at the pre-tipping path
  244   
- 245  integrand(reg,tt,'1')$(ord(tt)<=Tstar+1) = lampath(reg,tt,'1')*(1-delta) +
- 246      mupath(tt,'1') * ( A*alpha*((Kpath(reg,tt,'1')/Lpath(reg,tt,'1'))**(alpha-1)) -
- 247      phi/2*sqr(Ipath(reg,tt,'1')/Kpath(reg,tt,'1')-delta) +
- 248      phi*(Ipath(reg,tt,'1')/Kpath(reg,tt,'1')-delta)*Ipath(reg,tt,'1')/Kpath(reg,tt,'1') );
- 249  integrand(reg,tt,npath)$(ord(npath)>1 and ord(tt)<=Tstar+1) = lampath(reg,tt,npath)*(1-delta) +
- 250      mupath(tt,npath) * ( A*alpha*((Kpath(reg,tt,npath)/Lpath(reg,tt,npath))**(alpha-1)) -
- 251      phi/2*sqr(Ipath(reg,tt,npath)/Kpath(reg,tt,npath)-delta) +
- 252      phi*(Ipath(reg,tt,npath)/Kpath(reg,tt,npath)-delta)*Ipath(reg,tt,npath)/Kpath(reg,tt,npath) );
- 253   
- 254  errs(reg,tt)$(ord(tt)<=Tstar) = abs(1 - beta*( (1-prob1)*integrand(reg,tt+1,'1') +
- 255      prob1*sum(npath$(ord(npath)=ord(tt)+1),integrand(reg,tt+1,npath)) ) / lampath(reg,tt,'1'));
+ 245  parameter integrand(r,tt,npath)
+ 246      errs(r,tt);
+ 247   
+ 248  integrand(r,tt,'1')$(ord(tt)<=Tstar+1) = lampath(r,tt,'1')*(1-delta) +
+ 249      mupath(tt,'1') * ( A*alpha*((Kpath(r,tt,'1')/Lpath(r,tt,'1'))**(alpha-1)) -
+ 250      phi/2*sqr(Ipath(r,tt,'1')/Kpath(r,tt,'1')-delta) +
+ 251      phi*(Ipath(r,tt,'1')/Kpath(r,tt,'1')-delta)*Ipath(r,tt,'1')/Kpath(r,tt,'1') );
+ 252  integrand(r,tt,npath)$(ord(npath)>1 and ord(tt)<=Tstar+1) = lampath(r,tt,npath)*(1-delta) +
+ 253      mupath(tt,npath) * ( A*alpha*((Kpath(r,tt,npath)/Lpath(r,tt,npath))**(alpha-1)) -
+ 254      phi/2*sqr(Ipath(r,tt,npath)/Kpath(r,tt,npath)-delta) +
+ 255      phi*(Ipath(r,tt,npath)/Kpath(r,tt,npath)-delta)*Ipath(r,tt,npath)/Kpath(r,tt,npath) );
  256   
- 257  ************************
- 258  * Output solutions
+ 257  errs(r,tt)$(ord(tt)<=Tstar) = abs(1 - beta*( (1-prob1)*integrand(r,tt+1,'1') +
+ 258      prob1*sum(npath$(ord(npath)=ord(tt)+1),integrand(r,tt+1,npath)) ) / lampath(r,tt,'1'));
  259   
- 260  File sol_SCEQ_RBC_C /sol_SCEQ_RBC_C.csv/;
- 261  sol_SCEQ_RBC_C.pc=5;
- 262  sol_SCEQ_RBC_C.pw=4000;
- 263   
- 264  Put sol_SCEQ_RBC_C;
- 265   
- 266  loop(npath,
- 267    loop(tt$(ord(tt)<=Tstar),
- 268      put tt.tl::4;
- 269      loop(reg,
- 270        put Cpath(reg,tt,npath)::6;
- 271      );
- 272      put /;
- 273    );
- 274  );
- 275   
- 276  File sol_SCEQ_RBC_K /sol_SCEQ_RBC_K.csv/;
- 277  sol_SCEQ_RBC_K.pc=5;
- 278  sol_SCEQ_RBC_K.pw=4000;
- 279   
- 280  Put sol_SCEQ_RBC_K;
- 281   
- 282  loop(npath,
- 283    loop(tt$(ord(tt)<=Tstar),
- 284      put tt.tl::4;
- 285      loop(reg,
- 286        put Kpath(reg,tt,npath)::6;
- 287      );
- 288      put /;
- 289    );
- 290  );
- 291   
- 292  File sol_SCEQ_RBC_I /sol_SCEQ_RBC_I.csv/;
- 293  sol_SCEQ_RBC_I.pc=5;
- 294  sol_SCEQ_RBC_I.pw=4000;
- 295   
- 296  Put sol_SCEQ_RBC_I;
- 297   
- 298  loop(npath,
- 299    loop(tt$(ord(tt)<=Tstar),
- 300      put tt.tl::4;
- 301      loop(reg,
- 302        put Ipath(reg,tt,npath)::6;
- 303      );
- 304      put /;
- 305    );
- 306  );
- 307   
- 308  File sol_SCEQ_RBC_L /sol_SCEQ_RBC_L.csv/;
- 309  sol_SCEQ_RBC_L.pc=5;
- 310  sol_SCEQ_RBC_L.pw=4000;
- 311   
- 312  Put sol_SCEQ_RBC_L;
- 313   
- 314  loop(npath,
- 315    loop(tt$(ord(tt)<=Tstar),
- 316      put tt.tl::4;
- 317      loop(reg,
- 318        put Lpath(reg,tt,npath)::6;
- 319      );
- 320      put /;
- 321    );
- 322  );
- 323   
- 324  File sol_SCEQ_RBC_err /sol_SCEQ_RBC_err.csv/;
- 325  sol_SCEQ_RBC_err.pc=5;
- 326  sol_SCEQ_RBC_err.pw=4000;
- 327   
- 328  Put sol_SCEQ_RBC_err;
- 329   
- 330  loop(tt$(ord(tt)<=Tstar),
- 331      put tt.tl::4;
- 332      loop(reg,
- 333        put errs(reg,tt)::6;
- 334      );
- 335      put /;
- 336  );
- 337   
- 338  * display the running time in minutes
- 339  scalar elapsed;
- 340  elapsed = (jnow - starttime)*24*60;
- 341  display elapsed;
- 342   
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 2
+ 260  ************************
+ 261  * Output solutions
+ 262   
+ 263  File sol_SCEQ_RBC_C /sol_SCEQ_RBC_C.csv/;
+ 264  sol_SCEQ_RBC_C.pc=5;
+ 265  sol_SCEQ_RBC_C.pw=4000;
+ 266   
+ 267  Put sol_SCEQ_RBC_C;
+ 268   
+ 269  loop(npath,
+ 270    loop(tt$(ord(tt)<=Tstar),
+ 271      put tt.tl::4;
+ 272      loop(r,
+ 273        put Cpath(r,tt,npath)::6;
+ 274      );
+ 275      put /;
+ 276    );
+ 277  );
+ 278   
+ 279  File sol_SCEQ_RBC_K /sol_SCEQ_RBC_K.csv/;
+ 280  sol_SCEQ_RBC_K.pc=5;
+ 281  sol_SCEQ_RBC_K.pw=4000;
+ 282   
+ 283  Put sol_SCEQ_RBC_K;
+ 284   
+ 285  loop(npath,
+ 286    loop(tt$(ord(tt)<=Tstar),
+ 287      put tt.tl::4;
+ 288      loop(r,
+ 289        put Kpath(r,tt,npath)::6;
+ 290      );
+ 291      put /;
+ 292    );
+ 293  );
+ 294   
+ 295  File sol_SCEQ_RBC_I /sol_SCEQ_RBC_I.csv/;
+ 296  sol_SCEQ_RBC_I.pc=5;
+ 297  sol_SCEQ_RBC_I.pw=4000;
+ 298   
+ 299  Put sol_SCEQ_RBC_I;
+ 300   
+ 301  loop(npath,
+ 302    loop(tt$(ord(tt)<=Tstar),
+ 303      put tt.tl::4;
+ 304      loop(r,
+ 305        put Ipath(r,tt,npath)::6;
+ 306      );
+ 307      put /;
+ 308    );
+ 309  );
+ 310   
+ 311  File sol_SCEQ_RBC_L /sol_SCEQ_RBC_L.csv/;
+ 312  sol_SCEQ_RBC_L.pc=5;
+ 313  sol_SCEQ_RBC_L.pw=4000;
+ 314   
+ 315  Put sol_SCEQ_RBC_L;
+ 316   
+ 317  loop(npath,
+ 318    loop(tt$(ord(tt)<=Tstar),
+ 319      put tt.tl::4;
+ 320      loop(r,
+ 321        put Lpath(r,tt,npath)::6;
+ 322      );
+ 323      put /;
+ 324    );
+ 325  );
+ 326   
+ 327  File sol_SCEQ_RBC_err /sol_SCEQ_RBC_err.csv/;
+ 328  sol_SCEQ_RBC_err.pc=5;
+ 329  sol_SCEQ_RBC_err.pw=4000;
+ 330   
+ 331  Put sol_SCEQ_RBC_err;
+ 332   
+ 333  loop(tt$(ord(tt)<=Tstar),
+ 334      put tt.tl::4;
+ 335      loop(r,
+ 336        put errs(r,tt)::6;
+ 337      );
+ 338      put /;
+ 339  );
+ 340   
+ 341  * display the running time in minutes
+ 342  scalar elapsed;
+ 343  elapsed = (jnow - starttime)*24*60;
+ 344  display elapsed;
+ 345   
+
+**** 107 ERROR(S)   0 WARNING(S)
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 17:59:31 Page 2
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 Include File Summary
 
@@ -356,1519 +580,7 @@ Include File Summary
      2        8 INCLUDE        1       8  ./Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
 
 
-COMPILATION TIME     =        0.003 SECONDS      3 MB  38.1.0 a1a3b545 DEX-DEG
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 3
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-E x e c u t i o n
-
-
-----     72 PARAMETER A                    =      301.515  technology parameter
-            PARAMETER B                    =        0.002  relative weight of consumption and leisure
-            PARAMETER etahat               =        3.000  utility parameter
-
-----     72 PARAMETER k0  initial capital
-
-1 1.000,    2 1.000
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 4
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   1
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 1
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 5
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.019     10000.000
- ITERATION COUNT, LIMIT         5         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.007 seconds
-   of which: Function evaluations             0.001 = 14.3%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 6
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   2
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 2
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 7
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.005     10000.000
- ITERATION COUNT, LIMIT         9         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.001 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 8
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   3
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 3
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 9
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         8         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.001 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 10
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   4
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 4
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 11
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.005     10000.000
- ITERATION COUNT, LIMIT         8         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.001 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 12
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   5
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.001 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 5
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 13
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         8         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.001 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.001 =100.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 14
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   6
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 6
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 15
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         8         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.001 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 16
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   7
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.001 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 7
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 17
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        14         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 18
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   8
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 8
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 19
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.005     10000.000
- ITERATION COUNT, LIMIT        12         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 20
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   9
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 9
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 21
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        12         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.001 seconds
-   of which: Function evaluations             0.001 =100.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 22
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 186
-
-
-LOOPS                                npath   1
-                                        tt   10
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              44
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 1
-                                         tt 10
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 23
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 186
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  186
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0082
-
- RESOURCE USAGE, LIMIT          0.005     10000.000
- ITERATION COUNT, LIMIT        13         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.001 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 24
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   2
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 2
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 25
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        22         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.001 = 50.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 26
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   3
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 3
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 27
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        18         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.001 = 50.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             2nd Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 28
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   4
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.001 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 4
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 29
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.007     10000.000
- ITERATION COUNT, LIMIT        18         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.001 = 50.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             2nd Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 30
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   5
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 5
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 31
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        18         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.001 = 50.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             2nd Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 32
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   6
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 6
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 33
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        17         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             2nd Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 34
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   7
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 7
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 35
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        16         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.001 = 50.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 36
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   8
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 8
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 37
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.007     10000.000
- ITERATION COUNT, LIMIT        17         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             2nd Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 38
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   9
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 9
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 39
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        19         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.001 = 50.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             2nd Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 40
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc_tipped Using NLP From line 220
-
-
-LOOPS                                npath   10
-                                     niter   1
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           3     SINGLE EQUATIONS           31
-BLOCKS OF VARIABLES           5     SINGLE VARIABLES           83
-NON ZERO ELEMENTS           183     NON LINEAR N-Z            102
-CODE LENGTH                 632     CONSTANT POOL              35
-
-
-GENERATION TIME      =        0.002 SECONDS      4 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S              npath 10
-                                      niter 1
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 41
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc_tipped Using NLP From line 220
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc_tipped         OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  220
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      2 Locally Optimal
-**** OBJECTIVE VALUE               -0.0086
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT        15         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
-    The model has 83 variables and 31 constraints
-    with 183 Jacobian elements, 102 of which are nonlinear.
-    The Hessian of the Lagrangian has 82 elements on the diagonal,
-    40 elements below the diagonal, and 82 nonlinear variables.
- 
- ** Warning **  The variance of the derivatives in the initial
-                point is large (= 4.0 ). A better initial
-                point, a better scaling, or better bounds on the
-                variables will probably help the optimization.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  1
- 
- 
- ** Optimal solution. Reduced gradient less than tolerance.
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.002 =100.0%
-             1st Derivative evaluations       0.000 =  0.0%
-             2nd Derivative evaluations       0.000 =  0.0%
-             Directional 2nd Derivative       0.000 =  0.0%
- 
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             0 INFEASIBLE
-                             0  UNBOUNDED
-                             0     ERRORS
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 13:18:25 Page 42
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-E x e c u t i o n
-
-
-----    341 PARAMETER elapsed              =        0.009  
-
-**** REPORT FILE SUMMARY
-
-sol_SCEQ_RBC_C /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/sol_SCEQ_RBC_C.csv
-sol_SCEQ_RBC_K /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/sol_SCEQ_RBC_K.csv
-sol_SCEQ_RBC_I /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/sol_SCEQ_RBC_I.csv
-sol_SCEQ_RBC_L /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/sol_SCEQ_RBC_L.csv
-sol_SCEQ_RBC_err /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/sol_SCEQ_RBC_err.csv
-
-
-EXECUTION TIME       =        0.546 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+COMPILATION TIME     =        0.012 SECONDS      3 MB  38.1.0 a1a3b545 DEX-DEG
 
 
 USER: GAMS Demo license for Patrick OCallaghan       G220215|0002CO-GEN
@@ -1879,3 +591,5 @@ USER: GAMS Demo license for Patrick OCallaghan       G220215|0002CO-GEN
 
 Input      /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
 Output     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.lst
+
+**** USER ERROR(S) ENCOUNTERED

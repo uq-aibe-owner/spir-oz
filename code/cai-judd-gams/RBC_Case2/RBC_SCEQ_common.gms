@@ -8,18 +8,18 @@
 scalar starttime;
 starttime = jnow;
     
-set reg regions /1*2/;
-alias(r, reg);
+set r regions /1*2/;
+alias(rr, r);
 set t time /1*71/;
 alias(tt,t);
 
-set sec sectors /1*2/;
-alias(j, sec);
+set j sectors /1*2/;
+alias(i, j);
 * number of different paths + 1 (the extra one is for error checking at the last period of interest)
 set npath /1*10/;
 
 parameters
-beta        discount rate /0.01/
+beta        discount rate /0.98/
 alpha       capital cost share /0.33/
 delta       capital stock depreciation /0.5/
 phi         adjustment cost parameter /0.5/
@@ -32,14 +32,14 @@ B           relative weight of consumption and leisure
 s           starting period
 DT          number of periods for optimization in SCEQ / 10 /
 Tstar       number of periods of interest 
-tau(reg)      weight
+tau(r)      weight
 Imin        lower bound of investment 
-k0(reg)       initial capital
+k0(r)       initial capital
 kmin        smallest capital    / 0.1 /
 kmax        largest capital     / 10 /
 zeta1       TFP before shock   / 1 /
 zeta2       TFP after shock   / 0.95 /
-prob1       one period probability of regump of TFP / 0.01 /
+prob1       one period probability of jump of TFP / 0.01 /
 probs(t)    probability of jump of TFP
 TCS         tail consumption share (of output) / .45 /
 ;
@@ -54,12 +54,12 @@ etahat = 1+(1/eta);
 Imin = 0.9*delta;
 
 *the following is the vector of population weights: it will enter the objective and determine demand
-tau(reg) = 1;
+tau(r) = 1;
 
-*the following is initial kapital: it will vary across regions
-*k0(reg) = kmin + (kmax-kmin)*(ord(reg)-1)/(card(reg)-1);
-*k0(reg) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(reg)-1)/(card(reg)-1));
-k0(reg) = 1
+*the following is initial kapital: it will vary across rions
+*k0(r) = kmin + (kmax-kmin)*(ord(r)-1)/(card(r)-1);
+*k0(r) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(r)-1)/(card(r)-1));
+k0(r, sec) = 1
 
 display A, B, etahat, k0;
 
@@ -68,60 +68,63 @@ display A, B, etahat, k0;
 
 Variables
 obj objective criterion
-Inv(reg,t) investment
+Inv(r, sec,t) investment
 ;
 
 Positive variables
-k(reg,t) capital stock
-c(reg,t) consumption
-l(reg,t) labor supply
+
+c(r, sec, t) consumption
+c_sectors(r, t) consumption aggregate (across sectors)
+k(r, sec, t) kapital stock
+k_sectors(r, t) kapital aggregate (across sectors)
+l(r, sec, t) labor supply
 ;
 
 Equations
-objfun Obregective function
-TransitionCapital(reg,t) Law of Motion for Capital Stock
-BudgetConstraint(t) budget constraint before regump
-TippedBudgetConstraint(t) budget constraint after regump
+objfun Objective function
+TransitionCapital(r, sec, t) Law of Motion for Capital Stock
+BudgetConstraint(sec, t) budget constraint before jump
+TippedBudgetConstraint(sec, t) budget constraint after jump
 ;
 
 objfun .. 
-obj =e= sum(reg, tau(reg) *
+obj =e= sum(r, tau(r) *
                     sum(t$(ord(t)>=s and ord(t)<s+DT),
-                        beta**(ord(t)-s)*((c(reg,t)**gammahat)/gammahat - B * (l(reg,t)**etahat)/etahat)
+                        beta**(ord(t)-s)*((c(r, sec, t) )**gammahat)/gammahat - B * (l(r, sec, t)**etahat)/etahat)
                     )
         )
-        + sum(reg, tau(reg) *
+        + sum(r, tau(r) *
                     sum(t$(ord(t)=s+DT),
-                        beta**(ord(t)-s)*((( (TCS*A*(k(reg,t)**alpha))**gammahat )/gammahat-B)/(1-beta))
+                        beta**(ord(t)-s)*((( (TCS*A*(k(r,t)**alpha))**gammahat )/gammahat-B)/(1-beta))
                     )
         ) ;
 
-TransitionCapital(reg,t)$(ord(t)>=s and ord(t)<s+DT) .. 
-k(reg,t+1) =e= (1-delta)*k(reg,t) + Inv(reg,t);
+TransitionCapital(r,t)$(ord(t)>=s and ord(t)<s+DT) .. 
+k(r,t+1) =e= (1-delta)*k(r,t) + Inv(r,t);
 
 BudgetConstraint(t)$(ord(t)>=s and ord(t)<s+DT) .. 
-sum(reg, c(reg,t) + Inv(reg,t) + (phi/2)*k(reg,t)*sqr(Inv(reg,t)/k(reg,t)-delta)) =e= sum(reg, (zeta2 + Probs(t)*(zeta1-zeta2))*A*(k(reg,t)**alpha) * (l(reg,t)**(1-alpha)));
+sum(r, c(r,t) + Inv(r,t) + (phi/2)*k(r,t)*sqr(Inv(r,t)/k(r,t)-delta)) =e= sum(r, (zeta2 + Probs(t)*(zeta1-zeta2))*A*(k(r,t)**alpha) * (l(r,t)**(1-alpha)));
 
 TippedBudgetConstraint(t)$(ord(t)>=s and ord(t)<s+DT) .. 
-sum(reg, c(reg,t) + Inv(reg,t) + (phi/2)*k(reg,t)*sqr(Inv(reg,t)/k(reg,t)-delta)) =e= sum(reg, zeta2*A*(k(reg,t)**alpha) * (l(reg,t)**(1-alpha)));
+sum(r, c(r,t) + Inv(r,t) + (phi/2)*k(r,t)*sqr(Inv(r,t)/k(r,t)-delta)) =e= sum(r, zeta2*A*(k(r,t)**alpha) * (l(r,t)**(1-alpha)));
 
 * Bound Constraints
-k.lo(reg,t) = 0.001;
-k.up(reg,t) = 1000;
-c.lo(reg,t) = 0.001;
-c.up(reg,t) = 1000;
-l.lo(reg,t) = 0.001;
-l.up(reg,t) = 1000;
-Inv.lo(reg,t) = Imin;
+k.lo(r,t) = 0.001;
+k.up(r,t) = 1000;
+c.lo(r,t) = 0.001;
+c.up(r,t) = 1000;
+l.lo(r,t) = 0.001;
+l.up(r,t) = 1000;
+Inv.lo(r,t) = Imin;
 
 * Initial Guess
 s = 1;
-Inv.l(reg,t) = delta;
-k.l(reg,t) = 1;
-l.l(reg,t) = 1;
-c.l(reg,t) = A-delta;
-obj.l = sum(reg, tau(reg) * sum(t$(ord(t)>=s and ord(t)<s+DT), beta**(ord(t)-s)*((c.l(reg,t)**gammahat)/gammahat - B * (l.l(reg,t)**etahat)/etahat))) +
-  sum(reg, tau(reg) * sum(t$(ord(t)=s+DT), beta**(ord(t)-s)*((((0.75*A*(k.l(reg,t)**alpha))**gammahat)/gammahat-B)/(1-beta))));
+Inv.l(r,t) = delta;
+k.l(r,t) = 1;
+l.l(r,t) = 1;
+c.l(r,t) = A-delta;
+obj.l = sum(r, tau(r) * sum(t$(ord(t)>=s and ord(t)<s+DT), beta**(ord(t)-s)*((c.l(r,t)**gammahat)/gammahat - B * (l.l(r,t)**etahat)/etahat))) +
+  sum(r, tau(r) * sum(t$(ord(t)=s+DT), beta**(ord(t)-s)*((((0.75*A*(k.l(r,t)**alpha))**gammahat)/gammahat-B)/(1-beta))));
 
 
 options limrow = 0, limcol = 0;
