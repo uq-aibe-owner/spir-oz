@@ -521,7 +521,7 @@ def adjustment_cost(
 #-----------market clearing/budget constraint as a pure function
 #-----------requires: "import economic_parameters as par"
 #-----------requires: "import economic_functions as efcn"
-def market_clearing(
+def market_clearing( # -J could auto-setting values here be an issue? I would have thought we should only be auto-setting the constants
         con=var_con,
         knx=var_knx,
         lab=var_lab,
