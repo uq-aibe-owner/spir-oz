@@ -143,18 +143,22 @@ adj_eq(r, i, t)..
 *------------------------------------------------------------------------------
 *-----------the sequence of utility flows per region and time period
 *------------------------------------------------------------------------------
-utility_eq(r, t) $ (s <= ord(t) < DT + s)..
-    utility(r, t) =e=
+utility_eq(r, t) ..
+    If ((s <= ord(t) < DT + s),
+        utility(r, t) =e=
 *-----------the consumption part:
-        con_sec(r, t) ** GAMM_HAT / GAMM_HAT
+            con_sec(r, t) ** GAMM_HAT / GAMM_HAT
 *-----------the labour part:
             - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
-;
+    ;
 *-----------tail/continuation utility, where tail labour is normalised to one:
-utility_tail_eq(r, t) $ (ord(t) = DT + s)..
-    utility(r, t) $ (ord(t) = DT + s) =e= 
-        ((TL_CON_SH * A * kap_sec(r, t)) ** ALPH) ** GAMM_HAT / GAMM_HAT 
+    else (ord(t) = DT + s),
+        utility(r, t) =e= 
+*-----------in the consumption part, a fixed share of output is consumed
+            ((TL_CON_SH * A * kap_sec(r, t)) ** ALPH) ** GAMM_HAT / GAMM_HAT 
             - B / (1 - BETA)
+    ;
+    );
 ;
 *------------------------------------------------------------------------------
 *-----------the objective function
