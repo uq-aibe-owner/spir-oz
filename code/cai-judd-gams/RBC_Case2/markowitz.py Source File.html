@@ -1,0 +1,800 @@
+<!-- HTML header for doxygen 1.8.13-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta name="generator" content="Doxygen 1.8.18"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!--PROJECTNAME GAMS Python API - Tutorial and Examples-->
+<title>markowitz.py Source File</title>
+<link href="../../style/tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="../../style/jquery.js"></script>
+<script type="text/javascript" src="../../style/dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+  $(document).ready(function() { init_search(); });
+/* @license-end */
+</script>
+<link href="../../style/stylesheet.css" rel="stylesheet" type="text/css" id="gamsstylesheet" />
+<link href="../../style/navtree.css" rel="stylesheet" type="text/css" />
+<link href="../../style/icono.min.css" rel="stylesheet"  type="text/css" />
+
+<link rel="apple-touch-icon" sizes="57x57" href="/img/favicons/apple-icon-57x57.png" />
+<link rel="apple-touch-icon" sizes="60x60" href="/img/favicons/apple-icon-60x60.png" />
+<link rel="apple-touch-icon" sizes="72x72" href="/img/favicons/apple-icon-72x72.png" />
+<link rel="apple-touch-icon" sizes="76x76" href="/img/favicons/apple-icon-76x76.png" />
+<link rel="apple-touch-icon" sizes="114x114" href="/img/favicons/apple-icon-114x114.png" />
+<link rel="apple-touch-icon" sizes="120x120" href="/img/favicons/apple-icon-120x120.png" />
+<link rel="apple-touch-icon" sizes="144x144" href="/img/favicons/apple-icon-144x144.png" />
+<link rel="apple-touch-icon" sizes="152x152" href="/img/favicons/apple-icon-152x152.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-icon-180x180.png" />
+<link rel="icon" type="image/png" sizes="192x192"  href="/img/favicons/android-icon-192x192.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="96x96" href="/img/favicons/favicon-96x96.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png" />
+<link rel="manifest" href="/img/favicons/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+
+
+
+
+<style>
+.image
+{
+   text-align: left;
+}
+</style>
+</head>
+<body class="doc-page">
+<header class="topnav" id="menu-area">
+    
+
+
+
+
+
+  <link rel="stylesheet" href="/scss/custom.min.9e68aace33e3e7dc65a3b697d5574eb6477fe7df13ba847a28d11e9c73408569.css" >
+
+  <style>
+    .row {
+      flex-wrap: unset;
+    }
+
+  .modal-backdrop {
+    z-index: 100;
+  }
+
+  </style>
+
+
+<div class="gams-site">
+  <nav id="gams-nav" class="navbar navbar-expand-xl navbar-light bg-white py-2 px-2">
+      
+    <div class="container px-0">
+    
+      <a class="navbar-brand p-0" href="/">
+          <img id="gams-logo" src="/img/gams_logo.svg" alt="" width="250">
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse flex-column" id="navbarNavDropdown">
+          
+          <ul id="top-buttons" class="navbar-nav flex-row ml-auto">
+            
+            <li  class="nav-item ">
+            
+              <a href="/try_gams" id="navTryBtn" style="" class="top-button btn btn-gams-light-orange ">
+                <strong>FREE DEMO</strong>
+              </a>
+            </li>
+            
+            
+            <li class="nav-item ">
+              <button id="searchBtn" type="button" style="" class="top-button btn btn-secondary ml-2 " data-toggle="modal" data-target="#uni_searchModal" aria-label="Search Button">
+                  <i width="18px" data-feather="search"></i> 
+                  <strong> SEARCH</strong>
+              </button>
+            </li>
+          
+          </ul>
+          
+          
+          <ul class="navbar-nav ml-auto">
+            
+            
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Products</a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="/products/gams/gams-language"> GAMS - The Modeling Language</a></li>
+                <li><a class="dropdown-item" href="/sales/miro_facts/"> GAMS MIRO</a></li>
+                <li><a class="dropdown-item" href="/sales/engine_facts/"> GAMS Engine</a></li></ul>
+            </li>
+            
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Documentation</a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="/latest/docs/"> GAMS</a></li>
+                <li><a class="dropdown-item" href="/miro/"> MIRO</a></li>
+                <li><a class="dropdown-item" href="/engine"> Engine</a></li></ul>
+            </li>
+            
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Download</a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="/download/"> GAMS</a></li>
+                <li><a class="dropdown-item" href="/miro/download.html"> MIRO</a></li>
+                <li><a class="dropdown-item" href="/engine/installation.html"> Engine</a></li></ul>
+            </li>
+            
+            
+            <li class="nav-item">
+              <a class="nav-link" href="/support">Support</a>
+            </li><li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sales</a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="/sales/pricing_regular/"> Regular Price List</a></li>
+                <li><a class="dropdown-item" href="/sales/pricing_academic/"> Academic Price List</a></li>
+                <li><a class="dropdown-item" href="/buy_gams/"> Get a Quote</a></li>
+                <li><a class="dropdown-item" href="/sales/maintenance/"> Get Maintenance</a></li>
+                <li><a class="dropdown-item" href="/sales/extended-support"> Buy Extended Support</a></li></ul>
+            </li>
+            
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Community</a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="/newsletter/signup"> Sign-up for our Newsletter</a></li>
+                <li><a class="dropdown-item" href="/stories"> Case Studies</a></li>
+                <li><a class="dropdown-item" href="https://forum.gamsworld.org/"> The GAMSWORLD Forum <i height='15px' data-feather='external-link'></i></a></li>
+                <li><a class="dropdown-item" href="/conferences"> Meet us at a Conference</a></li>
+                <li><a class="dropdown-item" href="/blog"> Read our GAMS Blog</a></li>
+                <li><a class="dropdown-item" href="/webinars"> Visit a GAMS Webinar</a></li>
+                <li><a class="dropdown-item" href="/courses"> Take a GAMS Course</a></li></ul>
+            </li>
+            
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">About Us</a>
+              <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="/about/company"> Company Information</a></li>
+                <li><a class="dropdown-item" href="/team"> The GAMS team</a></li>
+                
+                <li><a class="dropdown-item dropdown-toggle" href="#">Career</a>
+                  <ul class="submenu submenu-left dropdown-menu"><li><a class="dropdown-item" href="/about/openings">Openings</a></li>
+                    <li><a class="dropdown-item" href="/about/internships">Internships</a></li>
+                    
+                  </ul>
+                </li>
+                
+                <li><a class="dropdown-item" href="/about/advisory"> Advisory Board</a></li></ul>
+            </li>
+            
+            </ul>
+          
+        
+        
+        </div>
+      
+      </div>
+    
+    </nav>
+</div>
+
+
+<div class="gams-site gams-modal-container">
+  <div class="modal fade" id="uni_searchModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h2 class='modal-title' id="exampleModalLabel">Search</h2>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+          <section>
+
+            <div class="input-group mb-3">
+              <input type="text" id="uni_query" class="form-control" placeholder="What are you looking for?" aria-label="SearchQuery" aria-describedby="uni_searchbutton">
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="uni_searchbutton">Search</button>
+              </div>
+            </div>
+
+            <div style="display:none;">
+              <input name="case_sensitive" id="case_sensitive" type="checkbox" ><label for="case_senstive">Case sensitive</label>
+              <input name="match_whole_word" id="match_whole_word" type="checkbox"><label for="match_whole_word">Match whole word</label>
+            </div>
+
+
+            
+            <div class="row">
+
+              
+              <div class="col-lg-4">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                  
+                  <a class="nav-link active" id="v-pills-gams-doc-tab" data-toggle="pill" href="#v-pills-gams-doc" role="tab" aria-controls="v-pills-gams-doc" aria-selected="false">GAMS Documentation</a>
+                  <a class="nav-link" id="v-pills-mod-lib-tab" data-toggle="pill" href="#v-pills-mod-lib" role="tab" aria-controls="v-pills-mod-lib" aria-selected="false">Model Library</a>
+                  <a class="nav-link" id="v-pills-miro-doc-tab" data-toggle="pill" href="#v-pills-miro-doc" role="tab" aria-controls="v-pills-miro-doc" aria-selected="false">MIRO Documentation</a>
+                  <a class="nav-link" id="v-pills-engine-doc-tab" data-toggle="pill" href="#v-pills-engine-doc" role="tab" aria-controls="v-pills-engine-doc" aria-selected="false">ENGINE Documentation</a>
+                  <a class="nav-link" id="v-pills-website-tab" data-toggle="pill" href="#v-pills-website" role="tab" aria-controls="v-pills-website" aria-selected="false">Website & Blog</a>
+                </div>
+              </div>
+
+
+              
+              <div class="col-lg-8">
+                <div class="tab-content" id="v-pills-tabContent">
+
+
+                  
+                  
+
+                  
+                  <div class="tab-pane fade show active" id="v-pills-gams-doc" role="tabpanel" aria-labelledby="v-pills-gams-doc-tab">
+
+                    <div id="uni_docsTab" class="mb-3 mt-3 mt-md-0" style="display: flex;">
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks active" onclick="uni_showSection(event, 'allsections')" id="uni_alldocsTab" value="docs/">All</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'userguides')" id="uni_ugTab" value="docs/"> User's Guide</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'solvers')" id="uni_solverTab" value="docs/">Solvers</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'tools')" id="uni_toolTab" value="docs/">Tools</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'apis')" id="uni_apiTab" value="docs/">APIs</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'releasenotes')" id="uni_rnTab" value="docs/">Release Notes</button>
+                    </div>
+
+                    <div class="uni_inforesults mb-3">
+                      <div class="resultsummary"></div>
+                    </div>
+
+                    <div class="uni_searchresults"></div>
+
+                    <div class="uni_navresults"></div>
+
+                  </div>
+
+                  
+                  <div class="tab-pane fade show" id="v-pills-mod-lib" role="tabpanel" aria-labelledby="v-pills-mod-lib-tab">
+
+                    <div id="uni_modlibsTab" class=" mb-3 mt-3 mt-md-0" style="display: flex;">
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks active" onclick="uni_showSection(event, 'all')" id="uni_allmodlibsTab" value="">All</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'gamslib')" id="uni_gamslibTab" value="">Model</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'testlib')" id="uni_testlibTab" value="">Test</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'datalib')" id="uni_datalibTab" value="">Data</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'emplib')" id="uni_emplibTab" value="">EMP</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'apilib')" id="uni_apilibTab" value="">API</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'finlib')" id="uni_finlibTab" value="">FIN</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'noalib')" id="uni_noalibTab" value="">NOA</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary uni_tablinks" onclick="uni_showSection(event, 'psoptlib')" id="uni_psoptlibTab" value="">PSOPT</button>
+                    </div>
+
+                    <div class="uni_inforesults mb-3">
+                      <div class="resultsummary">
+                      </div>
+                    </div>
+
+                    <div class="uni_searchresults">
+                    </div>
+
+                    <div class="uni_navresults"></div>
+
+
+
+                  </div>
+
+                  
+                  <div class="tab-pane fade" id="v-pills-miro-doc" role="tabpanel" aria-labelledby="v-pills-miro-doc-tab">
+
+                    <div class="uni_inforesults mb-3">
+                      <div class="resultsummary">
+                      </div>
+                    </div>
+
+                    <div class="uni_searchresults">
+                    </div>
+
+                    <div class="uni_navresults">
+                    </div>
+
+
+                  </div>
+
+                  
+                  <div class="tab-pane fade" id="v-pills-engine-doc" role="tabpanel" aria-labelledby="v-pills-engine-doc-tab">
+
+                    <div class="uni_inforesults mb-3">
+                      <div class="resultsummary">
+                      </div>
+                    </div>
+
+                    <div class="uni_searchresults">
+                    </div>
+
+                    <div class="uni_navresults">
+                    </div>
+
+
+                  </div>
+                  
+                  <div class="tab-pane fade" id="v-pills-website" role="tabpanel" aria-labelledby="v-pills-website-tab">
+
+                    <div class="uni_inforesults mb-3">
+                      <div class="resultsummary">
+                      </div>
+                    </div>
+
+                    <div class="uni_searchresults">
+                    </div>
+
+                    <div class="uni_navresults">
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+
+          </section>
+
+          
+          <script src="https://www.gams.com/latest/docs/style/keyword.js"></script>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+    <div class="versionwrapper">
+      <li id='version' class='right'>
+   <div class='styled-select'>
+   <select id='versionfilter' class='selectbox'>
+     <option id='38' value='/38/docs/index.html'>38 (latest)</option>
+     <option id='37' value='/37/docs/index.html'>37</option>
+     <option id='36' value='/36/docs/index.html'>36</option>
+     <option id='35' value='/35/docs/index.html'>35</option>
+     <option id='34' value='/34/docs/index.html'>34</option>
+     <option id='33' value='/33/docs/index.html'>33</option>
+     <option id='32' value='/32/docs/index.html'>32</option>
+     <option id='31' value='/31/docs/index.html'>31</option>
+     <option id='30' value='/30/docs/index.html'>30</option>
+     <option id='29' value='/29/docs/index.html'>29</option>
+     <option id='28' value='/28/docs/index.html'>28</option>
+     <option id='27' value='/27/docs/index.html'>27</option>
+     <option id='26' value='/26/docs/index.html'>26</option>
+     <option id='25.1' value='/25.1/docs/index.html'>25.1</option>
+   </select>
+   </div>
+</li>
+<li class='right menutext'><div>Version:</div></li>
+
+    </div>
+    <a href="javascript:void(0);" id="hamburger-nav" title="Open Menu" class="hamburger" onclick="toggleResponsive()">
+       <div class="bar1"></div>
+       <div class="bar2"></div>
+       <div class="bar3"></div>
+    </a>
+    <a class="search" href="javascript:void(0);">
+        <div class="searchwrapper">
+           <div class="nav-icon"><i class="icono-search"></i></div>
+           <input id="searchbar" type="text" placeholder="Search..." onkeypress="return handleSearchKeyPress(event);">
+        </div>
+    </a>
+    <div class="nav">
+        <div id="docs-menu-ctrl" title="Expand Submenu" class="submenu-icon collapsed"><i class="icono-caretDown"></i></div>
+        <a id="docs" href="../../index.html" class="menu">Documentation</a>
+        <div class="subnav">
+            <a href="../../Preface.html" class="docsmenu collapsed">Preface</a>
+            <a href="../../RN_MAIN.html" class="docsmenu collapsed">Release Notes</a>
+            <a href="../../UG_MAIN.html#UG_INSTALL" class="docsmenu collapsed">Installation and Licensing</a>
+            <a href="../../UG_MAIN.html#UG_Tutorial_Examples" class="docsmenu collapsed">Tutorials and Examples</a>
+            <a href="../../UG_MAIN.html#UG_Language_Environment" class="docsmenu collapsed">GAMS Language and Environment</a>
+            <a href="../../S_MAIN.html" class="docsmenu collapsed">Solver Manuals</a>
+            <a href="../../T_MAIN.html" class="docsmenu collapsed">Tools Manuals</a>
+            <a href="../../API_MAIN.html" class="docsmenu collapsed">Application Programming Interfaces</a>
+            <a href="../../UG_Glossary.html" class="docsmenu collapsed">Glossary</a>
+            <a href="../../citelist.html" class="docsmenu collapsed">Bibliograhpy</a>
+        </div>  
+        <div id="modlibs-menu-ctrl" title="Expand Submenu" class="submenu-icon collapsed"><i class="icono-caretDown"></i></div>
+        <a id="modlibs" href="../../modlibs.html" class="menu">Model Libraries</a>
+        <div class="subnav">
+            <a href="../../../gamslib_ml/libhtml/index.html" class="modlibsmenu collapsed">GAMS Model Library</a>
+            <a href="../../../testlib_ml/libhtml/index.html" class="modlibsmenu collapsed">GAMS Test Library</a>
+            <a href="../../../datalib_ml/libhtml/index.html" class="modlibsmenu collapsed">GAMS Data Library</a>
+            <a href="../../../emplib_ml/libhtml/index.html" class="modlibsmenu collapsed">GAMS EMP Library</a>
+            <a href="../../../apilib_ml/libhtml/index.html" class="modlibsmenu collapsed">GAMS API Library</a>
+            <a href="../../../finlib_ml/libhtml/index.html" class="modlibsmenu collapsed">FIN Library</a>
+            <a href="../../../noalib_ml/libhtml/index.html" class="modlibsmenu collapsed">NOA Library</a>
+            <a href="../../../psoptlib_ml/libhtml/index.html" class="modlibsmenu collapsed">PSOPT Library</a>
+        </div> 
+        <a id="keyword" href="../../keyword.html" class="menu">Index</a>
+        <a id="help" href="../../help.html" class="menu">Help</a>
+    </div>  
+</header>
+<div id="content-area" class="content-page">
+  <div  id="context-sidebar" class="ontop nav-menu">
+    <div id="ctrl-expand-collapse"> 
+        <div id="ctrl-icon" title="Show Table of Contents"><i class="icono-caretLeftCircle"></i></div>
+        <span id="ctrl-toc-item" class="tocitem">Hide Table of Contents</span>
+    </div>
+    <div id="nav-area" class="collapsible-menu">
+        <div id="nav-tree">
+           <div id="nav-tree-contents">
+             <div id="nav-sync" class="sync"></div>
+        </div>
+       </div>
+    </div>
+  </div>
+  <div id="split-bar" class="expanded"></div>
+  <div class="content" id="doc-content">
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+  <div style="height:20px; padding:10px;">
+    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <img id="MSearchSelect" src="search/mag_sel.png"
+               onmouseover="return searchBox.OnSearchSelectShow()"
+               onmouseout="return searchBox.OnSearchSelectHide()"
+               alt=""/>
+          <input type="text" id="MSearchField" value="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
+          </span>
+        </div>
+</td>
+  </div>
+</div>
+<!-- end header part -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'Search');
+/* @license-end */
+</script>
+</div><!-- top -->
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="headertitle">
+<div class="title">markowitz.py</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="markowitz_8py.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html">    1</a></span> </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">from</span> gams <span class="keyword">import</span> *</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="keyword">import</span> sys</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="keyword">import</span> os</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="keyword">from</span> math <span class="keyword">import</span> fabs</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160; </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keywordflow">try</span>:</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keywordflow">except</span>:</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keywordflow">raise</span> Exception(<span class="stringliteral">&quot;This example requires the matplotlib module&quot;</span>)</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#ace2f41fee02510226d278b8295086652">   20</a></span>&#160;<span class="keyword">def </span><a class="code" href="namespacemarkowitz.html#ace2f41fee02510226d278b8295086652">get_model_text</a>():</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keywordflow">return</span> <span class="stringliteral">&#39;&#39;&#39;</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="stringliteral">$title Standard Markowitz Portfolio Selection Model</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="stringliteral">set s selected stocks</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="stringliteral">    upper(s,s), lower(s,s) parts of covar matrix;</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="stringliteral">alias(s,t);</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="stringliteral">parameter mean(s)    mean of daily return</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="stringliteral">          covar(s,s) covariance matrix of returns (upper);</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="stringliteral">$if not set data $abort &#39;no include file name for data file provided&#39;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="stringliteral">$gdxin %data%</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="stringliteral">$load s covar upper lower mean</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="stringliteral">variables z      objective variable</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="stringliteral">          ret    return</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="stringliteral">          var    variance</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="stringliteral">          x(s)   investments;</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="stringliteral">positive variables x;</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="stringliteral">equations obj    objective</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="stringliteral">          budget</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="stringliteral">          varcon variance constraint</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="stringliteral">          retcon return constraint;</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="stringliteral">scalar lambda /0/;</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="stringliteral">obj..    z =e= lambda*ret - (1-lambda)*var;</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="stringliteral">budget.. sum(s, x(s)) =e= 1.0;</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="stringliteral">varcon.. var =e= sum(upper(s,t), x(s)*covar(s,t)*x(t)) +</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="stringliteral">                 sum(lower(s,t), x(s)*covar(t,s)*x(t));</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="stringliteral">retcon.. ret =e= sum(s, mean(s)*x(s));</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="stringliteral"></span> </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="stringliteral">model markowitz /all/; &#39;&#39;&#39;</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keywordflow">if</span> __name__ == <span class="stringliteral">&quot;__main__&quot;</span>:</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordflow">if</span> len(sys.argv) &gt; 1:</div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#afa7772bf4a091a2ce11ea361e67b53c8">   59</a></span>&#160;        ws = GamsWorkspace(system_directory = sys.argv[1])</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordflow">else</span>:</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        ws = GamsWorkspace()</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a58ea09f25bd86a182dc0f5335d5e7caf">   63</a></span>&#160;    job = ws.add_job_from_string(<a class="code" href="namespacemarkowitz.html#ace2f41fee02510226d278b8295086652">get_model_text</a>())</div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a08a93482115178ed8f18d64eec983f2f">   64</a></span>&#160;    opt = ws.add_options()</div>
+<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a3792c5c4a5b3ee6425229936f43249f1">   65</a></span>&#160;    opt.all_model_types = <span class="stringliteral">&quot;conopt&quot;</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    opt.defines[<span class="stringliteral">&quot;data&quot;</span>] = <span class="stringliteral">&quot;\&quot;&quot;</span> + os.path.join(os.path.dirname(os.path.realpath(__file__)), <span class="stringliteral">&quot;..\\Data\\markowitz.gdx&quot;</span>) + <span class="stringliteral">&quot;\&quot;&quot;</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#ab03644e6d2d176b657d973ad500f28ea">   68</a></span>&#160;    cp = ws.add_checkpoint()</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    job.run(opt, cp)</div>
+<div class="line"><a name="l00070"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#aff0567249d2575a344c05e3b2e79c250">   70</a></span>&#160;    mi = cp.add_modelinstance()</div>
+<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a300c36940fcbfc99aa056e4643c2dd8b">   71</a></span>&#160;    l = mi.sync_db.add_parameter(<span class="stringliteral">&quot;lambda&quot;</span>, 0, <span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    mi.instantiate(<span class="stringliteral">&quot;markowitz use nlp max z&quot;</span>, GamsModifier(l))</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="comment"># a list for collecting the data points</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#ae01bc36bc99ebf5583c66a9f98126a3a">   75</a></span>&#160;    data_points = []</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="comment"># get minimum and maximum return (lambda=0/1)</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#acd27512fc977cdd8e0a25259637d5501">   78</a></span>&#160;    l.add_record().value = 0</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    mi.solve()</div>
+<div class="line"><a name="l00080"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a738d16db2b9c75102031804f9db3b2d8">   80</a></span>&#160;    min_ret = mi.sync_db[<span class="stringliteral">&quot;ret&quot;</span>].first_record().level</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    data_points.append( (min_ret, mi.sync_db[<span class="stringliteral">&quot;var&quot;</span>].first_record().level) )</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    l.first_record().value = 1</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    mi.solve()</div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a83f6d15f5bcad5dae243bdf71a6305b5">   84</a></span>&#160;    max_ret = mi.sync_db[<span class="stringliteral">&quot;ret&quot;</span>].first_record().level</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    data_points.append( (max_ret, mi.sync_db[<span class="stringliteral">&quot;var&quot;</span>].first_record().level) )</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="comment"># gap that specifies the max distance (return) between two data points</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#af6507bfb1298a5636ec49b34f11e4dbb">   88</a></span>&#160;    gap = 0.02</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="comment"># a list (stack) of intervals, where an interval is represented by a 2-tuple containing two data points</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="comment"># each represented by a 2-tuple as well (lambda, return)</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a985a8ed0738a4eaf013ef15385fbd143">   91</a></span>&#160;    intervals = [((0.0, min_ret), (1.0, max_ret))]</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="comment"># Algorithm that solves the model instance for multiple lambda values</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="comment"># using a max gap between two data points to achieve a smooth graph.</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="comment"># Lambda is dynamically calculated for an even distribution of data points</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordflow">while</span> intervals:</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="comment"># pick the first interval and calculate a new value for lambda</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#aa4183c055e9b1ea2d532af816cfecab9">   98</a></span>&#160;        i = intervals.pop()</div>
+<div class="line"><a name="l00099"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a675989a2712e2be58c5bc23f0d8d5eff">   99</a></span>&#160;        min_l, min_ret = i[0][0], i[0][1]</div>
+<div class="line"><a name="l00100"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a13cea9e570de8d84513aeae3e321da2b">  100</a></span>&#160;        max_l, max_ret = i[1][0], i[1][1]</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
+<div class="line"><a name="l00102"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#aecb583a16e76028bb3996a796960d1ad">  102</a></span>&#160;        l_val = (min_l+max_l)/2</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        l.first_record().value = l_val</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="comment"># solve the model instance with the new lambda value</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        mi.solve()</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        <span class="comment"># retrieve the return and variance results</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#ad0c1d017259b8d7ad78ded77998084ef">  107</a></span>&#160;        cur_ret = mi.sync_db[<span class="stringliteral">&quot;ret&quot;</span>].first_record().level</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        data_points.append( (cur_ret, mi.sync_db[<span class="stringliteral">&quot;var&quot;</span>].first_record().level) )</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="comment"># add new intervals if the gap is still to big</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;        <span class="keywordflow">if</span> cur_ret - min_ret &gt; gap:</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;            intervals.append(((min_l, min_ret), (l_val, cur_ret)))</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <span class="keywordflow">if</span> fabs(cur_ret - max_ret) &gt; gap:</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            intervals.append(((l_val, cur_ret), (max_l, max_ret)))</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="comment"># Sort data points and make two list for the plot function</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a10ba2f76b45634d5b402556557a6ba41">  116</a></span>&#160;    data_points.sort(key=<span class="keyword">lambda</span> tup: tup[0])</div>
+<div class="line"><a name="l00117"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a92b4a49dce9eb959c6ddbdae5d3fa6f9">  117</a></span>&#160;    ret = map(<span class="keyword">lambda</span> x: x[0], data_points)</div>
+<div class="line"><a name="l00118"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a7bc66872e140c5ea9c0ac4d777f526a8">  118</a></span>&#160;    var = map(<span class="keyword">lambda</span> x: x[1], data_points)</div>
+<div class="line"><a name="l00119"></a><span class="lineno"><a class="line" href="namespacemarkowitz.html#a25ae9a5324087f63996c55de5397c437">  119</a></span>&#160;    plt.plot(ret, var, marker=<span class="stringliteral">&quot;.&quot;</span>, markersize=10)</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    plt.xlabel(<span class="stringliteral">&#39;return&#39;</span>)</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    plt.ylabel(<span class="stringliteral">&#39;variance&#39;</span>)</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    plt.show()</div>
+</div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespacemarkowitz_html_ace2f41fee02510226d278b8295086652"><div class="ttname"><a href="namespacemarkowitz.html#ace2f41fee02510226d278b8295086652">markowitz.get_model_text</a></div><div class="ttdeci">def get_model_text()</div><div class="ttdef"><b>Definition:</b> <a href="markowitz_8py_source.html#l00020">markowitz.py:20</a></div></div>
+<!-- modified HTML footer for doxygen 1.8.13-->
+<!-- start footer part -->
+  </div>
+  </div>
+  <footer id="footer-area" class="bottomnav"> 
+       <a id="print" class="printbtn left">Printer-friendly version </a> 
+       <div class="right"> Copyright &copy; <a target="_blank" href="http://www.gams.com">GAMS Development Corporation</a> </div>
+  </footer>
+<script src="../../style/jquery.js"></script>
+<script src="../../style/jquery.highlight.js"></script>
+<script src="../../style/navtree.js"></script>
+<script src="../../style/navtreeinfo.js"></script>
+<script src="../../style/navtreeindex.js"></script>
+<script>
+if (recallStatus("toc") == "hidden" || recallStatus("layout") == "collapsed") {
+    $('#context-sidebar').hide();
+    $('#split-bar').hide();
+}
+$(document).ready(function(){
+   initTOCPage();
+   var gamsversion = "34";
+   $('#versionfilter').val('/'+gamsversion+'/docs/index.html');
+$('#versionfilter').on('change', function () {
+   var url = $(this).val(); 
+   if (url) { 
+      window.location = url; 
+   }
+   return false;
+});
+
+});
+</script>
+<div id="gamsfooter">
+  
+
+
+
+
+<div class="gams-site">
+  <footer id="gams-site-footer" class="d-print-none">
+
+    <div class="container">
+      <div class="row">
+
+      <div class="col-md-3 col-sm-4 mb-3">
+        <strong>GAMS Development Corp.</strong><br>
+        <strong>GAMS Software GmbH</strong><br>
+        <br>
+        <a class="mr-1" href="https://www.youtube.com/channel/UCfTAizXPo4vN54CC-Zs9TTg"><i data-feather="youtube" stroke="black" stroke-width="1" ></i></a>
+        <a class="mr-1" href="https://twitter.com/gamssoftware"><i data-feather="twitter" stroke="black" stroke-width="1" ></i></a>
+        <a class="mr-1" href="https://www.linkedin.com/company/gams-development-corporation/"><i data-feather="linkedin" stroke="black" stroke-width="1" ></i></a>
+      </div>
+
+      <div class="col-md-3 col-sm-4 mb-3">
+          <strong>General Information and Sales</strong><br>
+          <div class="mt-2">
+            U.S.  (+1) 202 342-0180 <br>
+            Europe: (+49) 221 949-9170
+          </div>
+          <a href="mailto:sales@gams.com?subject=Inquiry" class="mt-2 pl-4 pr-4 btn btn-gams-light-orange ">
+            <strong>SALES@GAMS.COM</strong>
+          </a>
+      </div>
+
+      <div class="col-md-3 d-none d-md-block">
+        
+
+      </div>
+
+
+    <div class="col-md-3 col-sm-4 mb-3">
+        <ul class="list-unstyled ">
+            <li><a  href="/about/privacy">Privacy policy</a></li>
+            <li><a  href="/impressum">Impressum / Legal</a></li>
+            <li><a  target="_blank" href="/GAMS_EULA.pdf">License Agreement</a></li>
+            <li><a href="/archives" >Archives</a></li>
+            <li><a  href="/contact">Contact Us</a></li>
+      </ul>
+      </div>
+
+  </div>
+    </div>
+  </footer>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/js/bundle.js"></script>
+
+
+
+
+<script src="/js/gamsSearch.js"></script>
+
+
+
+<script src="/js/lightbox.js"></script>
+
+
+
+
+<script>
+
+
+  $(document).ready(function() {
+
+    $(document).on('click', '.dropdown-menu', function(e) {
+      e.stopPropagation();
+    });
+
+    
+    if ($(window).width() < 992) {
+      $('.dropdown-menu a').click(function(e) {
+
+
+        
+        if ($(this).next('.submenu').length) {
+          e.preventDefault();
+          $(this).next('.submenu').toggle();
+        }
+
+        
+        $('.dropdown').on('hide.bs.dropdown', function() {
+          $(this).find('.submenu').hide();
+        })
+      });
+    }
+
+    
+    
+    
+    
+    
+
+    function fixModal(m) {
+      
+      console.log(m);
+        $(m).on('shown.bs.modal', function () {
+        var mobd = $('.modal-backdrop');
+        var cont = $('.gams-modal-container');
+        cont.append(mobd);
+        $('body').css('overflow','hidden');
+        })
+
+        $(m).on('hidden.bs.modal', function () {
+          $('body').css('overflow','');
+        })  
+    }
+
+    var modals = ['#uni_searchModal','#galleryModal'];
+    modals.forEach(fixModal);
+
+
+  })
+</script>
+
+
+
+
+
+
+
+<script>
+    feather.replace()
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>  
+</body>
+</html>
