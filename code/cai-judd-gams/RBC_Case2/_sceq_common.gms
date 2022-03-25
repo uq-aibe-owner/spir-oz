@@ -125,27 +125,27 @@ Equations
 *-----------equation definitions for each s along the path
 *==============================================================================
 If ((s <= ord(t) <= DT + s),
-*-----------definitions for intermediate-variables
-  con_sec_eq(r, t).. 
-    con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
-  ;
-  lab_sec_eq(r, t).. 
-    lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
-  ;
-  kap_sec_eq(r, t).. 
-    kap_sec(r, t) =e= (sum(i, KAP_SHR(i) * kap(r, i, t) ** RHO)) ** RHO_INV
-  ;
-  out_eq(r, i, t).. 
-    out(r, i, t) =e= A * kap(r, i, t) ** ALPH * lab(r, i, t) ** (1 - ALPH)
-  ;
-  adj_eq(r, i, t)..
-    adj(r, i, t) =e= (PHI_ADJ/2) * k(r, i, t) 
-      * sqr(inv(r, i, t) / k(r,t) - DELT)
-  ;
+  If ((ord(t) < DT + s),
+*-----------definitions for some intermediate-variables
+    con_sec_eq(r, t).. 
+      con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
+    ;
+    lab_sec_eq(r, t).. 
+      lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
+    ;
+    kap_sec_eq(r, t).. 
+      kap_sec(r, t) =e= (sum(i, KAP_SHR(i) * kap(r, i, t) ** RHO)) ** RHO_INV
+    ;
+    out_eq(r, i, t).. 
+      out(r, i, t) =e= A * kap(r, i, t) ** ALPH * lab(r, i, t) ** (1 - ALPH)
+    ;
+    adj_eq(r, i, t)..
+      adj(r, i, t) =e= (PHI_ADJ/2) * k(r, i, t) 
+        * sqr(inv(r, i, t) / k(r,t) - DELT)
+    ;
 *------------------------------------------------------------------------------
 *-----------the sequence of utility flows per region and time period
 *------------------------------------------------------------------------------
-  If ((ord(t) < DT + s),
     utility_eq(r, t)..
       utility(r, t) =e=
 *-----------the consumption part:
@@ -153,37 +153,37 @@ If ((s <= ord(t) <= DT + s),
 *-----------the labour part:
         - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
     ;
-  ;
 *------------------------------------------------------------------------------
 *-----------the objective function
 *------------------------------------------------------------------------------
     obj_eq.. 
       obj =e= 
-          sum(r, REG_WGHT(r) * sum(t, BETA ** (ord(t) - s) * utility(r, t)))
+        sum(r, REG_WGHT(r) * sum(t, BETA ** (ord(t) - s) * utility(r, t)))
     ;
 *------------------------------------------------------------------------------
 *-----------canonical equations
 *------------------------------------------------------------------------------
-    dynamics_eq(r, t) $ (ord(t) < s + DT)..
+    dynamics_eq(r, t)..
       kap(r, i, t + 1) =e= (1 - DELT) * kap(r, i, t) + inv(r, i, t)
     ;
-    market_clearing_eq(t) $ (ord(t) < s + DT)..
+    market_clearing_eq(t)..
       sum(r, E_shk(r, i, t) * out(r, i, t)
         - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
     ;
 *------------------------------------------------------------------------------
 *-----------other states
-    tipped_market_clearing_eq(t) $ (ord(t) < s + DT)..
+    tipped_market_clearing_eq(t)..
       sum(r, ZETA2 * out(r, i, t) 
         - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
     ;
 *-----------tail/continuation utility, where tail labour is normalised to one:
   else (ord(t) = DT + s),
-    utility(r, t) =e=
+    utility_eq(r, t)..
+      utility(r, t) =e=
 *-----------in the consumption part, a fixed share of output is consumed
-      ((TL_CON_SH * A * kap_sec(r, t)) ** ALPH) ** GAMM_HAT / GAMM_HAT 
-      - B / (1 - BETA)
-  ;
+        ((TL_CON_SH * A * kap_sec(r, t)) ** ALPH) ** GAMM_HAT / GAMM_HAT 
+        - B / (1 - BETA)
+    ;
   );
 );
 
