@@ -145,46 +145,46 @@ If ((s <= ord(t) <= DT + s),
 *------------------------------------------------------------------------------
 *-----------the sequence of utility flows per region and time period
 *------------------------------------------------------------------------------
-  utility_eq(r, t)..
-    If ((ord(t) < DT + s),
+  If ((ord(t) < DT + s),
+    utility_eq(r, t)..
       utility(r, t) =e=
 *-----------the consumption part:
         con_sec(r, t) ** GAMM_HAT / GAMM_HAT
 *-----------the labour part:
         - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
     ;
-*-----------tail/continuation utility, where tail labour is normalised to one:
-    else (ord(t) = DT + s),
-      utility(r, t) =e=
-*-----------in the consumption part, a fixed share of output is consumed
-        ((TL_CON_SH * A * kap_sec(r, t)) ** ALPH) ** GAMM_HAT / GAMM_HAT 
-        - B / (1 - BETA)
-    ;
-    );
   ;
 *------------------------------------------------------------------------------
 *-----------the objective function
 *------------------------------------------------------------------------------
-  obj_eq.. 
-    obj =e= 
-        sum(r, REG_WGHT(r) * sum(t, BETA ** (ord(t) - s) * utility(r, t)))
-  ;
+    obj_eq.. 
+      obj =e= 
+          sum(r, REG_WGHT(r) * sum(t, BETA ** (ord(t) - s) * utility(r, t)))
+    ;
 *------------------------------------------------------------------------------
 *-----------canonical equations
 *------------------------------------------------------------------------------
-  dynamics_eq(r, t) $ (ord(t) < s + DT)..
-    kap(r, i, t + 1) =e= (1 - DELT) * kap(r, i, t) + inv(r, i, t)
-  ;
-  market_clearing_eq(t) $ (ord(t) < s + DT)..
-    sum(r, E_shk(r, i, t) * out(r, i, t)
+    dynamics_eq(r, t) $ (ord(t) < s + DT)..
+      kap(r, i, t + 1) =e= (1 - DELT) * kap(r, i, t) + inv(r, i, t)
+    ;
+    market_clearing_eq(t) $ (ord(t) < s + DT)..
+      sum(r, E_shk(r, i, t) * out(r, i, t)
         - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
-  ;
+    ;
 *------------------------------------------------------------------------------
 *-----------other states
-  tipped_market_clearing_eq(t) $ (ord(t) < s + DT)..
-    sum(r, ZETA2 * out(r, i, t) 
+    tipped_market_clearing_eq(t) $ (ord(t) < s + DT)..
+      sum(r, ZETA2 * out(r, i, t) 
         - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
+    ;
+*-----------tail/continuation utility, where tail labour is normalised to one:
+  else (ord(t) = DT + s),
+    utility(r, t) =e=
+*-----------in the consumption part, a fixed share of output is consumed
+      ((TL_CON_SH * A * kap_sec(r, t)) ** ALPH) ** GAMM_HAT / GAMM_HAT 
+      - B / (1 - BETA)
   ;
+  );
 );
 
 *==============================================================================
