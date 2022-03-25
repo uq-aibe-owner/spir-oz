@@ -112,6 +112,7 @@ Equations
     con_sec_eq(r, t)           consumption aggregate (across sectors)
     kap_sec_eq(r, t)           kapital aggregate (across sectors)
     lab_sec_eq(r, t)           labour aggregate (across sectors)
+    out_eq(r, i, t)            output 
     utility_eq(r, t)            the utility function
     obj_eq                              Objective function
 *-----------canonical equations
@@ -121,69 +122,71 @@ Equations
     tipped_market_clearing_eq(i, t)      budget constraint after jump
 ;
 *==============================================================================
-*-----------equation definitions
+*-----------equation definitions for each s along the path
 *==============================================================================
+If ((s <= ord(t) <= DT + s),
 *-----------definitions for intermediate-variables
-con_sec_eq.. 
+  con_sec_eq.. 
     con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
-;
-lab_sec_eq.. 
+  ;
+  lab_sec_eq.. 
     lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
-;
-kap_sec_eq.. 
+  ;
+  kap_sec_eq.. 
     kap_sec(r, t) =e= (sum(i, KAP_SHR(i) * kap(r, i, t) ** RHO)) ** RHO_INV
-;
-out_eq(r, i, t) $ (s <= ord(t) and ord(t) <= s + DT)..
+  ;
+  out_eq(r, i, t) $ (s <= ord(t) and ord(t) <= s + DT)..
     out(r, i, t) =e= A * kap(r, i, t) ** ALPH * lab(r, i, t) ** (1 - ALPH)
-;
-adj_eq(r, i, t)..
+  ;
+  adj_eq(r, i, t)..
     adj(r, i, t) =e= (PHI_ADJ/2) * k(r, i, t) 
         * sqr(inv(r, i, t) / k(r,t) - DELT))
-;
+  ;
 *------------------------------------------------------------------------------
 *-----------the sequence of utility flows per region and time period
 *------------------------------------------------------------------------------
-utility_eq(r, t) ..
-    If ((s <= ord(t) < DT + s),
-        utility(r, t) =e=
+  utility_eq(r, t)..
+    If ((ord(t) < DT + s),
+      utility(r, t) =e=
 *-----------the consumption part:
-            con_sec(r, t) ** GAMM_HAT / GAMM_HAT
+        con_sec(r, t) ** GAMM_HAT / GAMM_HAT
 *-----------the labour part:
-            - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
+        - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
     ;
 *-----------tail/continuation utility, where tail labour is normalised to one:
     else (ord(t) = DT + s),
-        utility(r, t) =e= 
+      utility(r, t) =e=
 *-----------in the consumption part, a fixed share of output is consumed
-            ((TL_CON_SH * A * kap_sec(r, t)) ** ALPH) ** GAMM_HAT / GAMM_HAT 
-            - B / (1 - BETA)
+        ((TL_CON_SH * A * kap_sec(r, t)) ** ALPH) ** GAMM_HAT / GAMM_HAT 
+        - B / (1 - BETA)
     ;
     );
-;
+  ;
+
 *------------------------------------------------------------------------------
 *-----------the objective function
 *------------------------------------------------------------------------------
-obj_eq.. 
+  obj_eq.. 
     obj =e= 
-        sum(r, REG_WGHT(r) * sum(t $ (s <= ord(t)  and ord(t) <= DT + s), 
-            BETA ** (ord(t) - s) * utility(r, t)))
-;
+        sum(r, REG_WGHT(r) * sum(t, BETA ** (ord(t) - s) * utility(r, t)))
+  ;
 *------------------------------------------------------------------------------
 *-----------canonical equations
 *------------------------------------------------------------------------------
-dynamics_eq(r, t) $ (s <= ord(t) and ord(t) < s + DT)..
+  dynamics_eq(r, t) $ (ord(t) < s + DT)..
     kap(r, i, t + 1) =e= (1 - DELT) * kap(r, i, t) + inv(r, i, t)
-;
-market_clearing_eq(t) $ (s <= ord(t) and ord(t) < s + DT)..
+  ;
+  market_clearing_eq(t) $ (ord(t) < s + DT)..
     sum(r, E_shk(r, i, t) * out(r, i, t)
         - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
-;
+  ;
 *------------------------------------------------------------------------------
 *-----------other states
-tipped_market_clearing_eq(t) $ (s <= ord(t) and ord(t) < s + DT)..
+  tipped_market_clearing_eq(t) $ (ord(t) < s + DT)..
     sum(r, ZETA2 * out(r, i, t) 
         - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
-;
+  ;
+);
 
 *==============================================================================
 *-----------Bound Constraints
