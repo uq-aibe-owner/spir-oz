@@ -1,4 +1,4 @@
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 17:59:31 Page 1
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/28/22 12:31:38 Page 1
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 C o m p i l a t i o n
 
@@ -21,7 +21,7 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   16  scalar starttime;
   17  starttime = jnow;
   18   
-  19  set r rions /1*2/;
+  19  set r regions /1*2/;
   20  alias(rr, r);
   21  set t time /1*71/;
   22  alias(tt,t);
@@ -96,17 +96,17 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   82  Positive variables
   83   
   84  c(r, sec, t) consumption
-  85  c_agg_sec(r, t) consumption aggregate (across sectors)
+  85  c_sectors(r, t) consumption aggregate (across sectors)
   86  k(r, sec, t) kapital stock
-  87  k_agg_sec(r, t) kapital aggregate (across sectors)
+  87  k_sectors(r, t) kapital aggregate (across sectors)
   88  l(r, sec, t) labor supply
   89  ;
   90   
   91  Equations
   92  objfun Objective function
   93  TransitionCapital(r, sec, t) Law of Motion for Capital Stock
-  94  BudgetConstraint(t) budget constraint before jump
-  95  TippedBudgetConstraint(t) budget constraint after jump
+  94  BudgetConstraint(sec, t) budget constraint before jump
+  95  TippedBudgetConstraint(sec, t) budget constraint after jump
   96  ;
   97   
   98  objfun ..
@@ -150,6 +150,12 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
 **** 171  Domain violation for set
  112   
  113  BudgetConstraint(t)$(ord(t)>=s and ord(t)<s+DT) ..
+****                    $171,148
+**** LINE    105 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
  114  sum(r, c(r,t) + Inv(r,t) + (phi/2)*k(r,t)*sqr(Inv(r,t)/k(r,t)-delta)) =e= sum(r, (zeta2 + Probs(t)*(zeta1-zeta2))*A*(k(r,t)**alpha) * (l(r,t)**(1-alpha)));
 ****              $171,148   $171,148         $171,148     $171,148,171,300
 **** LINE    106 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
@@ -160,6 +166,12 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
 **** 300  Remaining errors not printed for this line
  115   
  116  TippedBudgetConstraint(t)$(ord(t)>=s and ord(t)<s+DT) ..
+****                          $171,148
+**** LINE    108 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
+**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
  117  sum(r, c(r,t) + Inv(r,t) + (phi/2)*k(r,t)*sqr(Inv(r,t)/k(r,t)-delta)) =e= sum(r, zeta2*A*(k(r,t)**alpha) * (l(r,t)**(1-alpha)));
 ****              $171,148   $171,148         $171,148     $171,148,171,300
 **** LINE    109 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ_common.gms
@@ -362,13 +374,16 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
 ****         indices as declared
 **** 171  Domain violation for set
  200      mupath(tt,npath) = BudgetConstraint.m(tt);
-****                                          $141
+****                                          $141$171,148
 **** LINE     62 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
 **** 141  Symbol declared but no values have been assigned. Check for missing
 ****         data definition, assignment, data loading or implicit assignment
 ****         via a solve statement.
 ****         A wild shot: You may have spurious commas in the explanatory
 ****         text of a declaration. Check symbol reference list.
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
  201   
  202  * simulation step
  203      Kpath(r,tt+1,npath) = (1-delta)*Kpath(r,tt,npath) + Ipath(r,tt,npath);
@@ -447,6 +462,11 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
 ****         indices as declared
 **** 171  Domain violation for set
  235      mupath(tt,npath) = BudgetConstraint.m(tt);
+****                                              $171,148
+**** LINE     97 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/RBC_SCEQ.gms
+**** 148  Dimension different - The symbol is referenced with more/less
+****         indices as declared
+**** 171  Domain violation for set
  236   
  237  * relax the fixed constraints on the state variables
  238      K.lo(r,t) = 0.001;
@@ -568,8 +588,8 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
  344  display elapsed;
  345   
 
-**** 107 ERROR(S)   0 WARNING(S)
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/23/22 17:59:31 Page 2
+**** 115 ERROR(S)   0 WARNING(S)
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/28/22 12:31:38 Page 2
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 Include File Summary
 
