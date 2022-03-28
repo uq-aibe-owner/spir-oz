@@ -1,4 +1,4 @@
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/28/22 19:57:51 Page 1
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/28/22 21:12:11 Page 1
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 C o m p i l a t i o n
 
@@ -44,304 +44,199 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   39      BETA                     discount rate /0.98/
   40      ALPHA                    capital cost share /0.33/
   41      DELTA                    capital stock depreciation /0.5/
-  42      PHI_ADJ                      adjustment cost parameter /0.5/
-  43      GAMM                    intertemporal elasticity of substitution /0.5/
-  44      GAMM_HAT                 utility parameter
+  42      PHI_ADJ                  adjustment cost parameter /0.5/
+  43      GAMMA                    intertemporal elasticity of substitution /0.5/
+  44      GAMMA_HAT                utility parameter
   45      ETA                      Frisch elasticity of labor supply /0.5/
-  46      ETA_HAT                   utility parameter
+  46      ETA_HAT                  utility parameter
   47      A                        technology parameter
   48      B                        relative weight of consumption and leisure
-  49      LFWD                        look-forward parameter / 10 /
+  49      LFWD                     look-forward parameter / 10 /
   50      s                        starting period for each look forward
   51      Tstar                    number of periods of interest
-  52      REG_WGHT(r)                 regional weights (eg population)
-  53      EoS_KAP                     elasticity of substitution for kapital /0.4/
-  54      RHO                     exponent of the ces function
-  55      RHO_INV                 inverse of RHO
+  52      REG_WGHT(r)              regional weights (eg population)
+  53      EoS_KAP                  elasticity of substitution for kapital /0.4/
+  54      RHO                      exponent of the ces function
+  55      RHO_INV                  inverse of RHO
   56      CON_SHR(i)               share of each commodity in consumption
   57      LAB_SHR(i)               share of each type of labour in utility
-  58      INV_MIN                     lower bound of investment
-  59      KAP0(r, i)                    initial capital
-  60      kmin                     smallest capital    / 0.1 /
-  61      kmax                     largest capital     / 10 /
-  62      ZETA1                    TFP before shock   / 1 /
-  63      ZETA2                    TFP after shock   / 0.95 /
-  64      PROB1                    one period probability of jump of TFP / 0.01 /
-  65      probs(t)                 probability of jump of TFP
-  66      E_shk(r, i, t)                   expected shock (exogenous)
-  67      TL_CON_SHR                      tail consumption share (of output) / .45 /
-  68      CON_SHR(i)             consumption share for each sector
-  69  ;
-  70   
-  71  *==============================================================================
-  72  *-----------derived economic parameters
-  73  *==============================================================================
-  74  Tstar = card(p)-1;
-  75  A = (1 - (1 - DELTA) * BETA) / (ALPHA * BETA);
-  76  GAMM_HAT = 1 - (1 / GAMM);
-  77  B = (1 - ALPHA) * A * (A - DELTA) ** (-1 / GAMM);
-  78  ETA_HAT = 1 + (1 / ETA);
-  79  RHO = (EoS_KAP - 1) / EoS_KAP;
-  80  RHO_INV = 1 / RHO;
-  81   
-  82  *-----------the following is the vector of population weights:
-  83  *-----------it enters the objective function and determines demand
-  84  REG_WGHT(r) = 1;
-  85  CON_SHR(i) = 1 / card(i);
-  86  LAB_SHR(i) = 1 / card(i);
-  87  *-----------
-  88  INV_MIN = 0.9 * DELTA;
-  89  *-----------the following is initial kapital: it will vary across regions
-  90  *KAP0(r) = kmin + (kmax-kmin)*(ord(r)-1)/(card(r)-1);
-  91  *KAP0(r) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(r)-1)/(card(r)-1));
-  92  KAP0(r, i) = 1;
-  93   
-  94  display A, B, ETA_HAT, KAP0;
-  95  *-----------the following won't work as s is a parameter not a set
-  96  *interval(s) = yes$(s < ord(t) and ord(t) < LFWD + s)
-  97   
-  98  *==============================================================================
-  99  *-----------basic (economic) variables
+  58      KAP_SHR(i)               share of each commodity in saving
+  59      INV_MIN                  lower bound of investment
+  60      KAP0(r, i)               initial capital
+  61      kmin                     smallest capital    / 0.1 /
+  62      kmax                     largest capital     / 10 /
+  63      ZETA1                    TFP before shock   / 1 /
+  64      ZETA2                    TFP after shock   / 0.95 /
+  65      PROB1                    one period probability of jump of TFP / 0.01 /
+  66      probs(t)                 probability of jump of TFP
+  67      E_shk(r, i, t)           expected shock (exogenous)
+  68      TL_CON_SHR               tail consumption share (of output) / 0.45 /
+  69      CON_SHR(i)               consumption share for each sector
+  70  ;
+  71   
+  72  *==============================================================================
+  73  *-----------derived economic parameters
+  74  *==============================================================================
+  75  Tstar = card(p)-1;
+  76  A = (1 - (1 - DELTA) * BETA) / (ALPHA * BETA);
+  77  GAMMA_HAT = 1 - (1 / GAMMA);
+  78  B = (1 - ALPHA) * A * (A - DELTA) ** (-1 / GAMMA);
+  79  ETA_HAT = 1 + (1 / ETA);
+  80  RHO = (EoS_KAP - 1) / EoS_KAP;
+  81  RHO_INV = 1 / RHO;
+  82   
+  83  *-----------the following is the vector of population weights:
+  84  *-----------it enters the objective function and determines demand
+  85  REG_WGHT(r) = 1;
+  86  CON_SHR(i) = 1 / card(i);
+  87  LAB_SHR(i) = 1 / card(i);
+  88  KAP_SHR(i) = 1 / card(i);
+  89  *-----------
+  90  INV_MIN = 0.9 * DELTA;
+  91  *-----------the following is initial kapital: it will vary across regions
+  92  *KAP0(r) = kmin + (kmax-kmin)*(ord(r)-1)/(card(r)-1);
+  93  *KAP0(r) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(r)-1)/(card(r)-1));
+  94  KAP0(r, i) = 1;
+  95   
+  96  display A, B, ETA_HAT, KAP0;
+  97  *-----------the following won't work as s is a parameter not a set
+  98  *interval(s) = yes$(s < ord(t) and ord(t) < LFWD + s)
+  99   
  100  *==============================================================================
- 101  Variables
- 102      obj                        objective criterion
- 103      inv(r, i, t)              investment
- 104      utility(r, t)            instantaneous utility
- 105  ;
- 106  *------------------------------------------------------------------------------
- 107  Positive variables
- 108   
- 109      con(r, i, t)              consumption
- 110      kap(r, i, t)              kapital stock
- 111      lab(r, i, t)              labor supply
- 112  *-----------intermediate variables
- 113      con_sec(r, t)            consumption aggregate (across sectors)
- 114      kap_sec(r, t)            kapital aggregate (across sectors)
- 115      lab_sec(r, t)            labour aggregate (across sectors)
- 116      adj(r, i, t)             kapital adjustment costs
- 117      out(r, i, t)             output
- 118  ;
- 119   
- 120  *==============================================================================
- 121  *-----------Bound Constraints
+ 101  *-----------basic (economic) variables
+ 102  *==============================================================================
+ 103  Variables
+ 104      obj                        objective criterion
+ 105      inv(r, i, t)              investment
+ 106      utility(r, t)            instantaneous utility
+ 107  ;
+ 108  *------------------------------------------------------------------------------
+ 109  Positive variables
+ 110   
+ 111      con(r, i, t)              consumption
+ 112      kap(r, i, t)              kapital stock
+ 113      lab(r, i, t)              labor supply
+ 114  *-----------intermediate variables
+ 115      con_sec(r, t)            consumption aggregate (across sectors)
+ 116      kap_sec(r, t)            kapital aggregate (across sectors)
+ 117      lab_sec(r, t)            labour aggregate (across sectors)
+ 118      adj(r, i, t)             kapital adjustment costs
+ 119      out(r, i, t)             output
+ 120  ;
+ 121   
  122  *==============================================================================
- 123  kap.lo(r, i, t) = 0.001;
- 124  kap.up(r, i, t) = 1000;
- 125  con.lo(r, i, t) = 0.001;
- 126  con.up(r, i, t) = 1000;
- 127  lab.lo(r, i, t) = 0.001;
- 128  lab.up(r, i, t) = 1000;
- 129  inv.lo(r, i, t) = INV_MIN;
- 130   
- 131  *==============================================================================
- 132  *-----------Initial Guess
+ 123  *-----------Bound Constraints
+ 124  *==============================================================================
+ 125  kap.lo(r, i, t) = 0.001;
+ 126  kap.up(r, i, t) = 1000;
+ 127  con.lo(r, i, t) = 0.001;
+ 128  con.up(r, i, t) = 1000;
+ 129  lab.lo(r, i, t) = 0.001;
+ 130  lab.up(r, i, t) = 1000;
+ 131  inv.lo(r, i, t) = INV_MIN;
+ 132   
  133  *==============================================================================
- 134  s = 1;
- 135  inv.L(r, i, t) = DELTA;
- 136  kap.L(r, i, t) = 1;
- 137  lab.L(r, i, t) = 1;
- 138  con.L(r, i, t) = A-DELTA;
- 139  *==============================================================================
- 140  *-----------equation declarations (over entire sets)
+ 134  *-----------Initial Guess
+ 135  *==============================================================================
+ 136  s = 1;
+ 137  inv.L(r, i, t) = DELTA;
+ 138  kap.L(r, i, t) = 1;
+ 139  lab.L(r, i, t) = 1;
+ 140  con.L(r, i, t) = A-DELTA;
  141  *==============================================================================
- 142  *-----------declarations are applied globally (eg on the whole of 1..71)
- 143  Equations
- 144  *-----------declarations for intermediate-variables
- 145      con_sec_eq(r, t)           consumption aggregate (across sectors)
- 146      kap_sec_eq(r, t)           kapital aggregate (across sectors)
- 147      lab_sec_eq(r, t)           labour aggregate (across sectors)
- 148      adj_eq(r, i, t)            kapital adjustment costs
- 149      out_eq(r, i, t)            output
- 150      utility_eq(r, t)            the utility function
- 151      obj_eq                              Objective function
- 152  *-----------canonical equations
- 153      dynamics_eq(r, i, t)        Law of Motion for Capital Stock
- 154      market_clearing_eq(i, t)            budget constraint before jump
- 155  *-----------other states
- 156      tipped_market_clearing_eq(i, t)      budget constraint after jump
- 157  ;
- 158  *==============================================================================
- 159  *-----------equation definitions for each s along the path
- 160  *==============================================================================
- 161  If (((s <= ord(t)) and (ord(t) <= LFWD + s)),
-****                 $154         $154
-**** LINE    153 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 154  Set for 'ord' is not controlled
- 162    If ((ord(t) < LFWD + s),
-****             $154
-**** LINE    154 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 154  Set for 'ord' is not controlled
- 163  *-----------definitions for some intermediate-variables
- 164  con_sec_eq(r, t)..
-****           $169
-**** LINE    156 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 169  Equation definition within a LOOP or IF statement not allowed
- 165        con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
- 166      ;
- 167      lab_sec_eq(r, t)..
-****               $169
-**** LINE    159 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 169  Equation definition within a LOOP or IF statement not allowed
- 168        lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
- 169      ;
- 170      kap_sec_eq(r, t)..
-****               $169
-**** LINE    162 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 169  Equation definition within a LOOP or IF statement not allowed
- 171        kap_sec(r, t) =e= (sum(i, KAP_SHR(i) * kap(r, i, t) ** RHO)) ** RHO_INV
-****                                        $140
-**** LINE    163 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 140  Unknown symbol
- 172      ;
- 173      adj_eq(r, i, t)..
-****           $169
-**** LINE    165 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 169  Equation definition within a LOOP or IF statement not allowed
- 174        adj(r, i, t) =e= (PHI_ADJ/2) * k(r, i, t)
-****                                       $140
-**** LINE    166 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 140  Unknown symbol
- 175          * sqr(inv(r, i, t) / k(r,t) - DELTA)
-****                                    $148
-**** LINE    167 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 148  Dimension different - The symbol is referenced with more/less
-****         indices as declared
- 176      ;
- 177      out_eq(r, i, t)..
-****           $169
-**** LINE    169 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 169  Equation definition within a LOOP or IF statement not allowed
- 178        out(r, i, t) =e= A * kap(r, i, t) ** ALPHA * lab(r, i, t) ** (1 - ALPHA)
- 179      ;
- 180  *------------------------------------------------------------------------------
- 181  *-----------the sequence of utility flows per region and time period
- 182  *------------------------------------------------------------------------------
- 183      utility_eq(r, t)..
-****               $169
-**** LINE    175 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 169  Equation definition within a LOOP or IF statement not allowed
- 184        utility(r, t) =e=
- 185  *-----------the consumption part:
- 186          con_sec(r, t) ** GAMM_HAT / GAMM_HAT
- 187  *-----------the labour part:
- 188          - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
- 189      ;
- 190  *------------------------------------------------------------------------------
- 191  *-----------canonical equations
- 192  *------------------------------------------------------------------------------
- 193      dynamics_eq(r, t)..
-****                $169  $171,148
-**** LINE    185 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 148  Dimension different - The symbol is referenced with more/less
-****         indices as declared
-**** 169  Equation definition within a LOOP or IF statement not allowed
-**** 171  Domain violation for set
- 194        kap(r, i, t + 1) =e= (1 - DELTA) * kap(r, i, t) + inv(r, i, t)
-****                $149                               $149           $149
-**** LINE    186 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 149  Uncontrolled set entered as constant
- 195      ;
- 196      market_clearing_eq(t)..
-****                       $169,171,148
-**** LINE    188 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 148  Dimension different - The symbol is referenced with more/less
-****         indices as declared
-**** 169  Equation definition within a LOOP or IF statement not allowed
-**** 171  Domain violation for set
- 197        sum(r, E_shk(r, i, t) * out(r, i, t)
-****                         $149           $149
-**** LINE    189 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 149  Uncontrolled set entered as constant
- 198          - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
-****            $140  $149           $149           $149
-**** LINE    190 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 140  Unknown symbol
-**** 149  Uncontrolled set entered as constant
- 199      ;
- 200  *------------------------------------------------------------------------------
- 201  *-----------other states
- 202      tipped_market_clearing_eq(t)..
-****                              $169,171,148
-**** LINE    194 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 148  Dimension different - The symbol is referenced with more/less
-****         indices as declared
-**** 169  Equation definition within a LOOP or IF statement not allowed
-**** 171  Domain violation for set
- 203        sum(r, ZETA2 * out(r, i, t)
-****                               $149
-**** LINE    195 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 149  Uncontrolled set entered as constant
- 204          - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
-****                  $149           $149           $149
-**** LINE    196 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 149  Uncontrolled set entered as constant
- 205      ;
- 206  *-----------tail/continuation utility, where tail labour is normalised to one:
- 207    else (ord(t) = LFWD + s),
-****         $8,409
-**** LINE    199 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-****   8  ')' expected
-**** 409  Unrecognizable item - skip to find a new statement
-****        looking for a ';' or a key word to get started again
- 208      utility_eq(r, t)..
- 209        utility(r, t) =e=
+ 142  *-----------equation declarations (over entire sets)
+ 143  *==============================================================================
+ 144  *-----------declarations are applied globally (eg on the whole of 1..71)
+ 145  Equations
+ 146  *-----------declarations for intermediate-variables
+ 147      con_sec_eq(r, t)           consumption aggregate (across sectors)
+ 148      kap_sec_eq(r, t)           kapital aggregate (across sectors)
+ 149      lab_sec_eq(r, t)           labour aggregate (across sectors)
+ 150      adj_eq(r, i, t)            kapital adjustment costs
+ 151      out_eq(r, i, t)            output
+ 152      utility_eq(r, t)           the utility function
+ 153      tail_utility_eq(r, t)       the tail utility function
+ 154      obj_eq                     Objective function
+ 155  *-----------canonical equations
+ 156      dynamics_eq(r, i, t)        Law of Motion for Capital Stock
+ 157      market_clearing_eq(i, t)            budget constraint before jump
+ 158  *-----------other states
+ 159      tipped_market_clearing_eq(i, t)      budget constraint after jump
+ 160  ;
+ 161  *==============================================================================
+ 162  *-----------equation definitions for each s along the path
+ 163  *==============================================================================
+ 164  *-----------definitions for some intermediate-variables
+ 165  con_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 166        con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
+ 167      ;
+ 168      lab_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 169        lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
+ 170      ;
+ 171      kap_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 172        kap_sec(r, t) =e= (sum(i, KAP_SHR(i) * kap(r, i, t) ** RHO)) ** RHO_INV
+ 173      ;
+ 174      adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 175        adj(r, i, t) =e= (PHI_ADJ/2) * kap(r, i, t)
+ 176          * sqr(inv(r, i, t) / kap(r, i, t) - DELTA)
+ 177      ;
+ 178      out_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 179        out(r, i, t) =e= A * kap(r, i, t) ** ALPHA * lab(r, i, t) ** (1 - ALPHA)
+ 180      ;
+ 181  *------------------------------------------------------------------------------
+ 182  *-----------canonical equations
+ 183  *------------------------------------------------------------------------------
+ 184      dynamics_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 185        kap(r, i, t + 1) =e= (1 - DELTA) * kap(r, i, t) + inv(r, i, t)
+ 186      ;
+ 187      market_clearing_eq(i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 188        sum(r, E_shk(r, i, t) * out(r, i, t)
+ 189          - con(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
+ 190      ;
+ 191  *------------------------------------------------------------------------------
+ 192  *-----------other states
+ 193      tipped_market_clearing_eq(i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 194        sum(r, ZETA2 * out(r, i, t)
+ 195          - con(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
+ 196      ;
+ 197  *------------------------------------------------------------------------------
+ 198  *-----------the sequence of utility flows per region and time period
+ 199  *------------------------------------------------------------------------------
+ 200      utility_eq(r, t) $ (s <= ord(t) and ord(t) <= LFWD + s)..
+ 201        utility(r, t) $ (s <= ord(t) and ord(t) <= LFWD + s) =e=
+ 202  *-----------the consumption part:
+ 203          con_sec(r, t) ** GAMMA_HAT / GAMMA_HAT
+ 204  *-----------the labour part:
+ 205          - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
+ 206      ;
+ 207      tail_utility_eq(r, t) $ (ord(t) = LFWD + s)..
+ 208  *-----------tail/continuation utility, where tail labour is normalised to one:
+ 209        utility(r, t) $ (ord(t) = LFWD + s) =e=
  210  *-----------in the consumption part, a fixed share of output is consumed
- 211          ((TL_CON_SH * A * kap_sec(r, t)) ** ALPHA) ** GAMM_HAT / GAMM_HAT
+ 211          ((TL_CON_SHR * A * kap_sec(r, t)) ** ALPHA) ** GAMMA_HAT / GAMMA_HAT
  212          - B / (1 - BETA)
  213      ;
- 214    );
-****    $408
-**** LINE    206 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 408  Too many ),] or }
- 215  *------------------------------------------------------------------------------
- 216  *-----------the objective function
- 217  *------------------------------------------------------------------------------
- 218      obj_eq..
- 219        obj =e=
- 220          sum(r, REG_WGHT(r) * sum(t, BETA ** (ord(t) - s) * utility(r, t)))
+ 214  *------------------------------------------------------------------------------
+ 215  *-----------the objective function
+ 216  *------------------------------------------------------------------------------
+ 217      obj_eq..
+ 218        obj =e=
+ 219          sum(r, REG_WGHT(r) * sum(t $ (s <= ord(t) and ord(t) <= LFWD),
+ 220              BETA ** (ord(t) - s) * utility(r, t)))
  221      ;
- 222  );
-****  $408
-**** LINE    214 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 408  Too many ),] or }
- 223   
- 224  *==============================================================================
- 225  *-----------solver options
- 226  options limrow = 0, limcol = 0;
- 227  option reslim = 10000;
- 228  option iterlim = 10000;
- 229  option solprint = off;
- 230  option nlp = conopt;
- 231   
- 232  *==============================================================================
- 233  *-----------instantiate models with corresponding equations
- 234  model busc /objfun,
-****                   $140
-**** LINE    226 INCLUDE     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
-**** LINE      8 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 140  Unknown symbol
+ 222   
+ 223  *==============================================================================
+ 224  *-----------solver options
+ 225  options limrow = 0, limcol = 0;
+ 226  option reslim = 10000;
+ 227  option iterlim = 10000;
+ 228  option solprint = off;
+ 229  option nlp = conopt;
+ 230   
+ 231  *==============================================================================
+ 232  *-----------instantiate models with corresponding equations
+ 233  model busc /
+ 234          obj_eq,
  235          dynamics_eq,
  236          market_clearing_eq,
  237          con_sec_eq,
@@ -349,270 +244,268 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
  239          lab_sec_eq,
  240          adj_eq,
  241          out_eq,
- 242          utility_eq,
+ 242          utility_eq
  243          /;
- 244  model busc_tipped /objfun,
- 245          dynamics_eq,
- 246          tipped_market_clearing_eq,
- 247          con_sec_eq,
- 248          kap_sec_eq,
- 249          lab_sec_eq,
- 250          adj_eq,
- 251          out_eq,
- 252          utility_eq,
- 253          /;
- 254   
+ 244  model busc_tipped /
+ 245          obj_eq,
+ 246          dynamics_eq,
+ 247          tipped_market_clearing_eq,
+ 248          con_sec_eq,
+ 249          kap_sec_eq,
+ 250          lab_sec_eq,
+ 251          adj_eq,
+ 252          out_eq,
+ 253          utility_eq
+ 254          /;
  255   
- 256  *********************************************
- 257  * run SCEQ
- 258   
- 259  parameter
- 260      con_path(r, i, tt, p) simulated consumption paths
- 261      inv_path(r, i, tt, p) simulated investment paths
- 262      lab_path(r, i, tt, p) simulated labor supply paths
- 263      kap_path(r, i, tt, p) simulated capital paths
- 264      lam_path(r, i, tt, p) shadow prices for capital transition
- 265      mu_path(tt, p) shadow prices for budget constraint
- 266  ;
- 267   
- 268  con_path(r, i, tt, p) = 1;
- 269  inv_path(r, i, tt, p) = 1;
- 270  lab_path(r, i, tt, p) = 1;
- 271  kap_path(r, i, tt, p) = 1;
- 272  lam_path(r, i, tt, p) = 1;
- 273  mu_path(tt, p) = 1;
- 274   
- 275  set niter / 1*10 /;
- 276   
- 277  kap_path(r, i, '1', p) = KAP0(r, i);
- 278   
- 279  *==============================================================================
- 280  *-----------solve the pre-tipping path
- 281  loop(p $ (ord(p) = 1),
- 282  *-----------iterate over time periods, tt, of interest
- 283  *-----------(last period for error checking)
- 284    loop(tt $ (ord(tt) <= Tstar + 1),
- 285  * starting period
- 286      s = ord(tt);
- 287   
- 288  * optimization step
- 289   
- 290  * fix the state variable at s
- 291      kap.fx(r, i, tt) = kap_path(r, i, tt, p);
- 292   
- 293  * if tipping event has not happened by the beginning of the current period
- 294      probs(t) $ (ord(t)>=s) = (1 - PROB1) ** (ord(t) - s);
- 295      E_shk(r, i, t) = ZETA2 + probs(t) * (ZETA1 - ZETA2);
- 296      loop(niter,
- 297          solve busc using nlp maximizing obj;
-****                                             $257
-**** LINE     51 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
-**** 257  Solve statement not checked because of previous errors
- 298          if((busc.MODELSTAT <= 2 and busc.SOLVESTAT = 1),
- 299              break;
- 300          );
- 301      );
- 302      abort$(busc.MODELSTAT > 2 or busc.SOLVESTAT <> 1) "FAILED in solving!";
- 303   
- 304      con_path(r, i, tt, p) = con.L(r, i, tt);
- 305      inv_path(r, i, tt, p) = inv.L(r, i, tt);
- 306      lab_path(r, i, tt, p) = lab.L(r, i, tt);
- 307      lam_path(r, i, tt, p) = dynamics.m(r, i, tt);
+ 256   
+ 257  *********************************************
+ 258  * run SCEQ
+ 259   
+ 260  parameter
+ 261      con_path(r, i, tt, p) simulated consumption paths
+ 262      inv_path(r, i, tt, p) simulated investment paths
+ 263      lab_path(r, i, tt, p) simulated labor supply paths
+ 264      kap_path(r, i, tt, p) simulated capital paths
+ 265      lam_path(r, i, tt, p) shadow prices for capital transition
+ 266      mu_path(tt, p) shadow prices for budget constraint
+ 267  ;
+ 268   
+ 269  con_path(r, i, tt, p) = 1;
+ 270  inv_path(r, i, tt, p) = 1;
+ 271  lab_path(r, i, tt, p) = 1;
+ 272  kap_path(r, i, tt, p) = 1;
+ 273  lam_path(r, i, tt, p) = 1;
+ 274  mu_path(tt, p) = 1;
+ 275   
+ 276  set niter / 1*10 /;
+ 277   
+ 278  kap_path(r, i, '1', p) = KAP0(r, i);
+ 279   
+ 280  *==============================================================================
+ 281  *-----------solve the pre-tipping path
+ 282  loop(p $ (ord(p) = 1),
+ 283  *-----------iterate over time periods, tt, of interest
+ 284  *-----------(last period for error checking)
+ 285    loop(tt $ (ord(tt) <= Tstar + 1),
+ 286  * starting period
+ 287      s = ord(tt);
+ 288   
+ 289  * optimization step
+ 290   
+ 291  * fix the state variable at s
+ 292      kap.fx(r, i, tt) = kap_path(r, i, tt, p);
+ 293   
+ 294  * if tipping event has not happened by the beginning of the current period
+ 295      probs(t) $ (ord(t)>=s) = (1 - PROB1) ** (ord(t) - s);
+ 296      E_shk(r, i, t) = ZETA2 + probs(t) * (ZETA1 - ZETA2);
+ 297      loop(niter,
+ 298          solve busc using nlp maximizing obj;
+ 299          if((busc.MODELSTAT <= 2 and busc.SOLVESTAT = 1),
+ 300              break;
+ 301          );
+ 302      );
+ 303      abort$(busc.MODELSTAT > 2 or busc.SOLVESTAT <> 1) "FAILED in solving!";
+ 304   
+ 305      con_path(r, i, tt, p) = con.L(r, i, tt);
+ 306      inv_path(r, i, tt, p) = inv.L(r, i, tt);
+ 307      lab_path(r, i, tt, p) = lab.L(r, i, tt);
+ 308      lam_path(r, i, tt, p) = dynamics.m(r, i, tt);
 ****                                       $140
 **** LINE     61 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 140  Unknown symbol
- 308      mu_path(tt, p) = market_clearing.m(tt);
+ 309      mu_path(tt, p) = market_clearing.m(tt);
 ****                                       $140
 **** LINE     62 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 140  Unknown symbol
- 309   
- 310  * simulation step
- 311      kap_path(r, i, tt+1, p) = (1 - delta) * kappath(r, i, tt, p)
+ 310   
+ 311  * simulation step
+ 312      kap_path(r, i, tt+1, p) = (1 - delta) * kappath(r, i, tt, p)
 ****                                                    $140
 **** LINE     65 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 140  Unknown symbol
- 312        + inv_path(r, i, tt, p);
- 313    );
- 314   
- 315  * relax the fixed constraints on the state variables
- 316    kap.lo(r,t) = 0.001;
+ 313        + inv_path(r, i, tt, p);
+ 314    );
+ 315   
+ 316  * relax the fixed constraints on the state variables
+ 317    kap.lo(r,t) = 0.001;
 ****              $171,148
 **** LINE     70 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 148  Dimension different - The symbol is referenced with more/less
 ****         indices as declared
 **** 171  Domain violation for set
- 317    kap.up(r,t) = 1000;
+ 318    kap.up(r,t) = 1000;
 ****              $171,148
 **** LINE     71 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 148  Dimension different - The symbol is referenced with more/less
 ****         indices as declared
 **** 171  Domain violation for set
- 318  );
- 319   
- 320  *==============================================================================
- 321  * solve the tipped paths
- 322   
- 323  loop(p$(ord(p)>1),
- 324  * starting period is also the period that the tipped event happens
- 325      s = ord(p);
- 326   
- 327  *-----------fix the state variable at s: the tipping event happens at s, but
- 328  *-----------the capital at s has not been impacted
- 329      kap.fx(r, i, tt)$(ord(tt)=s) = kap_path(r, i, tt,'1');
- 330   
- 331      loop(niter,
- 332          solve busc_tipped using nlp maximizing obj;
+ 319  );
+ 320   
+ 321  *==============================================================================
+ 322  * solve the tipped paths
+ 323   
+ 324  loop(p$(ord(p)>1),
+ 325  * starting period is also the period that the tipped event happens
+ 326      s = ord(p);
+ 327   
+ 328  *-----------fix the state variable at s: the tipping event happens at s, but
+ 329  *-----------the capital at s has not been impacted
+ 330      kap.fx(r, i, tt)$(ord(tt)=s) = kap_path(r, i, tt,'1');
+ 331   
+ 332      loop(niter,
+ 333          solve busc_tipped using nlp maximizing obj;
 ****                                                    $257
 **** LINE     86 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 257  Solve statement not checked because of previous errors
- 333          if((busc_tipped.MODELSTAT<=2 and busc_tipped.SOLVESTAT=1),
- 334              break;
- 335          );
- 336      );
- 337      abort$(busc_tipped.MODELSTAT>2 or busc_tipped.SOLVESTAT<>1)
- 338        "FAILED in solving!"
- 339      ;
- 340      con_path(r, i, tt, p) = con.L(r, i, tt);
- 341      inv_path(r, i, tt, p) = inv.L(r, i, tt);
- 342      lab_path(r, i, tt, p) = lab.L(r, i, tt);
- 343      kap_path(r, i, tt, p) = kap.l(r, i, tt);
- 344      lam_path(r, i, tt, p) = dynamics.m(r, i, tt);
- 345      mu_path(tt, p) = market_clearing.m(tt);
- 346   
- 347  * relax the fixed constraints on the state variables
- 348      kap.lo(r,t) = 0.001;
+ 334          if((busc_tipped.MODELSTAT<=2 and busc_tipped.SOLVESTAT=1),
+ 335              break;
+ 336          );
+ 337      );
+ 338      abort$(busc_tipped.MODELSTAT>2 or busc_tipped.SOLVESTAT<>1)
+ 339        "FAILED in solving!"
+ 340      ;
+ 341      con_path(r, i, tt, p) = con.L(r, i, tt);
+ 342      inv_path(r, i, tt, p) = inv.L(r, i, tt);
+ 343      lab_path(r, i, tt, p) = lab.L(r, i, tt);
+ 344      kap_path(r, i, tt, p) = kap.l(r, i, tt);
+ 345      lam_path(r, i, tt, p) = dynamics.m(r, i, tt);
+ 346      mu_path(tt, p) = market_clearing.m(tt);
+ 347   
+ 348  * relax the fixed constraints on the state variables
+ 349      kap.lo(r,t) = 0.001;
 ****                $171,148
 **** LINE    102 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 148  Dimension different - The symbol is referenced with more/less
 ****         indices as declared
 **** 171  Domain violation for set
- 349      kap.up(r,t) = 1000;
+ 350      kap.up(r,t) = 1000;
 ****                $171,148
 **** LINE    103 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 148  Dimension different - The symbol is referenced with more/less
 ****         indices as declared
 **** 171  Domain violation for set
- 350  );
- 351   
- 352  *==============================================================================
- 353  * compute Euler errors at the pre-tipping path
- 354   
- 355  *parameter integrand(r, i, tt, p)
- 356  *    errs(r, i, tt);
- 357  *
- 358  *integrand(r, i, tt,'1')$(ord(tt)<=Tstar+1) = lam_path(r, i, tt,'1')*(1-delta) +
- 359  *    mu_path(tt,'1') * ( A*alpha*((kap_path(r, i, tt,'1')/lab_path(r, i, tt,'1'))**(alpha-1)) -
- 360  *    phi/2*sqr(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta) +
- 361  *    phi*(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta)*inv_path(r, i, tt,'1')/kappath(r, i, tt,'1') );
- 362  *integrand(r, i, tt, p)$(ord(p)>1 and ord(tt)<=Tstar+1) = lam_path(r, i, tt, p)*(1-delta) +
- 363  *    mu_path(tt, p) * ( A*alpha*((kap_path(r, i, tt, p)/lab_path(r, i, tt, p))**(alpha-1)) -
- 364  *    phi/2*sqr(inv_path(r, i, tt, p)/kap_path(r, i, tt, p)-delta) +
- 365  *    phi*(inv_path(r, i, tt, p)/kap_path(r, i, tt, p)-delta)*inv_path(r, i, tt, p)/kappath(r, i, tt, p) );
- 366  *
- 367  *errs(r, i, tt)$(ord(tt)<=Tstar) = abs(1 - beta*( (1-PROB1)*integrand(r, i, tt+1,'1') +
- 368  *    PROB1*sum(p$(ord(p)=ord(tt)+1),integrand(r, i, tt+1, p)) ) / lam_path(r, i, tt,'1'));
- 369   
- 370  ************************
- 371  * Output solutions
- 372   
- 373  File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
- 374  sol_SCEQ_RBC_con.pc=5;
- 375  sol_SCEQ_RBC_con.pw=4000;
- 376   
- 377  Put sol_SCEQ_RBC_con;
- 378   
- 379  loop(p,
- 380    loop(tt$(ord(tt)<=Tstar),
- 381      put tt.tl::4;
- 382      loop(r,
- 383        put con_path(r, i, tt, p)::6;
+ 351  );
+ 352   
+ 353  *==============================================================================
+ 354  * compute Euler errors at the pre-tipping path
+ 355   
+ 356  *parameter integrand(r, i, tt, p)
+ 357  *    errs(r, i, tt);
+ 358  *
+ 359  *integrand(r, i, tt,'1')$(ord(tt)<=Tstar+1) = lam_path(r, i, tt,'1')*(1-delta) +
+ 360  *    mu_path(tt,'1') * ( A*alpha*((kap_path(r, i, tt,'1')/lab_path(r, i, tt,'1'))**(alpha-1)) -
+ 361  *    phi/2*sqr(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta) +
+ 362  *    phi*(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta)*inv_path(r, i, tt,'1')/kappath(r, i, tt,'1') );
+ 363  *integrand(r, i, tt, p)$(ord(p)>1 and ord(tt)<=Tstar+1) = lam_path(r, i, tt, p)*(1-delta) +
+ 364  *    mu_path(tt, p) * ( A*alpha*((kap_path(r, i, tt, p)/lab_path(r, i, tt, p))**(alpha-1)) -
+ 365  *    phi/2*sqr(inv_path(r, i, tt, p)/kap_path(r, i, tt, p)-delta) +
+ 366  *    phi*(inv_path(r, i, tt, p)/kap_path(r, i, tt, p)-delta)*inv_path(r, i, tt, p)/kappath(r, i, tt, p) );
+ 367  *
+ 368  *errs(r, i, tt)$(ord(tt)<=Tstar) = abs(1 - beta*( (1-PROB1)*integrand(r, i, tt+1,'1') +
+ 369  *    PROB1*sum(p$(ord(p)=ord(tt)+1),integrand(r, i, tt+1, p)) ) / lam_path(r, i, tt,'1'));
+ 370   
+ 371  ************************
+ 372  * Output solutions
+ 373   
+ 374  File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
+ 375  sol_SCEQ_RBC_con.pc=5;
+ 376  sol_SCEQ_RBC_con.pw=4000;
+ 377   
+ 378  Put sol_SCEQ_RBC_con;
+ 379   
+ 380  loop(p,
+ 381    loop(tt$(ord(tt)<=Tstar),
+ 382      put tt.tl::4;
+ 383      loop(r,
+ 384        put con_path(r, i, tt, p)::6;
 ****                         $149
 **** LINE    137 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 149  Uncontrolled set entered as constant
- 384      );
- 385      put /;
- 386    );
- 387  );
- 388   
- 389  File sol_SCEQ_RBC_kap /sol_SCEQ_RBC_kap.csv/;
- 390  sol_SCEQ_RBC_kap.pc=5;
- 391  sol_SCEQ_RBC_kap.pw=4000;
- 392   
- 393  Put sol_SCEQ_RBC_kap;
- 394   
- 395  loop(p,
- 396    loop(tt$(ord(tt)<=Tstar),
- 397      put tt.tl::4;
- 398      loop(r,
- 399        put kap_path(r, i, tt, p)::6;
+ 385      );
+ 386      put /;
+ 387    );
+ 388  );
+ 389   
+ 390  File sol_SCEQ_RBC_kap /sol_SCEQ_RBC_kap.csv/;
+ 391  sol_SCEQ_RBC_kap.pc=5;
+ 392  sol_SCEQ_RBC_kap.pw=4000;
+ 393   
+ 394  Put sol_SCEQ_RBC_kap;
+ 395   
+ 396  loop(p,
+ 397    loop(tt$(ord(tt)<=Tstar),
+ 398      put tt.tl::4;
+ 399      loop(r,
+ 400        put kap_path(r, i, tt, p)::6;
 ****                         $149
 **** LINE    153 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 149  Uncontrolled set entered as constant
- 400      );
- 401      put /;
- 402    );
- 403  );
- 404   
- 405  File sol_SCEQ_RBC_inv /sol_SCEQ_RBC_inv.csv/;
- 406  sol_SCEQ_RBC_inv.pc=5;
- 407  sol_SCEQ_RBC_inv.pw=4000;
- 408   
- 409  Put sol_SCEQ_RBC_inv;
- 410   
- 411  loop(p,
- 412    loop(tt$(ord(tt)<=Tstar),
- 413      put tt.tl::4;
- 414      loop(r,
- 415        put inv_path(r, i, tt, p)::6;
+ 401      );
+ 402      put /;
+ 403    );
+ 404  );
+ 405   
+ 406  File sol_SCEQ_RBC_inv /sol_SCEQ_RBC_inv.csv/;
+ 407  sol_SCEQ_RBC_inv.pc=5;
+ 408  sol_SCEQ_RBC_inv.pw=4000;
+ 409   
+ 410  Put sol_SCEQ_RBC_inv;
+ 411   
+ 412  loop(p,
+ 413    loop(tt$(ord(tt)<=Tstar),
+ 414      put tt.tl::4;
+ 415      loop(r,
+ 416        put inv_path(r, i, tt, p)::6;
 ****                         $149
 **** LINE    169 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 149  Uncontrolled set entered as constant
- 416      );
- 417      put /;
- 418    );
- 419  );
- 420   
- 421  File sol_SCEQ_RBC_lab /sol_SCEQ_RBC_lab.csv/;
- 422  sol_SCEQ_RBC_lab.pc=5;
- 423  sol_SCEQ_RBC_lab.pw=4000;
- 424   
- 425  Put sol_SCEQ_RBC_lab;
- 426   
- 427  loop(p,
- 428    loop(tt$(ord(tt)<=Tstar),
- 429      put tt.tl::4;
- 430      loop(r,
- 431        put lab_path(r, i, tt, p)::6;
+ 417      );
+ 418      put /;
+ 419    );
+ 420  );
+ 421   
+ 422  File sol_SCEQ_RBC_lab /sol_SCEQ_RBC_lab.csv/;
+ 423  sol_SCEQ_RBC_lab.pc=5;
+ 424  sol_SCEQ_RBC_lab.pw=4000;
+ 425   
+ 426  Put sol_SCEQ_RBC_lab;
+ 427   
+ 428  loop(p,
+ 429    loop(tt$(ord(tt)<=Tstar),
+ 430      put tt.tl::4;
+ 431      loop(r,
+ 432        put lab_path(r, i, tt, p)::6;
 ****                         $149
 **** LINE    185 INPUT       /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 **** 149  Uncontrolled set entered as constant
- 432      );
- 433      put /;
- 434    );
- 435  );
- 436   
- 437  File sol_SCEQ_RBC_err /sol_SCEQ_RBC_err.csv/;
- 438  sol_SCEQ_RBC_err.pc=5;
- 439  sol_SCEQ_RBC_err.pw=4000;
- 440   
- 441  *Put sol_SCEQ_RBC_err;
- 442  *
- 443  *loop(tt$(ord(tt)<=Tstar),
- 444  *    put tt.tl::4;
- 445  *    loop(r,
- 446  *      put errs(r, i, tt)::6;
- 447  *    );
- 448  *    put /;
- 449  *);
- 450   
- 451  * display the running time in minutes
- 452  scalar elapsed;
- 453  elapsed = (jnow - starttime)*24*60;
- 454  display elapsed;
- 455   
+ 433      );
+ 434      put /;
+ 435    );
+ 436  );
+ 437   
+ 438  File sol_SCEQ_RBC_err /sol_SCEQ_RBC_err.csv/;
+ 439  sol_SCEQ_RBC_err.pc=5;
+ 440  sol_SCEQ_RBC_err.pw=4000;
+ 441   
+ 442  *Put sol_SCEQ_RBC_err;
+ 443  *
+ 444  *loop(tt$(ord(tt)<=Tstar),
+ 445  *    put tt.tl::4;
+ 446  *    loop(r,
+ 447  *      put errs(r, i, tt)::6;
+ 448  *    );
+ 449  *    put /;
+ 450  *);
+ 451   
+ 452  * display the running time in minutes
+ 453  scalar elapsed;
+ 454  elapsed = (jnow - starttime)*24*60;
+ 455  display elapsed;
+ 456   
 
-**** 56 ERROR(S)   0 WARNING(S)
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/28/22 19:57:51 Page 2
+**** 16 ERROR(S)   0 WARNING(S)
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/28/22 21:12:11 Page 2
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 Include File Summary
 
@@ -623,7 +516,7 @@ Include File Summary
      2        8 INCLUDE        1       8  ./Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq_common.gms
 
 
-COMPILATION TIME     =        0.011 SECONDS      3 MB  38.1.0 a1a3b545 DEX-DEG
+COMPILATION TIME     =        0.005 SECONDS      3 MB  38.1.0 a1a3b545 DEX-DEG
 
 
 USER: GAMS Demo license for Patrick OCallaghan       G220215|0002CO-GEN

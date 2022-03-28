@@ -31,33 +31,34 @@ parameters
     BETA                     discount rate /0.98/
     ALPHA                    capital cost share /0.33/
     DELTA                    capital stock depreciation /0.5/
-    PHI_ADJ                      adjustment cost parameter /0.5/
-    GAMM                    intertemporal elasticity of substitution /0.5/
-    GAMM_HAT                 utility parameter
+    PHI_ADJ                  adjustment cost parameter /0.5/
+    GAMMA                    intertemporal elasticity of substitution /0.5/
+    GAMMA_HAT                utility parameter
     ETA                      Frisch elasticity of labor supply /0.5/
-    ETA_HAT                   utility parameter
+    ETA_HAT                  utility parameter
     A                        technology parameter
     B                        relative weight of consumption and leisure
-    LFWD                        look-forward parameter / 10 /
+    LFWD                     look-forward parameter / 10 /
     s                        starting period for each look forward
     Tstar                    number of periods of interest 
-    REG_WGHT(r)                 regional weights (eg population)
-    EoS_KAP                     elasticity of substitution for kapital /0.4/
-    RHO                     exponent of the ces function
-    RHO_INV                 inverse of RHO
+    REG_WGHT(r)              regional weights (eg population)
+    EoS_KAP                  elasticity of substitution for kapital /0.4/
+    RHO                      exponent of the ces function
+    RHO_INV                  inverse of RHO
     CON_SHR(i)               share of each commodity in consumption
     LAB_SHR(i)               share of each type of labour in utility
-    INV_MIN                     lower bound of investment 
-    KAP0(r, i)                    initial capital
+    KAP_SHR(i)               share of each commodity in saving
+    INV_MIN                  lower bound of investment 
+    KAP0(r, i)               initial capital
     kmin                     smallest capital    / 0.1 /
     kmax                     largest capital     / 10 /
     ZETA1                    TFP before shock   / 1 /
     ZETA2                    TFP after shock   / 0.95 /
     PROB1                    one period probability of jump of TFP / 0.01 /
     probs(t)                 probability of jump of TFP
-    E_shk(r, i, t)                   expected shock (exogenous) 
-    TL_CON_SHR                      tail consumption share (of output) / .45 /
-    CON_SHR(i)             consumption share for each sector
+    E_shk(r, i, t)           expected shock (exogenous) 
+    TL_CON_SHR               tail consumption share (of output) / 0.45 /
+    CON_SHR(i)               consumption share for each sector
 ;
 
 *==============================================================================
@@ -65,8 +66,8 @@ parameters
 *==============================================================================
 Tstar = card(p)-1;
 A = (1 - (1 - DELTA) * BETA) / (ALPHA * BETA);
-GAMM_HAT = 1 - (1 / GAMM);
-B = (1 - ALPHA) * A * (A - DELTA) ** (-1 / GAMM);
+GAMMA_HAT = 1 - (1 / GAMMA);
+B = (1 - ALPHA) * A * (A - DELTA) ** (-1 / GAMMA);
 ETA_HAT = 1 + (1 / ETA);
 RHO = (EoS_KAP - 1) / EoS_KAP; 
 RHO_INV = 1 / RHO;
@@ -76,6 +77,7 @@ RHO_INV = 1 / RHO;
 REG_WGHT(r) = 1;
 CON_SHR(i) = 1 / card(i);
 LAB_SHR(i) = 1 / card(i);
+KAP_SHR(i) = 1 / card(i);
 *-----------
 INV_MIN = 0.9 * DELTA;
 *-----------the following is initial kapital: it will vary across regions
@@ -139,8 +141,9 @@ Equations
     lab_sec_eq(r, t)           labour aggregate (across sectors)
     adj_eq(r, i, t)            kapital adjustment costs
     out_eq(r, i, t)            output 
-    utility_eq(r, t)            the utility function
-    obj_eq                              Objective function
+    utility_eq(r, t)           the utility function
+    tail_utility_eq(r, t)       the tail utility function
+    obj_eq                     Objective function
 *-----------canonical equations
     dynamics_eq(r, i, t)        Law of Motion for Capital Stock
     market_clearing_eq(i, t)            budget constraint before jump
@@ -150,68 +153,64 @@ Equations
 *==============================================================================
 *-----------equation definitions for each s along the path
 *==============================================================================
-If (((s <= ord(t)) and (ord(t) <= LFWD + s)),
-  If ((ord(t) < LFWD + s),
 *-----------definitions for some intermediate-variables
-con_sec_eq(r, t).. 
+con_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
       con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
     ;
-    lab_sec_eq(r, t).. 
+    lab_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
       lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
     ;
-    kap_sec_eq(r, t).. 
+    kap_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
       kap_sec(r, t) =e= (sum(i, KAP_SHR(i) * kap(r, i, t) ** RHO)) ** RHO_INV
     ;
-    adj_eq(r, i, t)..
-      adj(r, i, t) =e= (PHI_ADJ/2) * k(r, i, t) 
-        * sqr(inv(r, i, t) / k(r,t) - DELTA)
+    adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
+      adj(r, i, t) =e= (PHI_ADJ/2) * kap(r, i, t) 
+        * sqr(inv(r, i, t) / kap(r, i, t) - DELTA)
     ;
-    out_eq(r, i, t).. 
+    out_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
       out(r, i, t) =e= A * kap(r, i, t) ** ALPHA * lab(r, i, t) ** (1 - ALPHA)
-    ;
-*------------------------------------------------------------------------------
-*-----------the sequence of utility flows per region and time period
-*------------------------------------------------------------------------------
-    utility_eq(r, t)..
-      utility(r, t) =e=
-*-----------the consumption part:
-        con_sec(r, t) ** GAMM_HAT / GAMM_HAT
-*-----------the labour part:
-        - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
     ;
 *------------------------------------------------------------------------------
 *-----------canonical equations
 *------------------------------------------------------------------------------
-    dynamics_eq(r, t)..
+    dynamics_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
       kap(r, i, t + 1) =e= (1 - DELTA) * kap(r, i, t) + inv(r, i, t)
     ;
-    market_clearing_eq(t)..
+    market_clearing_eq(i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
       sum(r, E_shk(r, i, t) * out(r, i, t)
-        - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
+        - con(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
     ;
 *------------------------------------------------------------------------------
 *-----------other states
-    tipped_market_clearing_eq(t)..
+    tipped_market_clearing_eq(i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
       sum(r, ZETA2 * out(r, i, t) 
-        - c(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
+        - con(r, i, t) - inv(r, i, t) - adj(r, i, t)) =e= 0
     ;
+*------------------------------------------------------------------------------
+*-----------the sequence of utility flows per region and time period
+*------------------------------------------------------------------------------
+    utility_eq(r, t) $ (s <= ord(t) and ord(t) <= LFWD + s).. 
+      utility(r, t) $ (s <= ord(t) and ord(t) <= LFWD + s) =e=
+*-----------the consumption part:
+        con_sec(r, t) ** GAMMA_HAT / GAMMA_HAT
+*-----------the labour part:
+        - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
+    ;
+    tail_utility_eq(r, t) $ (ord(t) = LFWD + s)..
 *-----------tail/continuation utility, where tail labour is normalised to one:
-  else (ord(t) = LFWD + s),
-    utility_eq(r, t)..
-      utility(r, t) =e=
+      utility(r, t) $ (ord(t) = LFWD + s) =e=
 *-----------in the consumption part, a fixed share of output is consumed
-        ((TL_CON_SH * A * kap_sec(r, t)) ** ALPHA) ** GAMM_HAT / GAMM_HAT 
+        ((TL_CON_SHR * A * kap_sec(r, t)) ** ALPHA) ** GAMMA_HAT / GAMMA_HAT 
         - B / (1 - BETA)
     ;
-  );
 *------------------------------------------------------------------------------
 *-----------the objective function
 *------------------------------------------------------------------------------
-    obj_eq.. 
+    obj_eq..
       obj =e= 
-        sum(r, REG_WGHT(r) * sum(t, BETA ** (ord(t) - s) * utility(r, t)))
+        sum(r, REG_WGHT(r) * sum(t $ (s <= ord(t) and ord(t) <= LFWD),
+            BETA ** (ord(t) - s) * utility(r, t)))
     ;
-);
 
 *==============================================================================
 *-----------solver options
@@ -223,7 +222,8 @@ option nlp = conopt;
 
 *==============================================================================
 *-----------instantiate models with corresponding equations
-model busc /objfun,
+model busc /
+        obj_eq,
         dynamics_eq,
         market_clearing_eq,
         con_sec_eq,
@@ -231,9 +231,10 @@ model busc /objfun,
         lab_sec_eq,
         adj_eq,
         out_eq,
-        utility_eq,
+        utility_eq
         /;
-model busc_tipped /objfun,
+model busc_tipped /
+        obj_eq,
         dynamics_eq,
         tipped_market_clearing_eq,
         con_sec_eq,
@@ -241,6 +242,6 @@ model busc_tipped /objfun,
         lab_sec_eq,
         adj_eq,
         out_eq,
-        utility_eq,
+        utility_eq
         /;
 
