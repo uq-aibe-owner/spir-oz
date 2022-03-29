@@ -1,59 +1,59 @@
 B 3 C o m p i l a t i o n
-B 497 Include File Summary
-B 509 E x e c u t i o n
-I 511 A
-I 512 B
-I 513 ETA_HAT
-I 514 KAP0
-B 525 Model Statistics    SOLVE busc Using NLP From line 329
-B 548 Solution Report     SOLVE busc Using NLP From line 329
-B 602 Model Statistics    SOLVE busc Using NLP From line 329
-B 625 Solution Report     SOLVE busc Using NLP From line 329
-B 677 Model Statistics    SOLVE busc Using NLP From line 329
-B 700 Solution Report     SOLVE busc Using NLP From line 329
-B 753 Model Statistics    SOLVE busc Using NLP From line 329
-B 776 Solution Report     SOLVE busc Using NLP From line 329
-B 828 Model Statistics    SOLVE busc Using NLP From line 329
-B 851 Solution Report     SOLVE busc Using NLP From line 329
-B 904 Model Statistics    SOLVE busc Using NLP From line 329
-B 927 Solution Report     SOLVE busc Using NLP From line 329
-B 979 Model Statistics    SOLVE busc Using NLP From line 329
-B 1002 Solution Report     SOLVE busc Using NLP From line 329
-B 1054 Model Statistics    SOLVE busc Using NLP From line 329
-B 1077 Solution Report     SOLVE busc Using NLP From line 329
-B 1130 Model Statistics    SOLVE busc Using NLP From line 329
-B 1153 Solution Report     SOLVE busc Using NLP From line 329
-B 1206 Model Statistics    SOLVE busc Using NLP From line 329
-B 1229 Solution Report     SOLVE busc Using NLP From line 329
-B 1282 Model Statistics    SOLVE busc Using NLP From line 329
-B 1305 Solution Report     SOLVE busc Using NLP From line 329
-B 1358 Model Statistics    SOLVE busc Using NLP From line 329
-B 1381 Solution Report     SOLVE busc Using NLP From line 329
-B 1433 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 1454 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 1506 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 1527 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 1579 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 1600 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 1652 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 1673 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 1724 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 1745 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 1795 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 1816 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 1866 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 1887 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 1938 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 1959 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 2009 Model Statistics    SOLVE busc_tipped Using NLP From line 364
-B 2030 Solution Report     SOLVE busc_tipped Using NLP From line 364
-B 2081 E x e c u t i o n
-I 2081 con
-I 2094 inv
-I 2125 inv_sec
-I 2137 kap
-I 2149 lab
-I 2161 out
-I 2173 adj
-I 2185 inv_sec_path
-I 2379 elapsed
+B 493 Include File Summary
+B 505 E x e c u t i o n
+I 507 A
+I 508 B
+I 509 ETA_HAT
+I 510 KAP0
+B 521 Model Statistics    SOLVE busc Using NLP From line 329
+B 544 Solution Report     SOLVE busc Using NLP From line 329
+B 598 Model Statistics    SOLVE busc Using NLP From line 329
+B 621 Solution Report     SOLVE busc Using NLP From line 329
+B 673 Model Statistics    SOLVE busc Using NLP From line 329
+B 696 Solution Report     SOLVE busc Using NLP From line 329
+B 749 Model Statistics    SOLVE busc Using NLP From line 329
+B 772 Solution Report     SOLVE busc Using NLP From line 329
+B 824 Model Statistics    SOLVE busc Using NLP From line 329
+B 847 Solution Report     SOLVE busc Using NLP From line 329
+B 900 Model Statistics    SOLVE busc Using NLP From line 329
+B 923 Solution Report     SOLVE busc Using NLP From line 329
+B 975 Model Statistics    SOLVE busc Using NLP From line 329
+B 998 Solution Report     SOLVE busc Using NLP From line 329
+B 1050 Model Statistics    SOLVE busc Using NLP From line 329
+B 1073 Solution Report     SOLVE busc Using NLP From line 329
+B 1126 Model Statistics    SOLVE busc Using NLP From line 329
+B 1149 Solution Report     SOLVE busc Using NLP From line 329
+B 1202 Model Statistics    SOLVE busc Using NLP From line 329
+B 1225 Solution Report     SOLVE busc Using NLP From line 329
+B 1278 Model Statistics    SOLVE busc Using NLP From line 329
+B 1301 Solution Report     SOLVE busc Using NLP From line 329
+B 1354 Model Statistics    SOLVE busc Using NLP From line 329
+B 1377 Solution Report     SOLVE busc Using NLP From line 329
+B 1429 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 1450 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 1501 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 1522 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 1574 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 1595 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 1647 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 1668 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 1719 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 1740 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 1791 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 1812 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 1863 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 1884 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 1936 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 1957 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 2008 Model Statistics    SOLVE busc_tipped Using NLP From line 360
+B 2029 Solution Report     SOLVE busc_tipped Using NLP From line 360
+B 2080 E x e c u t i o n
+I 2080 con
+I 2093 inv
+I 2124 inv_sec
+I 2136 kap
+I 2148 lab
+I 2160 out
+I 2172 adj
+I 2184 inv_sec_path
+I 2378 elapsed

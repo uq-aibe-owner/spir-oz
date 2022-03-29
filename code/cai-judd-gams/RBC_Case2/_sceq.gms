@@ -65,10 +65,6 @@ loop(p $ (ord(p) = 1),
     kap_path(r, j, tt + 1, p) = (1 - delta) * kap_path(r, j, tt, p)
       + inv_sec_path(r, j, tt, p);
   );
-  
-* relax the fixed constraints on the state variables
-  kap.lo(r, i, t) = 0.001;
-  kap.up(r, i, t) = 1000;  
 );
 
 *==============================================================================

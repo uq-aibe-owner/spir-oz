@@ -1,5 +1,5 @@
 
---- Job _sceq.gms Start 03/29/22 22:28:27 38.1.0 a1a3b545 DEX-DEG x86 64bit/Mac OS X
+--- Job _sceq.gms Start 03/29/22 22:39:41 38.1.0 a1a3b545 DEX-DEG x86 64bit/Mac OS X
 --- Applying:
     /Library/Frameworks/GAMS.framework/Versions/38/Resources/gmsprmun.txt
 --- GAMS Parameters defined
@@ -22,8 +22,8 @@ GAMS 38.1.0   Copyright (C) 1987-2022 GAMS Development. All rights reserved
 --- Starting compilation
 --- _sceq.gms(8) 2 Mb
 --- . _sceq_common.gms(278) 3 Mb
---- _sceq.gms(211) 3 Mb
---- Starting execution: elapsed 0:00:00.005
+--- _sceq.gms(207) 3 Mb
+--- Starting execution: elapsed 0:00:00.004
 --- _sceq.gms(313) 4 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -33,7 +33,7 @@ GAMS 38.1.0   Copyright (C) 1987-2022 GAMS Development. All rights reserved
 ---   496 rows  907 columns  2,071 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.011
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.008
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -136,7 +136,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
     gradient is greater than the tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.577
+--- Executing after solve: elapsed 0:00:00.604
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -146,7 +146,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,071 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.580
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.607
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -220,7 +220,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.986
+--- Executing after solve: elapsed 0:00:01.019
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -230,7 +230,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,069 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.990
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:01.023
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -289,7 +289,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
     gradient is greater than the tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:01.203
+--- Executing after solve: elapsed 0:00:01.247
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -299,7 +299,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,069 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:01.206
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:01.250
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -334,7 +334,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:01.281
+--- Executing after solve: elapsed 0:00:01.334
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -344,7 +344,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,067 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:01.285
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:01.338
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -422,7 +422,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:01.649
+--- Executing after solve: elapsed 0:00:01.704
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -432,7 +432,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,065 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:01.653
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:01.707
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -499,7 +499,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:01.963
+--- Executing after solve: elapsed 0:00:02.033
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -509,7 +509,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,063 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:01.966
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.037
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -579,7 +579,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:02.173
+--- Executing after solve: elapsed 0:00:02.248
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -589,7 +589,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,061 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:02.177
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.251
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -640,7 +640,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:02.316
+--- Executing after solve: elapsed 0:00:02.388
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -650,7 +650,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,059 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:02.319
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.391
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -712,7 +712,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:02.569
+--- Executing after solve: elapsed 0:00:02.637
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -722,7 +722,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,057 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:02.572
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.641
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -767,7 +767,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:02.672
+--- Executing after solve: elapsed 0:00:02.737
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -777,7 +777,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,055 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:02.676
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.741
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -828,7 +828,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:02.799
+--- Executing after solve: elapsed 0:00:02.862
 --- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
 --- _sceq.gms(329) 7 Mb
@@ -838,7 +838,7 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
 ---   496 rows  907 columns  2,053 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
 --- _sceq.gms(329) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:02.803
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.866
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -893,16 +893,16 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:02.961
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.030
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = b
 ---       niter = 1
 ---   496 rows  907 columns  2,069 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:02.964
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.033
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -918,33 +918,31 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
       0   0        7.7508243507E+00 (Input point)
  
-                   Pre-triangular equations:   0
+                   Pre-triangular equations:   96
                    Post-triangular equations:  91
-                   Definitional equations:     180
+                   Definitional equations:     132
  
       1   0        7.7235201741E-13 (After pre-processing)
-      2   0        1.9275469350E-13 (After scaling)
+      2   0        1.9553805732E-13 (After scaling)
  
  ** Feasible solution. Value of objective =   -13.7647307010
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   4       -1.3764730648E+01 1.1E-03   170 1.0E+00   16 F  T
-     16   4       -1.3764730640E+01 5.6E-07   170 1.0E+00   29 F  T
-     18   4       -1.3764730640E+01 5.9E-08   170
+      5   3       -1.3764730701E+01 9.9E-08   122
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.032
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.061
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = c
 ---       niter = 1
 ---   496 rows  907 columns  2,067 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:03.037
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.065
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -958,35 +956,34 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        1.1433686419E+00 (Input point)
+      0   0        1.1429521781E+00 (Input point)
  
                    Pre-triangular equations:   0
                    Post-triangular equations:  91
                    Definitional equations:     180
  
-      1   0        4.0699242390E-04 (After pre-processing)
-      2   0        2.4458518084E-04 (After scaling)
-     10   0     7  2.4458518084E-04               0.0E+00      F  F
+      1   0        1.5209294692E-08 (After pre-processing)
+      2   0        5.5903540610E-09 (After scaling)
  
- ** Feasible solution. Value of objective =   -12.6217785233
+ ** Feasible solution. Value of objective =   -12.6217785384
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     21   4       -1.2621778476E+01 8.3E-06   163 1.0E+00   21 F  T
-     25   4       -1.2621778476E+01 6.5E-08   163
+     11   4       -1.2621778482E+01 1.9E-04   162 1.0E+00   21 F  T
+     14   4       -1.2621778476E+01 9.5E-08   162
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.098
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.118
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = d
 ---       niter = 1
 ---   496 rows  907 columns  2,065 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:03.102
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.123
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -1000,34 +997,40 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        1.1620556317E+00 (Input point)
+      0   0        1.1620581661E+00 (Input point)
  
                    Pre-triangular equations:   0
                    Post-triangular equations:  91
                    Definitional equations:     180
  
-      1   0        5.6300125774E-03 (After pre-processing)
-      2   0        1.5410046768E-03 (After scaling)
+      1   0        5.6322644948E-03 (After pre-processing)
+      2   0        1.5407828817E-03 (After scaling)
+     10   0     0  6.1439512552E-05               1.0E+00      F  T
+     20   0     0  2.3207056625E-06               1.0E+00      F  T
+     30   0     0  8.8049347731E-08               1.0E+00      F  T
  
- ** Feasible solution. Value of objective =   -11.4652890306
+ ** Feasible solution. Value of objective =   -11.4653475202
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   4       -1.1465287504E+01 2.5E-04   122 2.3E+00      F  T
-     16   4       -1.1465287446E+01 7.0E-08   160
+     31   3       -1.1465319698E+01 1.2E-01   134 2.0E-01    3 F  T
+     36   4       -1.1465293258E+01 3.1E-02   159 1.0E+00    3 F  T
+     41   4       -1.1465288285E+01 2.3E-03   158 1.0E+00   13 F  T
+     46   4       -1.1465287446E+01 1.5E-07   159 1.0E+00    7 F  T
+     47   4       -1.1465287446E+01 8.8E-08   159
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.153
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.191
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = e
 ---       niter = 1
 ---   496 rows  907 columns  2,063 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:03.157
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.196
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -1041,33 +1044,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        9.8248015692E-01 (Input point)
+      0   0        9.8247617363E-01 (Input point)
  
                    Pre-triangular equations:   0
                    Post-triangular equations:  91
                    Definitional equations:     180
  
-      1   0        1.2611534482E-05 (After pre-processing)
-      2   0        5.6569498849E-06 (After scaling)
+      1   0        8.6962583083E-06 (After pre-processing)
+      2   0        4.3179519100E-06 (After scaling)
  
  ** Feasible solution. Value of objective =   -10.4828199369
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     10   4       -1.0482819937E+01 8.3E-08   160
+     11   4       -1.0482819937E+01 8.3E-08   159
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.195
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.238
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = f
 ---       niter = 1
 ---   496 rows  907 columns  2,061 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:03.198
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.242
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -1081,33 +1084,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        1.0087941253E+00 (Input point)
+      0   0        1.0087897842E+00 (Input point)
  
                    Pre-triangular equations:   0
                    Post-triangular equations:  91
                    Definitional equations:     180
  
-      1   0        8.4339442542E-06 (After pre-processing)
-      2   0        4.3487099363E-06 (After scaling)
+      1   0        4.1932143592E-06 (After pre-processing)
+      2   0        2.8471072351E-06 (After scaling)
  
  ** Feasible solution. Value of objective =   -9.47403439787
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-      5   3       -9.4740343979E+00 8.6E-08     0
+     10   4       -9.4740343979E+00 6.9E-08   158
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.227
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.283
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = g
 ---       niter = 1
 ---   496 rows  907 columns  2,059 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:03.232
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.287
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -1121,33 +1124,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        1.0356413655E+00 (Input point)
+      0   0        1.0356369214E+00 (Input point)
  
                    Pre-triangular equations:   0
                    Post-triangular equations:  91
                    Definitional equations:     180
  
-      1   0        8.2150639639E-06 (After pre-processing)
-      2   0        4.2171281105E-06 (After scaling)
+      1   0        3.8749168442E-06 (After pre-processing)
+      2   0        2.6625299647E-06 (After scaling)
  
  ** Feasible solution. Value of objective =   -8.43840139683
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-      5   3       -8.4384013968E+00 9.3E-08     0
+     10   4       -8.4384013968E+00 7.8E-08   158
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.262
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.327
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = h
 ---       niter = 1
 ---   496 rows  907 columns  2,057 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:03.266
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.331
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -1161,33 +1164,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        1.0630287508E+00 (Input point)
+      0   0        1.0630232183E+00 (Input point)
  
                    Pre-triangular equations:   0
                    Post-triangular equations:  91
                    Definitional equations:     180
  
-      1   0        7.8892412327E-06 (After pre-processing)
-      2   0        4.0019661434E-06 (After scaling)
+      1   0        2.4498175646E-06 (After pre-processing)
+      2   0        1.2106675792E-06 (After scaling)
  
- ** Feasible solution. Value of objective =   -7.37538067493
+ ** Feasible solution. Value of objective =   -7.37538067492
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     10   4       -7.3753806749E+00 5.3E-08   158
+     11   4       -7.3753806749E+00 4.7E-08   157
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.301
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.371
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = i
 ---       niter = 1
 ---   496 rows  907 columns  2,055 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:03.305
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.374
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -1201,33 +1204,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        6.8013667342E-01 (Input point)
+      0   0        6.8013493268E-01 (Input point)
  
                    Pre-triangular equations:   0
                    Post-triangular equations:  91
                    Definitional equations:     180
  
-      1   0        7.8695113875E-06 (After pre-processing)
-      2   0        4.0629545964E-06 (After scaling)
+      1   0        6.2271369306E-06 (After pre-processing)
+      2   0        2.6717623433E-06 (After scaling)
  
  ** Feasible solution. Value of objective =   -6.69525206324
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-      5   3       -6.6952520632E+00 4.9E-08    92
+     10   4       -6.6952520632E+00 8.2E-08   146
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.336
---- _sceq.gms(355) 5 Mb
+--- Executing after solve: elapsed 0:00:03.415
+--- _sceq.gms(351) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(364) 7 Mb
+--- _sceq.gms(360) 7 Mb
 --- LOOPS p = j
 ---       niter = 1
 ---   496 rows  907 columns  2,053 non-zeroes
 ---   4,741 nl-code  870 nl-non-zeroes
---- _sceq.gms(364) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:03.340
+--- _sceq.gms(360) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.418
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -1241,24 +1244,25 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        6.8135765301E-01 (Input point)
+      0   0        6.8134722504E-01 (Input point)
  
                    Pre-triangular equations:   0
                    Post-triangular equations:  91
                    Definitional equations:     180
  
-      1   0        1.1932101584E-05 (After pre-processing)
-      2   0        4.9061308683E-06 (After scaling)
+      1   0        1.5822223674E-06 (After pre-processing)
+      2   0        6.8601655009E-07 (After scaling)
  
- ** Feasible solution. Value of objective =   -6.01390635030
+ ** Feasible solution. Value of objective =   -6.01390635811
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     10   4       -6.0139063503E+00 8.0E-08   147
+      6   3       -6.0139063503E+00 6.1E-05    49 1.1E-05    1 F  T
+     11   4       -6.0139063503E+00 7.5E-08   146
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:03.372
---- _sceq.gms(488) 5 Mb
+--- Executing after solve: elapsed 0:00:03.455
+--- _sceq.gms(484) 5 Mb
 *** Status: Normal completion
---- Job _sceq.gms Stop 03/29/22 22:28:30 elapsed 0:00:03.374
+--- Job _sceq.gms Stop 03/29/22 22:39:45 elapsed 0:00:03.457
