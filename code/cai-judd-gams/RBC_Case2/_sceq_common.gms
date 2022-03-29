@@ -50,7 +50,7 @@ parameters
     kmin                     smallest capital    / 0.1 /
     kmax                     largest capital     / 10 /
     ZETA1                    TFP before shock   / 1 /
-    ZETA2                    TFP after shock   / 0.5 /
+    ZETA2                    TFP after shock   / 1e-0 /
     PROB1                    one period probability of jump of TFP / 0.01 /
     TL_CON_SHR               tail consumption share (of output) / 0.45 /
     CON_SHR(i)               consumption share for each sector
@@ -144,7 +144,7 @@ con_sec.lo(r, t) = 0.001;
 s = 1;
 inv.L(r, i, j, t) = DELTA;
 kap.L(r, i, t) = 1e+0;
-lab.L(r, i, t) = 1e+1;
+lab.L(r, i, t) = 1e+0;
 con.L(r, i, t) = A-DELTA;
 *==============================================================================
 *-----------equation declarations (over entire sets)
@@ -182,8 +182,7 @@ inv_sec_eq(r, j, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
 ;
 adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
   adj(r, i, t)
-    =e= 0
-* (PHI_ADJ/2) * kap(r, i, t) * sqr(kap(r, i, t + 1) / kap(r, i, t) - 1)
+    =e= (PHI_ADJ/2) * kap(r, i, t) * sqr(kap(r, i, t + 1) / kap(r, i, t) - 1)
 ;
 out_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
   out(r, i, t) =e= A * kap(r, i, t) ** ALPHA * lab(r, i, t) ** (1 - ALPHA)

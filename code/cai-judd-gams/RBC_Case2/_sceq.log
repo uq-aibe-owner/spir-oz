@@ -1,5 +1,5 @@
 
---- Job _sceq.gms Start 03/29/22 21:02:25 38.1.0 a1a3b545 DEX-DEG x86 64bit/Mac OS X
+--- Job _sceq.gms Start 03/29/22 22:28:27 38.1.0 a1a3b545 DEX-DEG x86 64bit/Mac OS X
 --- Applying:
     /Library/Frameworks/GAMS.framework/Versions/38/Resources/gmsprmun.txt
 --- GAMS Parameters defined
@@ -21,18 +21,18 @@ Processor information: 1 socket(s), 6 core(s), and 6 thread(s) available
 GAMS 38.1.0   Copyright (C) 1987-2022 GAMS Development. All rights reserved
 --- Starting compilation
 --- _sceq.gms(8) 2 Mb
---- . _sceq_common.gms(279) 3 Mb
+--- . _sceq_common.gms(278) 3 Mb
 --- _sceq.gms(211) 3 Mb
 --- Starting execution: elapsed 0:00:00.005
---- _sceq.gms(314) 4 Mb
+--- _sceq.gms(313) 4 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 1
 ---       niter = 1
----   496 rows  907 columns  1,891 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
+---   496 rows  907 columns  2,071 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
 --- Executing CONOPT (Solvelink=2): elapsed 0:00:00.011
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
@@ -47,78 +47,190 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        3.0382656588E+04 (Input point)
+      0   0        3.0067116104E+04 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        4.3598398816E+01 (After pre-processing)
-      2   0        4.3598398816E+01 (After scaling)
-     10   0     0  4.2874136850E+01               0.0E+00      T  T
-     20   0     0  4.2874136850E+01               0.0E+00      T  T
-     30   0     0  4.2874136850E+01               0.0E+00      T  T
-     40   0     0  4.2874136850E+01               0.0E+00      T  T
-     50   0     0  4.2874136850E+01               0.0E+00      T  T
-     60   0     0  4.2874136850E+01               0.0E+00      T  T
-     70   0     0  4.2874136850E+01               0.0E+00      T  T
+      1   0        9.0000000000E+00 (After pre-processing)
+      2   0        9.0000000000E+00 (After scaling)
+     10   0     0  8.8506975126E+00               0.0E+00      T  T
+     20   0     0  8.8506975126E+00               0.0E+00      T  T
+     30   0     0  8.8506975126E+00               0.0E+00      T  T
+     40   0     0  8.8506975126E+00               0.0E+00      T  T
+     50   0     0  8.8506975126E+00               0.0E+00      T  T
+     60   0     0  8.8506975126E+00               0.0E+00      T  T
+     70   0     0  8.8506975126E+00               0.0E+00      T  T
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-     80   0     0  4.2874136850E+01               0.0E+00      T  T
-     90   0     0  4.2874136850E+01               0.0E+00      T  T
-    100   0     0  2.8140833450E+01               8.2E-03      T  T
-    110   0     0  2.6646715980E+01               6.8E-03      T  T
-    120   0     0  2.5820416081E+01               7.6E-03      T  T
-    130   0     0  2.5039719723E+01               6.7E-03      T  T
-    140   0     0  1.4261977089E-01               1.0E+00      F  T
+     80   0     0  8.8506975126E+00               0.0E+00      T  T
+     90   0     0  8.8506975126E+00               0.0E+00      T  T
+    100   0     0  2.3331731082E-05               1.0E+00      F  T
  
- ** Feasible solution. Value of objective =   -3436.24143778
+ ** Feasible solution. Value of objective =   -381.080821428
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-    151   3       -2.9318725716E+03 1.7E+03   299 1.0E+00    7 T  T
-    156   3       -2.7780415851E+03 1.6E+03   200 1.0E+00   34 T  T
-    161   3       -1.1570284262E+03 2.3E+03   130 3.1E-02    3 F  T
-    171   4       -8.8846065415E+02 2.4E+02   139 2.8E-03      T  T
-    181   4       -7.3240182749E+02 6.4E+02   132 9.4E-02      T  T
-    191   4       -3.5233455372E+02 2.6E+02   123 9.5E-02      T  T
-    201   3       -2.8313472271E+02 4.1E+02   113 1.8E-05      F  T
-    211   4       -1.7289396377E+02 1.5E+02   117 1.0E+00   21 F  T
-    216   4       -8.9009087693E+01 1.6E+02   107 1.0E+00   18 T  T
-    221   4       -7.1022396836E+01 6.9E+01    97 1.0E+00   29 T  T
+    106   3       -3.4493946713E+02 8.6E+01   290 1.0E+00   16 T  T
+    111   3       -2.9901465572E+02 5.4E+01   157 2.8E-01   39 F  T
+    121   3       -2.9516951484E+02 2.6E+01   149 1.9E-07      T  T
+    126   3       -2.9464220305E+02 2.4E+01   142 9.3E-02    8 F  T
+    131   3       -2.9448048354E+02 2.3E+01   139 7.7E-07      T  T
+    141   4       -2.8456332957E+02 1.5E+01   131 8.0E-01    3 F  T
+    146   4       -1.1106888433E+02 4.5E+01   104 1.0E+00   18 T  T
+    151   4       -7.3095610656E+01 1.2E+03    95 7.9E-01   10 T  T
+    156   4       -6.7319324866E+01 6.1E+00    86 1.0E+00   20 T  T
+    161   4       -5.6441271675E+01 1.6E+01    81 6.9E-01   33 F  T
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-    226   4       -4.5790708156E+01 6.6E+02    88 1.0E+00    5 F  T
-    231   4       -4.1936342333E+01 1.9E+01    88 5.0E-01   32 F  T
-    236   4       -3.5793646215E+01 2.0E+01    86 8.0E-01   12 F  T
-    241   4       -3.1603013925E+01 1.2E+00    85 6.4E-01   31 F  T
-    246   4       -2.1589773937E+01 1.9E+00    95 6.7E-01   30 F  T
-    251   4       -1.9658548164E+01 6.3E-01    80 4.5E-01   70 F  T
-    256   4       -1.8184476724E+01 7.2E-02    72 1.5E+00   18 F  T
-    261   4       -1.8067230715E+01 1.3E-01    78 1.5E+00   12 F  T
-    266   4       -1.7936203230E+01 2.3E-02    91 1.0E+00    7 F  T
-    271   4       -1.7887219942E+01 1.2E-02   105 1.0E+00    7 F  T
+    166   4       -5.0894938586E+01 1.1E+04   105 1.0E+00    1 T  T
+    171   3       -5.0425104021E+01 2.2E+05   117 4.6E-15      F  F
+    176   3       -4.7169267603E+01 4.4E+00   146 1.2E-02      T  T
+    181   4       -3.9446764938E+01 6.9E+00   144 1.0E+00    8 T  T
+    186   4       -3.0279127680E+01 1.4E+01   129 1.0E+00    9 T  T
+    191   4       -2.7563032547E+01 4.9E+02   116 1.0E+00    2 F  T
+    196   4       -2.5977649230E+01 3.9E+00   125 1.0E+00    1 T  T
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -25.8908934721
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-    276   4       -1.7873798257E+01 3.2E-03   109 1.0E+00    7 F  T
-    281   4       -1.7864242407E+01 1.4E-02   110 6.0E-01    9 F  T
-    286   4       -1.7856245337E+01 4.0E-03   120 3.7E-01   13 F  T
-    291   4       -1.7856057411E+01 5.7E-07   121 1.0E+00    5 F  T
-    292   4       -1.7856057411E+01 5.4E-08   121
+    211   3       -2.4344245756E+01 1.6E+00   132 1.0E+00    2 F  T
+    221   4       -2.1558510946E+01 1.7E+00   130 1.0E+00      F  T
+    231   4       -1.7714116141E+01 1.5E+00   122 2.0E+00      F  T
+    236   4       -1.6635306075E+01 1.8E+00   117 8.4E-01   11 F  F
+    241   4       -1.6356795052E+01 1.6E-01   112 1.0E+00    1 F  T
+    246   4       -1.5915839959E+01 1.1E+00   109 6.2E-01   10 F  T
+    251   3       -1.5742424135E+01 1.3E-01    29 2.5E-01      T  T
+    256   4       -1.5533498807E+01 3.2E+00    28 6.4E-01    8 F  F
+    261   3       -1.5474959494E+01 9.9E-02    30 3.5E-01      F  T
+    266   4       -1.5440221232E+01 1.0E-01    31 1.0E+00    3 F  T
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    271   4       -1.5427521660E+01 3.0E+01    61 9.2E-01    1 F  F
+    276   4       -1.5413941596E+01 3.4E+00    88 8.2E-01    2 F  F
+    281   4       -1.5391340554E+01 2.2E+08    85 5.0E+00    1 F  T
+    286   4       -1.5351855870E+01 1.5E+07     1 5.0E+00    1 F  T
+    291   4       -1.5348384022E+01 1.7E+06    72 1.0E+00    1 F  T
+    296   4       -1.5348383850E+01 1.4E+05    72 1.0E+00    1 F  T
+    301   4       -1.5348255961E+01 9.6E+01    74 1.5E-09      F  F
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -15.3480441824
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    321   3       -1.5337173957E+01 3.2E-02   188 1.2E+00      T  T
+    331   4       -1.5328353575E+01 3.3E-02   187 1.6E-02      T  T
+    341   4       -1.5282000301E+01 3.8E+01   184 1.0E+00    1 T  T
+    346   3       -1.5280050098E+01 3.6E-02   183 3.8E-01      F  T
+    351   4       -1.5237178187E+01 6.5E-02   176 1.0E+00    7 T  T
+    356   3       -1.5209530766E+01 6.0E-02   182 0.0E+00      T  T
+    361   3       -1.5209530766E+01 1.6E+03   182 0.0E+00      F  F
+    366   3       -1.5209530766E+01 6.0E-02   188 0.0E+00      F  F
+    371   3       -1.5209530766E+01 6.0E-02   182 0.0E+00      F  F
+ 
+ ** Feasible solution. The tolerances are minimal and
+    there is no change in objective although the reduced
+    gradient is greater than the tolerance.
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.577
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = a
+---       tt = 1
+---       niter = 2
+---   496 rows  907 columns  2,071 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.580
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        2.8493294347E-10 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  91
+                   Definitional equations:     180
+ 
+      1   0        2.8492945373E-10 (After pre-processing)
+      2   0        1.4244652395E-10 (After scaling)
+ 
+ ** Feasible solution. Value of objective =   -15.2095307663
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+     11   4       -1.5137404273E+01 6.0E+00   168 2.0E+00    1 F  T
+     16   4       -1.5086177536E+01 3.5E-02   158 1.0E+00    4 T  T
+     21   4       -1.5024577858E+01 2.8E-02   148 1.0E+00   14 T  T
+     26   4       -1.5018521355E+01 4.7E-01   147 8.7E-01   10 F  T
+     31   4       -1.5015621576E+01 2.0E+00   148 1.0E+00    3 F  T
+     36   4       -1.5014232794E+01 6.4E+00   147 1.0E+00    2 T  T
+     41   3       -1.5013770537E+01 1.1E+05   161 9.3E-20      F  T
+     46   4       -1.5012341648E+01 8.1E+03   160 1.0E+00    1 F  T
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -15.0121662427
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+     61   4       -1.5008432171E+01 1.5E+01   178 8.9E-01    2 F  F
+     66   4       -1.5006818041E+01 3.0E+02   178 1.9E-10      F  F
+     71   3       -1.5006810274E+01 1.1E-02    29 1.1E-05      F  F
+     76   3       -1.5006810831E+01 1.4E-02   179 0.0E+00      T  T
+     81   3       -1.5006229145E+01 1.5E-02   183 5.3E-01      F  T
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -15.0062269382
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+     91   3       -1.5004879458E+01 3.1E-02   180 3.5E-01      F  T
+     96   4       -1.5001806818E+01 1.1E+01   178 6.8E-01    1 F  T
+    101   3       -1.5001139284E+01 1.8E-02    29 3.4E-01      T  T
+    106   4       -1.4999743814E+01 7.6E-03    30 1.0E+00    2 T  T
+    111   4       -1.4998000385E+01 2.5E+00    28 1.0E+00    1 F  T
+    116   4       -1.4996079212E+01 2.3E-03    52 1.0E+00   10 F  T
+    121   4       -1.4993317934E+01 2.8E+00    75 1.0E+00    1 F  T
+    126   4       -1.4993093646E+01 2.3E+01   101 1.0E+00    1 F  T
+    131   4       -1.4992771757E+01 5.7E-01    98 5.0E-01    2 F  F
+    136   3       -1.4992769817E+01 2.4E-03   179 0.0E+00      T  T
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    141   3       -1.4992731770E+01 4.1E+03   176 6.3E-18      F  F
+    146   3       -1.4992667356E+01 4.1E-03   175 4.0E-01      F  F
+    151   3       -1.4992658871E+01 1.8E-03   177 7.3E-01      F  T
+    156   4       -1.4992477111E+01 3.3E-03   174 1.0E+00      F  T
+    161   4       -1.4990938547E+01 1.3E+00   173 6.3E-01    6 F  T
+    166   4       -1.4990433431E+01 4.2E-03   176 1.0E+00   11 F  T
+    171   4       -1.4990426958E+01 8.4E-08   178
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.256
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:00.986
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 2
 ---       niter = 1
----   496 rows  907 columns  1,889 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.259
+---   496 rows  907 columns  2,069 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.990
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -132,37 +244,107 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0353121530E+03 (Input point)
+      0   0        2.0182175306E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        1.0012921159E+01 (After pre-processing)
-      2   0        5.7011109195E+00 (After scaling)
-     10   0     0  5.6071898521E+00               0.0E+00      T  T
+      1   0        1.2515673454E+01 (After pre-processing)
+      2   0        6.6119963812E+00 (After scaling)
+     10   0     2  6.5465057636E+00               0.0E+00      T  T
+     20   0     7  5.8734022319E+00               1.0E+00      F  T
+     31   1     8  5.6035486460E+00 1.3E+00   105 1.0E+00    8 T  T
+     41   1     8  4.8694305848E+00 1.2E+00    91 1.0E+00    3 T  T
+     51   1     7  4.5557214739E+00 1.2E+00    74 0.0E+00    3 F  F
+     61   1     8  4.4619116502E+00 1.2E+00    74 7.0E-05      T  T
+     71   1     8  3.9535212524E+00 3.5E+01    68 2.5E-01    6 F  F
  
- ** Feasible solution. Value of objective =   -15.2674923451
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     81   1     7  2.6568074578E+00 1.1E+02    63 8.4E-01    6 F  F
+     91   1     4  1.4798138382E+00 6.3E+01    61 9.3E-01    4 T  T
+    101   1     1  7.1089153749E-02 5.7E+00    14 8.5E-01    4 F  F
+ 
+ ** Feasible solution. Value of objective =   -14.3245662308
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     21   4       -1.5266631209E+01 1.5E-03   106 2.2E+00      F  T
-     26   4       -1.5266618113E+01 1.5E-07   125 1.0E+00   19 F  T
-     27   4       -1.5266618113E+01 7.2E-08   125
+    111   4       -1.3925094000E+01 1.3E+00   120 0.0E+00      F  F
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -13.9250940004
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -13.9205384814
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    121   3       -1.3920258897E+01 1.2E+00   120 0.0E+00      F  F
+    131   4       -1.3788175004E+01 1.8E+02   149 9.2E-01    1 F  F
+    136   3       -1.3788172652E+01 3.2E-02   156 0.0E+00      F  F
+    141   3       -1.3788172655E+01 3.2E-02   149 0.0E+00      F  F
+ 
+ ** Feasible solution. The tolerances are minimal and
+    there is no change in objective although the reduced
+    gradient is greater than the tolerance.
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:01.203
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = a
+---       tt = 2
+---       niter = 2
+---   496 rows  907 columns  2,069 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:01.206
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        2.1700476568E-10 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  91
+                   Definitional equations:     180
+ 
+      1   0        2.1698324994E-10 (After pre-processing)
+      2   0        5.4246026575E-11 (After scaling)
+ 
+ ** Feasible solution. Value of objective =   -13.7881726555
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+     11   4       -1.3764919928E+01 9.1E-03   170 1.0E+00    8 T  T
+     16   3       -1.3764741201E+01 2.7E-03   157 4.7E-01      F  F
+     21   4       -1.3764736076E+01 4.5E-04   175 1.0E+00    2 F  T
+     26   4       -1.3764730640E+01 5.0E-07   175 1.0E+00   18 F  T
+     27   4       -1.3764730640E+01 6.5E-08   175
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.310
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:01.281
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 3
 ---       niter = 1
----   496 rows  907 columns  1,887 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.313
+---   496 rows  907 columns  2,067 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:01.285
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -176,39 +358,81 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0334800633E+03 (Input point)
+      0   0        2.0178490262E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        9.7873589860E+00 (After pre-processing)
-      2   0        5.6406463232E+00 (After scaling)
-     10   0     0  5.5479242483E+00               0.0E+00      T  T
+      1   0        1.2227555846E+01 (After pre-processing)
+      2   0        6.4736182339E+00 (After scaling)
+     10   0     2  6.4115497221E+00               0.0E+00      T  T
+     20   0     6  5.4848442906E+00               1.1E-01      T  T
+     30   0     8  5.4047119284E+00               0.0E+00      F  F
+     40   0    18  5.4047119284E+00               0.0E+00      F  F
+     50   0    24  5.2776618161E+00               1.0E+00      F  T
+     51   1    21  5.2743965482E+00 2.5E+00   119 1.0E+00    3 T  T
+     61   1    15  4.7718572771E+00 1.1E+00    86 5.1E-07      T  T
  
- ** Feasible solution. Value of objective =   -14.3101373391
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     71   1    11  4.3716946004E+00 1.1E+00    86 8.0E-07      T  T
+     76   1    10  4.1025050981E+00 7.8E+03    78 0.0E+00    4 F  F
+     81   1     9  4.0161628718E+00 1.1E+00    77 9.9E-03      T  T
+     91   1     9  3.6298651035E+00 1.0E+00    65 1.0E+00    3 T  T
+     96   1     5  2.9830013894E+00 2.8E+00    68 1.0E+00    5 T  T
+    101   1     5  1.7648194092E+00 1.0E+02    53 3.1E-07      F  F
+    111   1     4  9.6363722930E-01 3.8E+02    58 1.2E-08      F  F
+    121   1     4  9.6060302071E-01 1.0E+00    22 1.5E-04      F  F
+    130   0        9.5969875278E-01               1.6E-02
+    140   0     3  9.2722188975E-01               1.0E+00      F  T
+    151   1     2  2.7325596312E-01 5.0E-01    14 4.5E-02      F  F
+ 
+ ** Feasible solution. Value of objective =   -13.1861826666
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     21   3       -1.4289189490E+01 4.2E-01   124 1.0E+00   11 T  T
-     26   3       -1.4286922342E+01 3.3E-02   101 2.3E-03   11 F  T
-     31   3       -1.4286835356E+01 2.4E-03    98 5.1E-01      F  T
-     36   4       -1.4286821754E+01 1.9E-05   137 1.0E+00   11 F  T
-     38   4       -1.4286821754E+01 4.1E-08   137
+    161   4       -1.2688306915E+01 6.5E-02   100 1.5E-01      T  T
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -12.6799240324
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    171   4       -1.2632705648E+01 2.5E-02   125 1.0E+00    3 F  T
+    176   4       -1.2622123879E+01 2.3E-02   121 4.1E-01      F  T
+    181   4       -1.2621963914E+01 3.6E-03   151 1.0E+00   11 F  T
+    186   4       -1.2621909057E+01 3.6E-01   134 5.4E-01    3 F  T
+    191   4       -1.2621890028E+01 1.7E+00   152 1.0E+00    1 F  T
+    196   3       -1.2621884143E+01 3.8E-02   129 2.7E-09      F  T
+    201   4       -1.2621883700E+01 3.6E+00   152 1.0E+00    1 F  T
+    206   4       -1.2621873073E+01 2.8E-04   158 1.0E+00   38 F  T
+    211   3       -1.2621869968E+01 1.2E+05   137 4.0E-20      F  T
+    221   3       -1.2621869817E+01 4.5E-03   136 0.0E+00      F  F
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    231   4       -1.2621804092E+01 1.3E-01   160 1.0E+00    2 F  T
+    236   4       -1.2621791419E+01 1.6E-03   159 1.0E+00    9 F  T
+    241   4       -1.2621786654E+01 4.4E-02   137 4.3E-01    3 F  T
+    246   4       -1.2621784547E+01 9.0E-01   160 1.0E+00    1 F  T
+    251   4       -1.2621783188E+01 3.1E-01   137 5.3E-01    2 F  T
+    256   4       -1.2621782634E+01 2.6E+00   160 1.0E+00    1 F  T
+    261   4       -1.2621782490E+01 3.5E+00   160 1.0E+00    1 F  T
+    266   4       -1.2621782400E+01 2.7E-07   159 1.0E+00   24 F  T
+    268   4       -1.2621782400E+01 9.4E-08   159
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.359
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:01.649
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 4
 ---       niter = 1
----   496 rows  907 columns  1,885 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.364
+---   496 rows  907 columns  2,065 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:01.653
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -222,37 +446,70 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0332629437E+03 (Input point)
+      0   0        2.0174612938E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        9.5447852071E+00 (After pre-processing)
-      2   0        6.2977673805E+00 (After scaling)
-     10   0     0  6.1953605428E+00               0.0E+00      T  T
+      1   0        1.1843206040E+01 (After pre-processing)
+      2   0        6.2366122824E+00 (After scaling)
+     10   0     1  6.2015601181E+00               0.0E+00      T  T
+     20   0     3  6.1333606566E+00               4.3E-03      T  T
+     30   0     7  4.7701979378E+00               0.0E+00      F  F
+     40   0    10  4.0802176580E+00               9.3E-01      T  T
+     50   0    12  4.0794918680E+00               9.9E-01      T  T
+     56   1     7  2.3158139777E+00 9.8E+02    59 9.0E-01   18 F  F
+     61   1     7  2.2774173899E+00 1.1E+00    53 4.0E-05      T  T
  
- ** Feasible solution. Value of objective =   -13.2862067617
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     71   1     7  2.0480276063E+00 7.9E+03    57 7.0E-01    7 F  F
+     81   1     5  1.9767627698E+00 1.0E+00    42 3.6E-03      T  T
+     86   1     3  1.4251978523E+00 1.2E+07    32 1.0E+00    6 T  T
+     91   1     2  2.6526732123E-01 7.3E+00    24 6.4E-04      T  T
+ 
+ ** Feasible solution. Value of objective =   -11.5652368581
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     21   3       -1.3285213585E+01 3.7E-03    90 6.0E-03    1 F  T
-     26   4       -1.3285182077E+01 5.7E-04   147 1.0E+00    5 F  T
-     31   4       -1.3285181560E+01 4.1E-08   147
+    101   3       -1.1525393939E+01 1.8E-01   112 1.0E-02      T  T
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -11.5253939393
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    111   3       -1.1496492141E+01 7.4E-02   111 3.3E-01      F  F
+    121   4       -1.1473309916E+01 6.1E-02   117 1.2E+00      F  T
+    126   4       -1.1466299734E+01 1.3E+00   117 8.4E-01    5 F  T
+    131   4       -1.1465486241E+01 1.5E+00   151 1.0E+00    1 F  T
+    136   3       -1.1465444788E+01 2.0E-03   117 0.0E+00      T  T
+    141   4       -1.1465429719E+01 1.2E+05   151 1.0E+00    2 T  T
+    146   4       -1.1465379757E+01 2.3E-02   151 6.2E-02    2 F  F
+    151   3       -1.1465379562E+01 1.2E-01   118 0.0E+00      F  F
+    161   3       -1.1465379329E+01 5.3E-03   122 1.5E-05      F  T
+    171   3       -1.1465379282E+01 2.6E+02   122 0.0E+00      F  F
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    181   4       -1.1465297396E+01 4.6E+00   156 1.0E+00    1 F  T
+    186   4       -1.1465292423E+01 1.2E+00   122 7.5E-01    3 F  T
+    191   4       -1.1465292098E+01 1.1E+01    90 1.6E+00    1 F  T
+    196   4       -1.1465291386E+01 1.1E-06   155 1.0E+00   16 F  T
+    200   4       -1.1465291386E+01 7.5E-08   155
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.410
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:01.963
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 5
 ---       niter = 1
----   496 rows  907 columns  1,883 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.413
+---   496 rows  907 columns  2,063 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:01.966
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -266,39 +523,73 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0330550202E+03 (Input point)
+      0   0        2.0170117552E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        9.3110716794E+00 (After pre-processing)
-      2   0        6.2073012056E+00 (After scaling)
-     10   0     0  6.1064203890E+00               0.0E+00      T  T
-     20   0     0  1.1236036512E-03               0.0E+00      F  F
+      1   0        1.1574650376E+01 (After pre-processing)
+      2   0        6.1119207762E+00 (After scaling)
+     10   0     2  6.0589387955E+00               0.0E+00      T  T
+     20   0     2  3.8129206493E+00               8.9E-03      T  T
+     30   0     5  3.7866789902E+00               0.0E+00      F  F
+     40   0    12  3.6748342158E+00               0.0E+00      F  F
+     50   0    21  3.5676637082E+00               0.0E+00      F  F
+     60   0    30  3.5676637082E+00               0.0E+00      F  F
+     70   0    40  3.5676542305E+00               1.0E+00      F  T
  
- ** Feasible solution. Value of objective =   -12.2625963889
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     71   1    37  3.5674038534E+00 2.4E+00   169 1.0E+00    3 T  T
+     76   1    16  2.6314135100E+00 7.1E+02    78 7.8E-01   15 F  F
+     81   1    16  2.5649586793E+00 1.5E+03    73 1.5E-10      T  T
+     91   1    11  2.1302299649E+00 4.2E+04    64 1.0E+00    8 T  T
+     96   1     9  1.7671723513E+00 1.0E+00    53 1.0E+00    6 T  T
+    101   1     8  1.3386677218E+00 2.2E+00    50 2.2E-03      T  T
+    106   1     5  4.0087207591E-01 6.5E+00    43 8.3E-01    5 F  F
+ 
+ ** Feasible solution. Value of objective =   -10.5530126781
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     31   3       -1.2261417347E+01 2.8E-02    93 5.7E-04      T  T
-     41   3       -1.2261397771E+01 1.6E-02    83 4.7E-05      T  T
-     46   4       -1.2261380268E+01 1.1E-04   160 1.0E+00   20 F  T
-     49   4       -1.2261380265E+01 4.5E-08   160
+    111   3       -1.0526924582E+01 2.0E+02    96 8.3E-01   10 F  F
+    121   3       -1.0526499336E+01 9.5E-01    88 5.4E-11      T  T
+    131   4       -1.0482913518E+01 1.2E-02   142 1.0E+00   11 F  T
+    136   4       -1.0482870017E+01 4.0E-03   146 1.0E+00    5 F  T
+    141   4       -1.0482845466E+01 5.3E-02   113 3.3E-01    6 F  T
+    146   4       -1.0482835917E+01 7.5E-01   154 1.0E+00    1 F  T
+    151   4       -1.0482829380E+01 4.1E-02   113 4.3E-01    4 F  T
+    156   4       -1.0482826748E+01 8.7E-01   154 1.0E+00    1 F  T
+    161   4       -1.0482825043E+01 1.7E-01   113 5.0E-01    3 F  T
+    166   4       -1.0482824594E+01 1.0E+00   154 1.0E+00    1 F  T
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+    170   0        1.7522227687E-08
+    171   1     1  1.5197421591E-08 1.0E+00    10 9.6E-10      T  T
+ 
+ ** Feasible solution. Value of objective =   -10.4828240213
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    181   4       -1.0482823959E+01 2.3E+03   154 1.0E+00    1 F  T
+    186   4       -1.0482823947E+01 2.1E+02     1 7.1E+00    1 F  T
+    191   4       -1.0482819937E+01 3.4E-07   154 1.0E+00    7 F  T
+    192   4       -1.0482819937E+01 8.9E-08   154
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.460
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:02.173
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 6
 ---       niter = 1
----   496 rows  907 columns  1,881 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.464
+---   496 rows  907 columns  2,061 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.177
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -312,38 +603,54 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0328545342E+03 (Input point)
+      0   0        2.0166714698E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        9.0844212072E+00 (After pre-processing)
-      2   0        6.1228534446E+00 (After scaling)
-     10   0     0  6.0231479807E+00               0.0E+00      T  T
-     20   0     0  1.4997532388E-05               1.0E+00      F  T
+      1   0        1.1223166978E+01 (After pre-processing)
+      2   0        5.9028083527E+00 (After scaling)
+     10   0     1  5.8586159822E+00               0.0E+00      T  T
+     20   0     4  5.7519081004E+00               3.7E-03      T  T
+     30   0     5  4.3178406029E+00               0.0E+00      F  F
+     40   0    10  3.5914652386E+00               0.0E+00      F  F
+     50   0    20  3.5914652386E+00               0.0E+00      F  F
+     60   0    30  3.5914652386E+00               0.0E+00      F  F
+     66   1    21  3.5901588797E+00 2.5E+00   161 1.0E+00    8 T  T
  
- ** Feasible solution. Value of objective =   -11.2160051623
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     71   1     8  1.9628380190E+00 3.1E+03    70 1.0E+00   18 T  T
+     81   1     5  1.7804648933E+00 1.0E+03    36 4.6E-01    3 F  F
+     86   1     5  1.7292294286E+00 1.4E+02    41 8.3E-01    3 F  F
+     91   1     4  1.3720693901E+00 1.5E+01    37 7.1E-01    3 F  F
+ 
+ ** Feasible solution. Value of objective =   -9.55153838779
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     31   3       -1.1215127613E+01 3.6E-03    74 6.5E-03    1 F  T
-     36   4       -1.1215096879E+01 8.6E-05   171 1.0E+00   20 F  T
-     39   4       -1.1215096878E+01 2.5E-08   171
+    101   3       -9.5327949702E+00 1.5E+01    98 8.2E-01   16 F  F
+    111   3       -9.5316460209E+00 3.7E-01    89 5.4E-07      T  T
+    116   3       -9.5253635084E+00 2.0E+02    85 8.2E-01    3 F  F
+    121   3       -9.4867936315E+00 4.1E-02    92 2.0E+00      F  T
+    131   3       -9.4810026095E+00 8.4E+03    93 8.8E-16      F  F
+    136   3       -9.4773015255E+00 1.5E-02    95 9.1E-01      T  T
+    141   4       -9.4740685814E+00 3.8E-03   168 1.0E+00   17 F  T
+    146   4       -9.4740343979E+00 8.7E-08   176
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.508
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:02.316
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 7
 ---       niter = 1
----   496 rows  907 columns  1,879 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.513
+---   496 rows  907 columns  2,059 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.319
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -357,37 +664,65 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0326657923E+03 (Input point)
+      0   0        2.0164912546E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        8.8692135676E+00 (After pre-processing)
-      2   0        6.0488488307E+00 (After scaling)
-     10   0     0  5.9500532221E+00               0.0E+00      T  T
+      1   0        1.1018698241E+01 (After pre-processing)
+      2   0        5.8354272806E+00 (After scaling)
+     10   0     1  5.7961355564E+00               5.8E-03      T  T
+     20   0     4  5.6460422324E+00               0.0E+00      T  T
+     30   0     4  3.5356247352E+00               0.0E+00      F  F
+     40   0    10  3.4974607529E+00               0.0E+00      F  F
+     50   0    19  3.3709396012E+00               1.0E+00      F  T
+     60   0    27  3.3709396012E+00               0.0E+00      F  F
+     71   1    20  3.3398911189E+00 2.4E+00   123 1.0E+00   13 T  T
  
- ** Feasible solution. Value of objective =   -10.1468117862
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     81   1    14  2.8117637973E+00 1.1E+00    88 3.4E-06      T  T
+     91   1    11  2.2855382283E+00 1.9E+03    77 8.2E-01    8 F  F
+    101   1     8  1.8669489341E+00 2.0E+03    56 6.2E-01    8 F  F
+    111   1     6  1.5074963083E+00 2.3E+03    71 6.2E-01    8 F  F
+    121   1     4  8.1270345232E-01 6.0E+01    33 1.6E-06      F  F
+    131   1     2  1.9724395031E-01 1.6E+01    48 4.8E-07      T  T
+ 
+ ** Feasible solution. Value of objective =   -8.51566745013
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     21   3       -1.0146033386E+01 3.6E-03    66 6.5E-03    1 F  T
-     26   4       -1.0146006563E+01 2.1E-04   182 1.0E+00   16 F  T
-     29   4       -1.0146006556E+01 2.5E-08   182
+    141   3       -8.5040882183E+00 9.8E-01    74 4.6E-07      T  T
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -8.48572788812
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    151   3       -8.4625290990E+00 8.1E-02    77 2.7E-01      F  F
+    161   4       -8.4386095242E+00 9.4E-04   154 1.0E+00   24 F  T
+    166   4       -8.4385216874E+00 7.1E-01   166 1.0E+00    1 F  T
+    171   4       -8.4384799962E+00 4.1E-01    93 6.4E-01    2 F  T
+    176   4       -8.4384684600E+00 5.4E+00   104 4.8E-09      F  T
+    181   4       -8.4384661373E+00 3.4E-05   103 1.0E+00      F  T
+    186   3       -8.4384657968E+00 3.6E+02    92 5.4E-12      F  T
+    191   4       -8.4384619700E+00 3.5E-02    92 2.5E-01    2 F  T
+    196   4       -8.4384013968E+00 3.8E-06   166 1.0E+00   58 F  T
+    198   4       -8.4384013968E+00 6.4E-08   166
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.559
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:02.569
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 8
 ---       niter = 1
----   496 rows  907 columns  1,877 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.563
+---   496 rows  907 columns  2,057 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.572
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -401,37 +736,48 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0324823984E+03 (Input point)
+      0   0        2.0162392535E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        8.6589302831E+00 (After pre-processing)
-      2   0        5.9788128667E+00 (After scaling)
-     10   0     0  5.8808542209E+00               0.0E+00      T  T
+      1   0        1.0748212152E+01 (After pre-processing)
+      2   0        5.6985024030E+00 (After scaling)
+     10   0     0  5.6290630801E+00               0.0E+00      T  T
+     20   0     0  3.0013512585E+00               3.6E-03      T  T
+     30   0     5  2.9830613506E+00               0.0E+00      F  F
+     40   0    12  2.9225831080E+00               0.0E+00      F  F
+     50   0    21  2.8171936055E+00               0.0E+00      F  F
+     61   1    19  2.0592131218E+00 3.6E+03   108 6.2E-01   15 F  F
+     66   1    11  9.4249937458E-01 4.4E+01    48 8.4E-01    9 F  F
  
- ** Feasible solution. Value of objective =   -9.05449166456
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     71   1     9  8.2994350203E-01 1.5E+00    49 3.5E-04      F  F
+     76   1     5  1.6684827560E-01 1.5E+01    25 2.5E-01    7 F  F
+ 
+ ** Feasible solution. Value of objective =   -7.53323930759
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     21   3       -9.0538059291E+00 3.8E-03    58 6.1E-03    1 F  T
-     26   4       -9.0537804834E+00 2.5E-04   193 1.0E+00   13 F  T
-     30   4       -9.0537804535E+00 2.0E-08   193
+     81   3       -7.3854636103E+00 1.7E+01    78 6.2E-02   15 F  T
+     91   4       -7.3759821890E+00 1.2E-02   169 1.0E+00    4 F  T
+     96   4       -7.3753806780E+00 1.2E-04   174 1.0E+00   17 F  T
+     99   4       -7.3753806749E+00 8.3E-08   174
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.608
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:02.672
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 9
 ---       niter = 1
----   496 rows  907 columns  1,875 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.611
+---   496 rows  907 columns  2,055 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.676
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -445,37 +791,54 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0323021598E+03 (Input point)
+      0   0        2.0155427794E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        8.4513337115E+00 (After pre-processing)
-      2   0        5.9105508123E+00 (After scaling)
-     10   0     0  5.8134690720E+00               0.0E+00      T  T
+      1   0        1.0446018307E+01 (After pre-processing)
+      2   0        5.5351984230E+00 (After scaling)
+     10   0     0  5.4605959668E+00               0.0E+00      T  T
+     20   0     0  2.9758759671E+00               2.1E-03      T  T
+     30   0     7  2.9757653293E+00               0.0E+00      F  F
+     40   0    11  2.8649474135E+00               0.0E+00      F  F
+     50   0    20  2.7644823277E+00               0.0E+00      F  F
+     60   0    29  2.7644823277E+00               0.0E+00      F  F
+     70   0    39  2.7644823277E+00               0.0E+00      F  F
  
- ** Feasible solution. Value of objective =   -7.93865032416
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     76   1    32  2.7642307853E+00 1.8E+00   143 1.0E+00    8 T  T
+     81   1    20  2.6026484693E+00 1.5E+00    97 6.9E-07      T  T
+     91   1    20  2.6024731558E+00 1.3E+00    87 1.8E-07      T  T
+     96   1    15  1.2432566877E+00 5.8E+01    65 8.2E-01   11 F  F
+    101   1     5  5.5135625530E-01 5.3E+00    15 4.0E-01   10 F  F
+ 
+ ** Feasible solution. Value of objective =   -18.6967163320
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     21   3       -7.9381028135E+00 3.7E-03    50 5.3E-01      F  T
-     26   4       -7.9380855394E+00 3.8E-06   204 1.0E+00   12 F  T
-     28   4       -7.9380855393E+00 6.9E-08   204
+    111   3       -1.6730974382E+01 1.3E+02    62 5.7E-08      T  T
+    116   3       -6.7463980405E+00 3.3E+01    59 2.3E-01    3 F  F
+    121   3       -6.7346906101E+00 1.2E+03    59 2.8E-11      F  F
+    126   4       -6.6953341698E+00 5.0E-01   143 1.0E+00    2 F  T
+    131   4       -6.6952874671E+00 1.1E+02   141 1.0E+00    1 F  T
+    136   4       -6.6952520676E+00 9.8E-04   140 1.0E+00   14 F  T
+    140   4       -6.6952520632E+00 6.4E-08   141
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.648
---- _sceq.gms(314) 5 Mb
+--- Executing after solve: elapsed 0:00:02.799
+--- _sceq.gms(313) 5 Mb
 --- Generating NLP model busc
---- _sceq.gms(330) 7 Mb
+--- _sceq.gms(329) 7 Mb
 --- LOOPS p = a
 ---       tt = 10
 ---       niter = 1
----   496 rows  907 columns  1,873 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(330) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.651
+---   496 rows  907 columns  2,053 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.803
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -489,36 +852,57 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        2.0321250022E+03 (Input point)
+      0   0        2.0152575317E+03 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        8.2463429340E+00 (After pre-processing)
-      2   0        5.8440234583E+00 (After scaling)
-     10   0     0  5.7477187372E+00               0.0E+00      T  T
+      1   0        1.0169365143E+01 (After pre-processing)
+      2   0        5.3885441614E+00 (After scaling)
+     10   0     2  5.3541485646E+00               0.0E+00      T  T
+     20   0     4  3.9244000531E+00               5.8E-04      T  T
+     30   0     9  3.8440790444E+00               0.0E+00      F  F
+     40   0    18  3.7689388051E+00               1.0E+00      F  T
+     51   1    17  3.1819584068E+00 5.3E+02    72 3.8E-01   13 F  F
+     61   1    12  2.9329269038E+00 1.0E+00    33 5.3E-06      T  T
+     66   1     8  1.8664085138E+00 1.1E+02    61 8.3E-01    5 F  F
  
- ** Feasible solution. Value of objective =   -6.79901151558
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     71   1     5  1.7714647459E+00 6.1E-01    19 6.0E-03      T  T
+     81   1     2  4.7167535068E-01 1.3E+01    14 8.3E-01    2 F  F
+ 
+ ** Feasible solution. Value of objective =   -6.11993425589
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     21   3       -6.7986041072E+00 1.6E-02    42 5.4E-03    1 F  T
-     26   4       -6.7985843637E+00 1.3E-04   215 1.0E+00   19 F  T
-     29   4       -6.7985843628E+00 2.6E-08   215
+     91   4       -6.0152771062E+00 3.5E-02   139 1.0E+00    8 T  T
+     96   4       -6.0147362527E+00 1.1E+00    49 5.1E-01    2 F  T
+    101   4       -6.0145983320E+00 2.6E+00   146 1.0E+00    1 F  T
+    106   4       -6.0145137914E+00 1.9E+00   146 1.0E+00    1 F  T
+    111   4       -6.0145009000E+00 9.6E-03   146 1.0E+00    2 T  T
+ 
+ ** Loss of feasibility while tightening tolerances - Return to phase 0.
+ 
+ ** Feasible solution. Value of objective =   -6.01450089998
+ 
+   Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
+    121   4       -6.0139361391E+00 7.7E-02   146 1.0E+00    1 F  T
+    126   4       -6.0139063504E+00 6.4E-05   146 1.0E+00   11 F  T
+    128   4       -6.0139063503E+00 3.4E-08   146
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc
---- Executing after solve: elapsed 0:00:00.690
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:02.961
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = b
 ---       niter = 1
----   496 rows  907 columns  1,889 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.694
+---   496 rows  907 columns  2,069 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:02.964
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -532,43 +916,35 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        1.6486312849E+02 (Input point)
+      0   0        7.7508243507E+00 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        1.5672567248E+02 (After pre-processing)
-      2   0        3.7826364207E+01 (After scaling)
-     10   0     0  3.7377582036E+01               4.0E-03      T  T
-     20   0     0  3.6927969695E+01               2.4E-03      T  T
-     30   0     0  7.9261177493E-02               1.0E+00      F  T
-     40   0     0  5.2557209078E-07               1.0E+00      F  T
+      1   0        7.7235201741E-13 (After pre-processing)
+      2   0        1.9275469350E-13 (After scaling)
  
- ** Feasible solution. Value of objective =   -336.245476712
+ ** Feasible solution. Value of objective =   -13.7647307010
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     51   4       -3.8955124824E+01 1.4E+01   101 0.0E+00      T  T
-     61   3       -3.1135561162E+01 1.3E+00    91 2.0E-02      T  T
-     71   4       -2.7298218043E+01 2.2E-01    95 1.0E+00    9 F  T
-     76   4       -2.7287321278E+01 3.1E-02   103 1.0E+00   34 F  T
-     81   4       -2.7286129585E+01 5.3E-03   115 1.0E+00    6 F  T
-     86   4       -2.7286115159E+01 1.5E-06   117 1.0E+00    6 F  T
-     87   4       -2.7286115159E+01 8.1E-08   117
+     11   4       -1.3764730648E+01 1.1E-03   170 1.0E+00   16 F  T
+     16   4       -1.3764730640E+01 5.6E-07   170 1.0E+00   29 F  T
+     18   4       -1.3764730640E+01 5.9E-08   170
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:00.762
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:03.032
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = c
 ---       niter = 1
----   496 rows  907 columns  1,887 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.767
+---   496 rows  907 columns  2,067 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.037
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -582,35 +958,35 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        3.9158585829E+00 (Input point)
+      0   0        1.1433686419E+00 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        2.2017583542E+00 (After pre-processing)
-      2   0        2.1822108332E+00 (After scaling)
+      1   0        4.0699242390E-04 (After pre-processing)
+      2   0        2.4458518084E-04 (After scaling)
+     10   0     7  2.4458518084E-04               0.0E+00      F  F
  
- ** Feasible solution. Value of objective =   -25.5768037372
+ ** Feasible solution. Value of objective =   -12.6217785233
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   3       -2.5576803586E+01 8.2E-05    94 2.0E-01      F  T
-     16   4       -2.5576803553E+01 1.4E-07   125 1.0E+00    9 F  T
-     17   4       -2.5576803553E+01 8.4E-08   125
+     21   4       -1.2621778476E+01 8.3E-06   163 1.0E+00   21 F  T
+     25   4       -1.2621778476E+01 6.5E-08   163
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:00.803
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:03.098
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = d
 ---       niter = 1
----   496 rows  907 columns  1,885 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.806
+---   496 rows  907 columns  2,065 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.102
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -624,35 +1000,34 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        3.9386006849E+00 (Input point)
+      0   0        1.1620556317E+00 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        2.1780300726E+00 (After pre-processing)
-      2   0        2.1615666077E+00 (After scaling)
+      1   0        5.6300125774E-03 (After pre-processing)
+      2   0        1.5410046768E-03 (After scaling)
  
- ** Feasible solution. Value of objective =   -23.8213218138
+ ** Feasible solution. Value of objective =   -11.4652890306
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   3       -2.3821321656E+01 8.3E-05    86 2.1E-01      F  T
-     16   4       -2.3821321622E+01 1.5E-07   134 1.0E+00   11 F  T
-     17   4       -2.3821321622E+01 4.6E-08   134
+     11   4       -1.1465287504E+01 2.5E-04   122 2.3E+00      F  T
+     16   4       -1.1465287446E+01 7.0E-08   160
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:00.848
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:03.153
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = e
 ---       niter = 1
----   496 rows  907 columns  1,883 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.851
+---   496 rows  907 columns  2,063 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.157
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -666,35 +1041,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        3.9573043326E+00 (Input point)
+      0   0        9.8248015692E-01 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        2.1496801363E+00 (After pre-processing)
-      2   0        2.1331707873E+00 (After scaling)
+      1   0        1.2611534482E-05 (After pre-processing)
+      2   0        5.6569498849E-06 (After scaling)
  
- ** Feasible solution. Value of objective =   -22.0187640162
+ ** Feasible solution. Value of objective =   -10.4828199369
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   3       -2.2018763851E+01 8.3E-05    78 2.2E-01      F  T
-     16   4       -2.2018763816E+01 1.1E-07   143 1.0E+00   13 F  T
-     17   4       -2.2018763816E+01 8.5E-08   143
+     10   4       -1.0482819937E+01 8.3E-08   160
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:00.885
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:03.195
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = f
 ---       niter = 1
----   496 rows  907 columns  1,881 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.888
+---   496 rows  907 columns  2,061 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.198
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -708,34 +1081,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        3.9768615718E+00 (Input point)
+      0   0        1.0087941253E+00 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        2.1212425723E+00 (After pre-processing)
-      2   0        2.1046949612E+00 (After scaling)
+      1   0        8.4339442542E-06 (After pre-processing)
+      2   0        4.3487099363E-06 (After scaling)
  
- ** Feasible solution. Value of objective =   -20.1682098522
+ ** Feasible solution. Value of objective =   -9.47403439787
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   4       -2.0168209664E+01 1.2E-04    70 1.0E+00      F  T
-     15   4       -2.0168209642E+01 9.1E-08   152
+      5   3       -9.4740343979E+00 8.6E-08     0
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:00.923
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:03.227
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = g
 ---       niter = 1
----   496 rows  907 columns  1,879 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.926
+---   496 rows  907 columns  2,059 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.232
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -749,34 +1121,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        3.9977666459E+00 (Input point)
+      0   0        1.0356413655E+00 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        2.0931974483E+00 (After pre-processing)
-      2   0        2.0766178289E+00 (After scaling)
+      1   0        8.2150639639E-06 (After pre-processing)
+      2   0        4.2171281105E-06 (After scaling)
  
- ** Feasible solution. Value of objective =   -18.2687240963
+ ** Feasible solution. Value of objective =   -8.43840139683
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   4       -1.8268723898E+01 1.3E-04    62 1.0E+00      F  T
-     15   4       -1.8268723876E+01 4.4E-08   161
+      5   3       -8.4384013968E+00 9.3E-08     0
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:00.967
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:03.262
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = h
 ---       niter = 1
----   496 rows  907 columns  1,877 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:00.970
+---   496 rows  907 columns  2,057 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.266
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -790,34 +1161,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        4.0200372284E+00 (Input point)
+      0   0        1.0630287508E+00 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        2.0655417105E+00 (After pre-processing)
-      2   0        2.0489334336E+00 (After scaling)
+      1   0        7.8892412327E-06 (After pre-processing)
+      2   0        4.0019661434E-06 (After scaling)
  
- ** Feasible solution. Value of objective =   -16.3193572637
+ ** Feasible solution. Value of objective =   -7.37538067493
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   4       -1.6319357052E+01 1.5E-04    54 1.0E+00      F  T
-     15   4       -1.6319357031E+01 3.5E-08   170
+     10   4       -7.3753806749E+00 5.3E-08   158
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:01.007
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:03.301
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = i
 ---       niter = 1
----   496 rows  907 columns  1,875 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:01.010
+---   496 rows  907 columns  2,055 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.305
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -831,34 +1201,33 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        4.0436868345E+00 (Input point)
+      0   0        6.8013667342E-01 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        2.0382660102E+00 (After pre-processing)
-      2   0        2.0216265489E+00 (After scaling)
+      1   0        7.8695113875E-06 (After pre-processing)
+      2   0        4.0629545964E-06 (After scaling)
  
- ** Feasible solution. Value of objective =   -14.3191465239
+ ** Feasible solution. Value of objective =   -6.69525206324
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     11   4       -1.4319146304E+01 6.8E-05    46 7.4E+00      F  T
-     16   4       -1.4319146282E+01 1.1E-08   179
+      5   3       -6.6952520632E+00 4.9E-08    92
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:01.049
---- _sceq.gms(356) 5 Mb
+--- Executing after solve: elapsed 0:00:03.336
+--- _sceq.gms(355) 5 Mb
 --- Generating NLP model busc_tipped
---- _sceq.gms(365) 7 Mb
+--- _sceq.gms(364) 7 Mb
 --- LOOPS p = j
 ---       niter = 1
----   496 rows  907 columns  1,873 non-zeroes
----   3,751 nl-code  690 nl-non-zeroes
---- _sceq.gms(365) 5 Mb
---- Executing CONOPT (Solvelink=2): elapsed 0:00:01.053
+---   496 rows  907 columns  2,053 non-zeroes
+---   4,741 nl-code  870 nl-non-zeroes
+--- _sceq.gms(364) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:03.340
 
 CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
 
@@ -872,29 +1241,24 @@ CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X
  
  
    Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
-      0   0        4.0687410009E+00 (Input point)
+      0   0        6.8135765301E-01 (Input point)
  
-                   Pre-triangular equations:   90
+                   Pre-triangular equations:   0
                    Post-triangular equations:  91
-                   Definitional equations:     90
+                   Definitional equations:     180
  
-      1   0        2.0113682112E+00 (After pre-processing)
-      2   0        1.9946828110E+00 (After scaling)
-     10   0     6  1.9830299058E+00               1.0E+00      F  T
-     11   1     5  1.9127688422E+00 1.0E+00   132 1.0E+00    3 T  T
+      1   0        1.1932101584E-05 (After pre-processing)
+      2   0        4.9061308683E-06 (After scaling)
  
- ** Feasible solution. Value of objective =   -12.5394042305
+ ** Feasible solution. Value of objective =   -6.01390635030
  
    Iter Phase Ninf     Objective     RGmax    NSB   Step InItr MX OK
-     16   3       -1.2267649728E+01 1.9E-01    38 4.0E-02    8 F  T
-     21   4       -1.2267120169E+01 7.6E-03    37 2.2E+00      F  T
-     26   4       -1.2267117246E+01 3.9E-06   185 1.0E+00   19 F  T
-     28   4       -1.2267117246E+01 1.9E-08   185
+     10   4       -6.0139063503E+00 8.0E-08   147
  
  ** Optimal solution. Reduced gradient less than tolerance.
  
 --- Reading solution for model busc_tipped
---- Executing after solve: elapsed 0:00:01.099
---- _sceq.gms(489) 5 Mb
+--- Executing after solve: elapsed 0:00:03.372
+--- _sceq.gms(488) 5 Mb
 *** Status: Normal completion
---- Job _sceq.gms Stop 03/29/22 21:02:26 elapsed 0:00:01.102
+--- Job _sceq.gms Stop 03/29/22 22:28:30 elapsed 0:00:03.374
