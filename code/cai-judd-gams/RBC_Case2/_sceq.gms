@@ -47,13 +47,8 @@ loop(p $ (ord(p) = 1),
 * if tipping event has not happened by the beginning of the current period
     probs(t) $ (s <= ord(t)) = (1 - PROB1) ** (ord(t) - s);
     E_shk(r, i, t) $ (s <= ord(t)) = ZETA2 + probs(t) * (ZETA1 - ZETA2);
-    loop(niter,
-        solve busc using nlp maximizing obj;
-        if((busc.MODELSTAT <= 2 and busc.SOLVESTAT = 1),
-            break;
-        );
-    );
-    abort$(busc.MODELSTAT > 2 or busc.SOLVESTAT <> 1) "FAILED in solving!";
+
+    solve busc using nlp maximizing obj;
 
     con_path(r, i, tt, p) = con.L(r, i, tt);
     inv_sec_path(r, j, tt, p) = inv_sec.L(r, j, tt);
@@ -72,31 +67,22 @@ loop(p $ (ord(p) = 1),
 
 loop(p $ (ord(p) > 1),
 * starting period is also the period that the tipped event happens
-    s = ord(p);
+  loop(tt $ (ord(tt) <= T_STAR + 1),
+    s = ord(tt);
 
 *-----------fix the state variable at s: the tipping event happens at s, but
 *-----------the capital at s has not been impacted 
     kap.fx(r, i, tt) $ (ord(tt) = s) = kap_path(r, i, tt,'a');
     
-    loop(niter,
-        solve busc_tipped using nlp maximizing obj;
-        if((busc_tipped.MODELSTAT <= 2 and busc_tipped.SOLVESTAT = 1),
-            break;
-        );
-    );
-    abort$(busc_tipped.MODELSTAT > 2 or busc_tipped.SOLVESTAT <> 1)
-      "FAILED in solving!"
-    ;
+    solve busc_tipped using nlp maximizing obj;
+
     con_path(r, i, tt, p) = con.L(r, i, tt);
     inv_sec_path(r, j, tt, p) = inv_sec.L(r, j, tt);
     lab_path(r, i, tt, p) = lab.L(r, i, tt);
     kap_path(r, i, tt, p) = kap.L(r, i, tt);
     lam_path(r, i, tt, p) = dynamics_eq.m(r, i, tt);
     mu_path(i, tt, p) = market_clearing_eq.m(i, tt);
-    
-* relax the fixed constraints on the state variables
-    kap.lo(r, i, t) = 0.001;
-    kap.up(r, i, t) = 1000;  
+);
 );
 *==============================================================================
 display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;

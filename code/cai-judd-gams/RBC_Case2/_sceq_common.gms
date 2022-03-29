@@ -50,7 +50,7 @@ parameters
     kmin                     smallest capital    / 0.1 /
     kmax                     largest capital     / 10 /
     ZETA1                    TFP before shock   / 1 /
-    ZETA2                    TFP after shock   / 1e-0 /
+    ZETA2                    TFP after shock   /95e-2 /
     PROB1                    one period probability of jump of TFP / 0.01 /
     TL_CON_SHR               tail consumption share (of output) / 0.45 /
     CON_SHR(i)               consumption share for each sector
