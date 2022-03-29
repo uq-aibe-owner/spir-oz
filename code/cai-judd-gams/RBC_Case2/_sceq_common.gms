@@ -16,19 +16,25 @@ alias(rr, r)
 set j sectors /1*3/;
 alias(i, j)
 ;
-sets
-    t time /1*71/
-;
-alias(tt,t);
 *-----------number of different paths + 1 (the extra one is for error checking
 *-----------at the last period of interest)
 set p /1*10/;
 
 *==============================================================================
+*-----------derived set for timeline that transcends LFWD and T_STAR
+*==============================================================================
+set t time /1 * 70/;
+alias(tt,t);
+*-----------
+parameter
+  probs(t)                probability of jump of TFP
+  E_shk(r, i, t)           expected shock (exogenous)
+;
+*==============================================================================
 *-----------basic economic parameters
 *==============================================================================
 parameters
-    BETA                     discount rate /0.90/
+    BETA                     discount rate /0.98/
     ALPHA                    capital cost share /0.33/
     DELTA                    capital stock depreciation /0.025/
     PHI_ADJ                  adjustment cost parameter /0.5/
@@ -38,9 +44,9 @@ parameters
     ETA_HAT                  utility parameter
     A                        technology parameter
     B                        relative weight of consumption and leisure
-    LFWD                     look-forward parameter / 15/
+    LFWD                     look-forward parameter / 12/
     s                        starting period for each look forward
-    Tstar                    number of periods of interest 
+    T_STAR                    number of periods of interest 
     REG_WGHT(r)              regional weights (eg population)
     EoS_KAP                  elasticity of substitution for kapital /0.4/
     RHO                      exponent of the ces function
@@ -55,16 +61,15 @@ parameters
     ZETA1                    TFP before shock   / 1 /
     ZETA2                    TFP after shock   / 0.95 /
     PROB1                    one period probability of jump of TFP / 0.01 /
-    probs(t)                 probability of jump of TFP
-    E_shk(r, i, t)           expected shock (exogenous) 
     TL_CON_SHR               tail consumption share (of output) / 0.45 /
     CON_SHR(i)               consumption share for each sector
+    T_ALL                    for the set of all time periods
 ;
-
 *==============================================================================
 *-----------derived economic parameters
 *==============================================================================
-Tstar = card(p) - 1;
+T_STAR = card(p) - 1;
+T_ALL = 70;
 A = (1 - (1 - DELTA) * BETA) / (ALPHA * BETA);
 GAMMA_HAT = 1 - (1 / GAMMA);
 B = (1 - ALPHA) * A * (A - DELTA) ** (-1 / GAMMA);
@@ -74,10 +79,20 @@ RHO_HAT = 1 / RHO;
 
 *-----------the following is the vector of population weights: 
 *-----------it enters the objective function and determines demand
-REG_WGHT(r) = 1;
-CON_SHR(i) = 1 / card(i);
-LAB_SHR(i) = 1 / card(i);
-INV_SHR(i, j) = 1 / (card(i) * card(j));
+loop(r,
+  REG_WGHT(r) = 1 / ord(r);
+);
+loop(i,
+  CON_SHR(i) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
+  LAB_SHR(i) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
+  INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
+*-----------alternative, less symmetric parametrisation for INV_SHR
+* loop(j,
+*   INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) - 1)) / 2) 
+*    / (ord(j) / ((card(j) * (card(j) - 1)) / 2))
+* ;
+* );
+);
 *-----------
 INV_MIN = 0.9 * DELTA;
 *-----------the following is initial kapital: it will vary across regions
@@ -127,8 +142,8 @@ con_sec.lo(r, t) = 0.001;
 *============================================================================== 
 s = 1;
 inv.L(r, i, j, t) = DELTA;
-kap.L(r, i, t) = 1;
-lab.L(r, i, t) = 1;
+kap.L(r, i, t) = 1e+1;
+lab.L(r, i, t) = 1e+1;
 con.L(r, i, t) = A-DELTA;
 *==============================================================================
 *-----------equation declarations (over entire sets)
@@ -232,6 +247,8 @@ options limrow = 0, limcol = 0;
 option reslim = 10000;
 option iterlim = 10000;
 option solprint = off;
+*-----------which solver to use, comment out one of the following:
+*option nlp = ipopt;
 option nlp = conopt;
 
 *==============================================================================

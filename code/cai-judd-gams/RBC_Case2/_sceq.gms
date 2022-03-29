@@ -35,7 +35,7 @@ kap_path(r, i, '1', p) = KAP0(r, i);
 loop(p $ (ord(p) = 1),
 *-----------iterate over time periods, tt, of interest
 *-----------(last period for error checking)
-  loop(tt $ (ord(tt) <= Tstar + 1),
+  loop(tt $ (ord(tt) <= T_STAR + 1),
 * starting period
     s = ord(tt);    
 
@@ -104,23 +104,23 @@ loop(p $ (ord(p) > 1),
 );
 *==============================================================================
 display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
-
+display con_path;
 *==============================================================================
 * compute Euler errors at the pre-tipping path
 
 *parameter integrand(r, i, tt, p)
 *    errs(r, i, tt);
 *
-*integrand(r, i, tt,'1')$(ord(tt)<=Tstar+1) = lam_path(r, i, tt,'1')*(1-delta) + 
+*integrand(r, i, tt,'1')$(ord(tt)<=T_STAR+1) = lam_path(r, i, tt,'1')*(1-delta) + 
 *    mu_path(tt,'1') * ( A*alpha*((kap_path(r, i, tt,'1')/lab_path(r, i, tt,'1'))**(alpha-1)) -
 *    phi/2*sqr(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta) +
 *    phi*(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta)*inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1') );
-*integrand(r, i, tt, p)$(ord(p)>1 and ord(tt)<=Tstar+1) = lam_path(r, i, tt, p)*(1-delta) + 
+*integrand(r, i, tt, p)$(ord(p)>1 and ord(tt)<=T_STAR+1) = lam_path(r, i, tt, p)*(1-delta) + 
 *    mu_path(tt, p) * ( A*alpha*((kap_path(r, i, tt, p)/lab_path(r, i, tt, p))**(alpha-1)) -
 *    phi/2*sqr(inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p)-delta) +
 *    phi*(inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p)-delta)*inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p) );
 *   
-*errs(r, i, tt)$(ord(tt)<=Tstar) = abs(1 - beta*( (1-PROB1)*integrand(r, i, tt+1,'1') +
+*errs(r, i, tt)$(ord(tt)<=T_STAR) = abs(1 - beta*( (1-PROB1)*integrand(r, i, tt+1,'1') +
 *    PROB1*sum(p$(ord(p)=ord(tt)+1),integrand(r, i, tt+1, p)) ) / lam_path(r, i, tt,'1'));
     
 ************************
@@ -133,7 +133,7 @@ display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
 *Put sol_SCEQ_RBC_con;
 *
 *loop(p,
-*  loop(tt$(ord(tt)<=Tstar),
+*  loop(tt$(ord(tt)<=T_STAR),
 *    put tt.tl::4;    
 *        loop(r,
 *          put con_path(r, *, tt, p)::6;
@@ -149,7 +149,7 @@ display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
 *Put sol_SCEQ_RBC_kap;
 *
 *loop(p,
-*  loop(tt$(ord(tt)<=Tstar),
+*  loop(tt$(ord(tt)<=T_STAR),
 *    put tt.tl::4;
 *    loop(r,
 *      put kap_path(r, *, tt, p)::6;
@@ -165,7 +165,7 @@ display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
 *Put sol_SCEQ_RBC_inv;
 *
 *loop(p,
-*  loop(tt$(ord(tt)<=Tstar),
+*  loop(tt$(ord(tt)<=T_STAR),
 *    put tt.tl::4;
 *    loop(r,
 *      put inv_path(r, *, tt, p)::6;
@@ -181,7 +181,7 @@ display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
 *Put sol_SCEQ_RBC_lab;
 *
 *loop(p,
-*  loop(tt$(ord(tt)<=Tstar),
+*  loop(tt$(ord(tt)<=T_STAR),
 *    put tt.tl::4;
 *    loop(r,
 *      put lab_path(r, *, tt, p)::6;
@@ -196,7 +196,7 @@ display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
 
 *Put sol_SCEQ_RBC_err;
 *
-*loop(tt$(ord(tt)<=Tstar),
+*loop(tt$(ord(tt)<=T_STAR),
 *    put tt.tl::4;
 *    loop(r,
 *      put errs(r, i, tt)::6;
