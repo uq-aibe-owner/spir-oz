@@ -1,4 +1,4 @@
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 1
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 1
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 C o m p i l a t i o n
 
@@ -23,7 +23,7 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   18  *==============================================================================
   19  *-----------sets
   20  *==============================================================================
-  21  set r regions /1*2/;
+  21  set r regions /Aus, Qld/;
   22  alias(rr, r)
   23  ;
   24  set j sectors /1*3/;
@@ -31,468 +31,469 @@ INCLUDE    /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-ga
   26  ;
   27  *-----------number of different paths + 1 (the extra one is for error checking
   28  *-----------at the last period of interest)
-  29  set p /1*10/;
-  30   
-  31  *==============================================================================
-  32  *-----------derived set for timeline that transcends LFWD and T_STAR
-  33  *==============================================================================
-  34  set t time /1 * 70/;
-  35  alias(tt,t);
-  36  *-----------
-  37  parameter
-  38    probs(t)                probability of jump of TFP
-  39    E_shk(r, i, t)           expected shock (exogenous)
-  40  ;
-  41  *==============================================================================
-  42  *-----------basic economic parameters
-  43  *==============================================================================
-  44  parameters
-  45      BETA                     discount rate /0.98/
-  46      ALPHA                    capital cost share /0.33/
-  47      DELTA                    capital stock depreciation /0.025/
-  48      PHI_ADJ                  adjustment cost parameter /0.5/
-  49      GAMMA                    intertemporal elasticity of substitution /0.5/
-  50      GAMMA_HAT                utility parameter
-  51      ETA                      Frisch elasticity of labor supply /0.5/
-  52      ETA_HAT                  utility parameter
-  53      A                        technology parameter
-  54      B                        relative weight of consumption and leisure
-  55      LFWD                     look-forward parameter / 12/
-  56      s                        starting period for each look forward
-  57      T_STAR                    number of periods of interest
-  58      REG_WGHT(r)              regional weights (eg population)
-  59      EoS_KAP                  elasticity of substitution for kapital /0.4/
-  60      RHO                      exponent of the ces function
-  61      RHO_HAT                  inverse of RHO
-  62      CON_SHR(i)               share of each commodity in consumption
-  63      LAB_SHR(i)               share of each type of labour in utility
-  64      INV_SHR(i, j)               share of each commodity in saving
-  65      INV_MIN                  lower bound of investment
-  66      KAP0(r, i)               initial capital
-  67      kmin                     smallest capital    / 0.1 /
-  68      kmax                     largest capital     / 10 /
-  69      ZETA1                    TFP before shock   / 1 /
-  70      ZETA2                    TFP after shock   / 0.95 /
-  71      PROB1                    one period probability of jump of TFP / 0.01 /
-  72      TL_CON_SHR               tail consumption share (of output) / 0.45 /
-  73      CON_SHR(i)               consumption share for each sector
-  74      T_ALL                    for the set of all time periods
-  75  ;
-  76  *==============================================================================
-  77  *-----------derived economic parameters
-  78  *==============================================================================
-  79  T_STAR = card(p) - 1;
-  80  T_ALL = 70;
-  81  A = (1 - (1 - DELTA) * BETA) / (ALPHA * BETA);
-  82  GAMMA_HAT = 1 - (1 / GAMMA);
-  83  B = (1 - ALPHA) * A * (A - DELTA) ** (-1 / GAMMA);
-  84  ETA_HAT = 1 + (1 / ETA);
-  85  RHO = (EoS_KAP - 1) / EoS_KAP;
-  86  RHO_HAT = 1 / RHO;
-  87   
-  88  *-----------the following is the vector of population weights:
-  89  *-----------it enters the objective function and determines demand
-  90  loop(r,
-  91    REG_WGHT(r) = 1 / ord(r);
-  92  );
-  93  loop(i,
-  94    CON_SHR(i) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
-  95    LAB_SHR(i) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
-  96    INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
-  97  *-----------alternative, less symmetric parametrisation for INV_SHR
-  98  * loop(j,
-  99  *   INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) - 1)) / 2)
- 100  *    / (ord(j) / ((card(j) * (card(j) - 1)) / 2))
- 101  * ;
- 102  * );
- 103  );
- 104  *-----------
- 105  INV_MIN = 0.9 * DELTA;
- 106  *-----------the following is initial kapital: it will vary across regions
- 107  *KAP0(r) = kmin + (kmax-kmin)*(ord(r)-1)/(card(r)-1);
- 108  *KAP0(r) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(r)-1)/(card(r)-1));
- 109  KAP0(r, i) = 1;
- 110   
- 111  display A, B, ETA_HAT, KAP0;
- 112  *-----------the following won't work as s is a parameter not a set
- 113  *interval(s) = yes$(s < ord(t) and ord(t) < LFWD + s)
- 114   
- 115  *==============================================================================
- 116  *-----------basic (economic) variables
- 117  *==============================================================================
- 118  Variables
- 119      obj                       objective criterion
- 120      inv(r, i, j, t)           investment
- 121      utility(r, t)             instantaneous utility
- 122  ;
- 123  *------------------------------------------------------------------------------
- 124  Positive variables
- 125   
- 126      con(r, i, t)              consumption
- 127      kap(r, i, t)              kapital stock
- 128      lab(r, i, t)              labor supply
- 129  *-----------intermediate variables
- 130      con_sec(r, t)             consumption aggregate (across sectors)
- 131      inv_sec(r, j, t)             kapital aggregate (across sectors)
- 132      lab_sec(r, t)             labour aggregate (across sectors)
- 133      adj(r, i, t)              kapital adjustment costs
- 134      out(r, i, t)              output
- 135  ;
- 136   
- 137  *==============================================================================
- 138  *-----------Bound Constraints
- 139  *==============================================================================
- 140  kap.lo(r, i, t) = 0.001;
- 141  kap.up(r, i, t) = 1000;
- 142  con.lo(r, i, t) = 0.001;
- 143  con.up(r, i, t) = 1000;
- 144  lab.lo(r, i, t) = 0.001;
- 145  lab.up(r, i, t) = 1000;
- 146  inv.lo(r, i, j, t) = INV_MIN;
- 147  con_sec.lo(r, t) = 0.001;
- 148  *==============================================================================
- 149  *-----------Initial Guess
- 150  *==============================================================================
- 151  s = 1;
- 152  inv.L(r, i, j, t) = DELTA;
- 153  kap.L(r, i, t) = 1e+1;
- 154  lab.L(r, i, t) = 1e+1;
- 155  con.L(r, i, t) = A-DELTA;
- 156  *==============================================================================
- 157  *-----------equation declarations (over entire sets)
- 158  *==============================================================================
- 159  *-----------declarations are applied globally (eg on the whole of 1..71)
- 160  Equations
- 161  *-----------declarations for intermediate-variables
- 162      con_sec_eq(r, t)           consumption aggregate (across sectors)
- 163      inv_sec_eq(r, j, t)           kapital aggregate (across sectors)
- 164      lab_sec_eq(r, t)           labour aggregate (across sectors)
- 165      adj_eq(r, i, t)            kapital adjustment costs
- 166      out_eq(r, i, t)            output
- 167      utility_eq(r, t)           the utility function
- 168      tail_utility_eq(r, t)       the tail utility function
- 169      obj_eq                     Objective function
- 170  *-----------canonical equations
- 171      dynamics_eq(r, i, t)        Law of Motion for Capital Stock
- 172      market_clearing_eq(i, t)            budget constraint before jump
- 173  *-----------other states
- 174      tipped_market_clearing_eq(i, t)      budget constraint after jump
- 175  ;
- 176  *==============================================================================
- 177  *-----------equation definitions for each s along the path
- 178  *==============================================================================
- 179  *-----------definitions for some intermediate-variables
- 180  con_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 181    con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
- 182  ;
- 183  lab_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 184    lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
- 185  ;
- 186  inv_sec_eq(r, j, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 187    inv_sec(r, j, t)
- 188      =e= (sum(i, INV_SHR(i, j) * inv(r, i, j, t) ** RHO)) ** RHO_HAT
- 189  ;
- 190  adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 191    adj(r, i, t)
- 192      =e= (PHI_ADJ/2) * kap(r, i, t) * sqr(kap(r, i, t + 1) / kap(r, i, t) - 1)
- 193  ;
- 194  out_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 195    out(r, i, t) =e= A * kap(r, i, t) ** ALPHA * lab(r, i, t) ** (1 - ALPHA)
- 196  ;
- 197  *------------------------------------------------------------------------------
- 198  *-----------canonical equations
+  29  set p /a, b, c, d, e, f, g, h, i, j /;
+  30  *set p /a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r /;
+  31   
+  32  *==============================================================================
+  33  *-----------basic economic parameters
+  34  *==============================================================================
+  35  parameters
+  36      BETA                     discount rate /0.98/
+  37      ALPHA                    capital cost share /0.33/
+  38      DELTA                    capital stock depreciation /0.025/
+  39      PHI_ADJ                  adjustment cost parameter /0.5/
+  40      GAMMA                    intertemporal elasticity of substitution /0.5/
+  41      GAMMA_HAT                utility parameter
+  42      ETA                      Frisch elasticity of labor supply /0.5/
+  43      ETA_HAT                  utility parameter
+  44      A                        technology parameter
+  45      B                        relative weight of consumption and leisure
+  46      LFWD                     look-forward parameter / 15/
+  47      s                        starting period for each look forward
+  48      T_STAR                    number of periods of interest
+  49      REG_WGHT(r)              regional weights (eg population)
+  50      EoS_KAP                  elasticity of substitution for kapital /0.4/
+  51      RHO                      exponent of the ces function
+  52      RHO_HAT                  inverse of RHO
+  53      CON_SHR(i)               share of each commodity in consumption
+  54      LAB_SHR(i)               share of each type of labour in utility
+  55      INV_SHR(i, j)               share of each commodity in saving
+  56      INV_MIN                  lower bound of investment
+  57      KAP0(r, i)               initial capital
+  58      kmin                     smallest capital    / 0.1 /
+  59      kmax                     largest capital     / 10 /
+  60      ZETA1                    TFP before shock   / 1 /
+  61      ZETA2                    TFP after shock   / 0.5 /
+  62      PROB1                    one period probability of jump of TFP / 0.01 /
+  63      TL_CON_SHR               tail consumption share (of output) / 0.45 /
+  64      CON_SHR(i)               consumption share for each sector
+  65      T_ALL                    for the set of all time periods
+  66  ;
+  67  *==============================================================================
+  68  *-----------derived economic parameters
+  69  *==============================================================================
+  70  T_STAR = card(p) - 1;
+  71  T_ALL = card(p) + LFWD;
+  72  A = (1 - (1 - DELTA) * BETA) / (ALPHA * BETA);
+  73  GAMMA_HAT = 1 - (1 / GAMMA);
+  74  B = (1 - ALPHA) * A * (A - DELTA) ** (-1 / GAMMA);
+  75  ETA_HAT = 1 + (1 / ETA);
+  76  RHO = (EoS_KAP - 1) / EoS_KAP;
+  77  RHO_HAT = 1 / RHO;
+  78   
+  79  *-----------the following is the vector of population weights:
+  80  *-----------it enters the objective function and determines demand
+  81  loop(r,
+  82    REG_WGHT(r) = 1 / ord(r);
+  83  );
+  84  loop(i,
+  85    CON_SHR(i) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
+  86    LAB_SHR(i) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
+  87    INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
+  88  *-----------alternative, less symmetric parametrisation for INV_SHR
+  89  * loop(j,
+  90  *   INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) - 1)) / 2)
+  91  *    / (ord(j) / ((card(j) * (card(j) - 1)) / 2))
+  92  * ;
+  93  * );
+  94  );
+  95  *-----------
+  96  INV_MIN = 0.9 * DELTA;
+  97  *-----------the following is initial kapital: it will vary across regions
+  98  *KAP0(r) = kmin + (kmax-kmin)*(ord(r)-1)/(card(r)-1);
+  99  *KAP0(r) = exp(log(kmin) + (log(kmax)-log(kmin))*(ord(r)-1)/(card(r)-1));
+ 100  KAP0(r, i) = 1;
+ 101   
+ 102  display A, B, ETA_HAT, KAP0;
+ 103  *-----------the following won't work as s is a parameter not a set
+ 104  *interval(s) = yes$(s < ord(t) and ord(t) < LFWD + s)
+ 105   
+ 106  *==============================================================================
+ 107  *-----------derived set for timeline that transcends LFWD and T_STAR
+ 108  *==============================================================================
+ 109  set t time / 1 * 30 /;
+ 110  alias(tt,t);
+ 111  *-----------
+ 112  parameter
+ 113    probs(t)                probability of jump of TFP
+ 114    E_shk(r, i, t)           expected shock (exogenous)
+ 115  ;
+ 116  *==============================================================================
+ 117  *-----------basic (economic) variables
+ 118  *==============================================================================
+ 119  Variables
+ 120      obj                       objective criterion
+ 121      inv(r, i, j, t)           investment
+ 122      utility(r, t)             instantaneous utility
+ 123  ;
+ 124  *------------------------------------------------------------------------------
+ 125  Positive variables
+ 126   
+ 127      con(r, i, t)              consumption
+ 128      kap(r, i, t)              kapital stock
+ 129      lab(r, i, t)              labor supply
+ 130  *-----------intermediate variables
+ 131      con_sec(r, t)             consumption aggregate (across sectors)
+ 132      inv_sec(r, j, t)             kapital aggregate (across sectors)
+ 133      lab_sec(r, t)             labour aggregate (across sectors)
+ 134      adj(r, i, t)              kapital adjustment costs
+ 135      out(r, i, t)              output
+ 136  ;
+ 137   
+ 138  *==============================================================================
+ 139  *-----------Bound Constraints
+ 140  *==============================================================================
+ 141  kap.lo(r, i, t) = 0.001;
+ 142  kap.up(r, i, t) = 1000;
+ 143  con.lo(r, i, t) = 0.001;
+ 144  con.up(r, i, t) = 1000;
+ 145  lab.lo(r, i, t) = 0.001;
+ 146  lab.up(r, i, t) = 1000;
+ 147  inv.lo(r, i, j, t) = INV_MIN;
+ 148  con_sec.lo(r, t) = 0.001;
+ 149  *==============================================================================
+ 150  *-----------Initial Guess
+ 151  *==============================================================================
+ 152  s = 1;
+ 153  inv.L(r, i, j, t) = DELTA;
+ 154  kap.L(r, i, t) = 1e+0;
+ 155  lab.L(r, i, t) = 1e+1;
+ 156  con.L(r, i, t) = A-DELTA;
+ 157  *==============================================================================
+ 158  *-----------equation declarations (over entire sets)
+ 159  *==============================================================================
+ 160  *-----------declarations are applied globally (eg on the whole of 1..71)
+ 161  Equations
+ 162  *-----------declarations for intermediate-variables
+ 163      con_sec_eq(r, t)           consumption aggregate (across sectors)
+ 164      inv_sec_eq(r, j, t)           kapital aggregate (across sectors)
+ 165      lab_sec_eq(r, t)           labour aggregate (across sectors)
+ 166      adj_eq(r, i, t)            kapital adjustment costs
+ 167      out_eq(r, i, t)            output
+ 168      utility_eq(r, t)           the utility function
+ 169      tail_utility_eq(r, t)       the tail utility function
+ 170      obj_eq                     Objective function
+ 171  *-----------canonical equations
+ 172      dynamics_eq(r, i, t)        Law of Motion for Capital Stock
+ 173      market_clearing_eq(i, t)            budget constraint before jump
+ 174  *-----------other states
+ 175      tipped_market_clearing_eq(i, t)      budget constraint after jump
+ 176  ;
+ 177  *==============================================================================
+ 178  *-----------equation definitions for each s along the path
+ 179  *==============================================================================
+ 180  *-----------definitions for some intermediate-variables
+ 181  con_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 182    con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
+ 183  ;
+ 184  lab_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 185    lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
+ 186  ;
+ 187  inv_sec_eq(r, j, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 188    inv_sec(r, j, t)
+ 189      =e= (sum(i, INV_SHR(i, j) * inv(r, i, j, t) ** RHO)) ** RHO_HAT
+ 190  ;
+ 191  adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 192    adj(r, i, t)
+ 193      =e= 0
+ 194  * (PHI_ADJ/2) * kap(r, i, t) * sqr(kap(r, i, t + 1) / kap(r, i, t) - 1)
+ 195  ;
+ 196  out_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 197    out(r, i, t) =e= A * kap(r, i, t) ** ALPHA * lab(r, i, t) ** (1 - ALPHA)
+ 198  ;
  199  *------------------------------------------------------------------------------
- 200  dynamics_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 201    kap(r, i, t + 1) =e= (1 - DELTA) * kap(r, i, t) + inv_sec(r, i, t)
- 202  ;
- 203  market_clearing_eq(i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 204    sum(r,
- 205      E_shk(r, i, t) * out(r, i, t)
- 206      - con(r, i, t)
- 207      - adj(r, i, t)
- 208      - sum(j, inv(r, i, j, t))
- 209    )
- 210    =e= 0
- 211  ;
- 212  *------------------------------------------------------------------------------
- 213  *-----------other states
+ 200  *-----------canonical equations
+ 201  *------------------------------------------------------------------------------
+ 202  dynamics_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 203    kap(r, i, t + 1) =e= (1 - DELTA) * kap(r, i, t) + inv_sec(r, i, t)
+ 204  ;
+ 205  market_clearing_eq(i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 206    sum(r,
+ 207      E_shk(r, i, t) * out(r, i, t)
+ 208      - con(r, i, t)
+ 209      - adj(r, i, t)
+ 210      - sum(j, inv(r, i, j, t))
+ 211    )
+ 212    =e= 0
+ 213  ;
  214  *------------------------------------------------------------------------------
- 215  tipped_market_clearing_eq(i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 216    sum(r,
- 217      ZETA2 * out(r, i, t)
- 218      - con(r, i, t)
- 219      - adj(r, i, t)
- 220      - sum(j, inv(r, i, j, t))
- 221    )
- 222    =e= 0
- 223  ;
- 224  *------------------------------------------------------------------------------
- 225  *-----------the sequence of utility flows per region and time period
+ 215  *-----------other states
+ 216  *------------------------------------------------------------------------------
+ 217  tipped_market_clearing_eq(i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 218    sum(r,
+ 219      ZETA2 * out(r, i, t)
+ 220      - con(r, i, t)
+ 221      - adj(r, i, t)
+ 222      - sum(j, inv(r, i, j, t))
+ 223    )
+ 224    =e= 0
+ 225  ;
  226  *------------------------------------------------------------------------------
- 227  utility_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
- 228    utility(r, t) =e=
- 229  *-----------the consumption part:
- 230      con_sec(r, t) ** GAMMA_HAT / GAMMA_HAT
- 231  *-----------the labour part:
- 232      - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
- 233  ;
- 234  tail_utility_eq(r, t) $ (ord(t) = LFWD + s)..
- 235  *-----------tail/continuation utility, where tail labour is normalised to one:
- 236    utility(r, t) =e=
- 237  *-----------in the consumption part, a fixed share of output is consumed
- 238      (prod(i,
- 239        CON_SHR(i)
- 240        * (TL_CON_SHR * A * kap(r, i, t)) ** ALPHA)) ** GAMMA_HAT / GAMMA_HAT
- 241  *-----------and the labour part:
- 242      - B / (1 - BETA)
- 243  ;
- 244  *------------------------------------------------------------------------------
- 245  *-----------the objective function
- 246  *------------------------------------------------------------------------------
- 247  obj_eq..
- 248    obj =e=
- 249      sum(r, REG_WGHT(r) * sum(t $ (s <= ord(t) and ord(t) <= LFWD),
- 250        BETA ** (ord(t) - s) * utility(r, t)))
- 251  ;
- 252  *==============================================================================
- 253  *-----------solver options
- 254  options limrow = 0, limcol = 0;
- 255  option reslim = 10000;
- 256  option iterlim = 10000;
- 257  option solprint = off;
- 258  *-----------which solver to use, comment out one of the following:
- 259  *option nlp = ipopt;
- 260  option nlp = conopt;
- 261   
- 262  *==============================================================================
- 263  *-----------instantiate models with corresponding equations
- 264  model busc /
- 265          obj_eq,
- 266          dynamics_eq,
- 267          market_clearing_eq,
- 268          con_sec_eq,
- 269          inv_sec_eq,
- 270          lab_sec_eq,
- 271          adj_eq,
- 272          out_eq,
- 273          utility_eq
- 274          /;
- 275  model busc_tipped /
- 276          obj_eq,
- 277          dynamics_eq,
- 278          tipped_market_clearing_eq,
- 279          con_sec_eq,
- 280          inv_sec_eq,
- 281          lab_sec_eq,
- 282          adj_eq,
- 283          out_eq,
- 284          utility_eq
- 285          /;
- 286   
+ 227  *-----------the sequence of utility flows per region and time period
+ 228  *------------------------------------------------------------------------------
+ 229  utility_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
+ 230    utility(r, t) =e=
+ 231  *-----------the consumption part:
+ 232      con_sec(r, t) ** GAMMA_HAT / GAMMA_HAT
+ 233  *-----------the labour part:
+ 234      - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
+ 235  ;
+ 236  tail_utility_eq(r, t) $ (ord(t) = LFWD + s)..
+ 237  *-----------tail/continuation utility, where tail labour is normalised to one:
+ 238    utility(r, t) =e=
+ 239  *-----------in the consumption part, a fixed share of output is consumed
+ 240      (prod(i,
+ 241        (TL_CON_SHR * A * kap(r, i, t)) ** CON_SHR(i)) ** ALPHA) ** GAMMA_HAT / GAMMA_HAT
+ 242  *-----------and the labour part:
+ 243      - B / (1 - BETA)
+ 244  ;
+ 245  *------------------------------------------------------------------------------
+ 246  *-----------the objective function
+ 247  *------------------------------------------------------------------------------
+ 248  obj_eq..
+ 249    obj =e=
+ 250      sum(r, REG_WGHT(r) * sum(t $ (s <= ord(t) and ord(t) <= LFWD),
+ 251        BETA ** (ord(t) - s) * utility(r, t)))
+ 252  ;
+ 253  *==============================================================================
+ 254  *-----------solver options
+ 255  options limrow = 0, limcol = 0;
+ 256  option reslim = 10000;
+ 257  option iterlim = 10000;
+ 258  option solprint = off;
+ 259  *-----------which solver to use, comment out one of the following:
+ 260  *option nlp = ipopt;
+ 261  option nlp = conopt;
+ 262   
+ 263  *==============================================================================
+ 264  *-----------instantiate models with corresponding equations
+ 265  model busc /
+ 266          obj_eq,
+ 267          dynamics_eq,
+ 268          market_clearing_eq,
+ 269          con_sec_eq,
+ 270          inv_sec_eq,
+ 271          lab_sec_eq,
+ 272          adj_eq,
+ 273          out_eq,
+ 274          utility_eq
+ 275          /;
+ 276  model busc_tipped /
+ 277          obj_eq,
+ 278          dynamics_eq,
+ 279          tipped_market_clearing_eq,
+ 280          con_sec_eq,
+ 281          inv_sec_eq,
+ 282          lab_sec_eq,
+ 283          adj_eq,
+ 284          out_eq,
+ 285          utility_eq
+ 286          /;
  287   
- 288  *********************************************
- 289  * run SCEQ
- 290   
- 291  parameter
- 292      con_path(r, i, tt, p) simulated consumption paths
- 293      inv_sec_path(r, j, tt, p) simulated investment paths
- 294      lab_path(r, i, tt, p) simulated labor supply paths
- 295      kap_path(r, i, tt, p) simulated capital paths
- 296      lam_path(r, i, tt, p) shadow prices for capital transition
- 297      mu_path(i, tt, p) shadow prices for budget constraint
- 298  ;
- 299   
- 300  con_path(r, i, tt, p) = 1;
- 301  inv_sec_path(r, j, tt, p) = 1;
- 302  lab_path(r, i, tt, p) = 1;
- 303  kap_path(r, i, tt, p) = 1;
- 304  lam_path(r, i, tt, p) = 1;
- 305  mu_path(i, tt, p) = 1;
- 306   
- 307  set niter / 1 * 10 /;
- 308   
- 309  kap_path(r, i, '1', p) = KAP0(r, i);
- 310   
- 311  *==============================================================================
- 312  *-----------solve the pre-tipping path
- 313  loop(p $ (ord(p) = 1),
- 314  *-----------iterate over time periods, tt, of interest
- 315  *-----------(last period for error checking)
- 316    loop(tt $ (ord(tt) <= T_STAR + 1),
- 317  * starting period
- 318      s = ord(tt);
- 319   
- 320  * optimization step
- 321   
- 322  * fix the state variable at s
- 323      kap.fx(r, i, tt) = kap_path(r, i, tt, p);
- 324   
- 325  * if tipping event has not happened by the beginning of the current period
- 326      probs(t) $ (s <= ord(t)) = (1 - PROB1) ** (ord(t) - s);
- 327      E_shk(r, i, t) $ (s <= ord(t)) = ZETA2 + probs(t) * (ZETA1 - ZETA2);
- 328      loop(niter,
- 329          solve busc using nlp maximizing obj;
- 330          if((busc.MODELSTAT <= 2 and busc.SOLVESTAT = 1),
- 331              break;
- 332          );
- 333      );
- 334      abort$(busc.MODELSTAT > 2 or busc.SOLVESTAT <> 1) "FAILED in solving!";
- 335   
- 336      con_path(r, i, tt, p) = con.L(r, i, tt);
- 337      inv_sec_path(r, j, tt, p) = inv_sec.L(r, j, tt);
- 338      lab_path(r, i, tt, p) = lab.L(r, i, tt);
- 339      lam_path(r, i, tt, p) = dynamics_eq.m(r, i, tt);
- 340      mu_path(i, tt, p) = market_clearing_eq.m(i, tt);
- 341   
- 342  * simulation step
- 343      kap_path(r, j, tt + 1, p) = (1 - delta) * kap_path(r, j, tt, p)
- 344        + inv_sec_path(r, j, tt, p);
- 345    );
- 346   
- 347  * relax the fixed constraints on the state variables
- 348    kap.lo(r, i, t) = 0.001;
- 349    kap.up(r, i, t) = 1000;
- 350  );
- 351   
- 352  *==============================================================================
- 353  * solve the tipped paths
- 354   
- 355  loop(p $ (ord(p) > 1),
- 356  * starting period is also the period that the tipped event happens
- 357      s = ord(p);
- 358   
- 359  *-----------fix the state variable at s: the tipping event happens at s, but
- 360  *-----------the capital at s has not been impacted
- 361      kap.fx(r, i, tt) $ (ord(tt) = s) = kap_path(r, i, tt,'1');
- 362   
- 363      loop(niter,
- 364          solve busc_tipped using nlp maximizing obj;
- 365          if((busc_tipped.MODELSTAT <= 2 and busc_tipped.SOLVESTAT = 1),
- 366              break;
- 367          );
- 368      );
- 369      abort$(busc_tipped.MODELSTAT > 2 or busc_tipped.SOLVESTAT <> 1)
- 370        "FAILED in solving!"
- 371      ;
- 372      con_path(r, i, tt, p) = con.L(r, i, tt);
- 373      inv_sec_path(r, j, tt, p) = inv_sec.L(r, j, tt);
- 374      lab_path(r, i, tt, p) = lab.L(r, i, tt);
- 375      kap_path(r, i, tt, p) = kap.L(r, i, tt);
- 376      lam_path(r, i, tt, p) = dynamics_eq.m(r, i, tt);
- 377      mu_path(i, tt, p) = market_clearing_eq.m(i, tt);
- 378   
- 379  * relax the fixed constraints on the state variables
- 380      kap.lo(r, i, t) = 0.001;
- 381      kap.up(r, i, t) = 1000;
- 382  );
- 383  *==============================================================================
- 384  display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
- 385  display con_path;
- 386  *==============================================================================
- 387  * compute Euler errors at the pre-tipping path
- 388   
- 389  *parameter integrand(r, i, tt, p)
- 390  *    errs(r, i, tt);
- 391  *
- 392  *integrand(r, i, tt,'1')$(ord(tt)<=T_STAR+1) = lam_path(r, i, tt,'1')*(1-delta) +
- 393  *    mu_path(tt,'1') * ( A*alpha*((kap_path(r, i, tt,'1')/lab_path(r, i, tt,'1'))**(alpha-1)) -
- 394  *    phi/2*sqr(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta) +
- 395  *    phi*(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta)*inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1') );
- 396  *integrand(r, i, tt, p)$(ord(p)>1 and ord(tt)<=T_STAR+1) = lam_path(r, i, tt, p)*(1-delta) +
- 397  *    mu_path(tt, p) * ( A*alpha*((kap_path(r, i, tt, p)/lab_path(r, i, tt, p))**(alpha-1)) -
- 398  *    phi/2*sqr(inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p)-delta) +
- 399  *    phi*(inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p)-delta)*inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p) );
- 400  *
- 401  *errs(r, i, tt)$(ord(tt)<=T_STAR) = abs(1 - beta*( (1-PROB1)*integrand(r, i, tt+1,'1') +
- 402  *    PROB1*sum(p$(ord(p)=ord(tt)+1),integrand(r, i, tt+1, p)) ) / lam_path(r, i, tt,'1'));
- 403   
- 404  ************************
- 405  * Output solutions
- 406   
- 407  *File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
- 408  *sol_SCEQ_RBC_con.pc=5;
- 409  *sol_SCEQ_RBC_con.pw=4000;
- 410  *
- 411  *Put sol_SCEQ_RBC_con;
- 412  *
- 413  *loop(p,
- 414  *  loop(tt$(ord(tt)<=T_STAR),
- 415  *    put tt.tl::4;
- 416  *        loop(r,
- 417  *          put con_path(r, *, tt, p)::6;
- 418  *          );
- 419  *    put /;
- 420  *  );
- 421  *);
- 422  *
- 423  *File sol_SCEQ_RBC_kap /sol_SCEQ_RBC_kap.csv/;
- 424  *sol_SCEQ_RBC_kap.pc=5;
- 425  *sol_SCEQ_RBC_kap.pw=4000;
- 426  *
- 427  *Put sol_SCEQ_RBC_kap;
- 428  *
- 429  *loop(p,
- 430  *  loop(tt$(ord(tt)<=T_STAR),
- 431  *    put tt.tl::4;
- 432  *    loop(r,
- 433  *      put kap_path(r, *, tt, p)::6;
- 434  *    );
- 435  *    put /;
- 436  *  );
- 437  *);
- 438  *
- 439  *File sol_SCEQ_RBC_inv /sol_SCEQ_RBC_inv.csv/;
- 440  *sol_SCEQ_RBC_inv.pc=5;
- 441  *sol_SCEQ_RBC_inv.pw=4000;
- 442  *
- 443  *Put sol_SCEQ_RBC_inv;
- 444  *
- 445  *loop(p,
- 446  *  loop(tt$(ord(tt)<=T_STAR),
- 447  *    put tt.tl::4;
- 448  *    loop(r,
- 449  *      put inv_path(r, *, tt, p)::6;
- 450  *    );
- 451  *    put /;
- 452  *  );
- 453  *);
- 454  *
- 455  *File sol_SCEQ_RBC_lab /sol_SCEQ_RBC_lab.csv/;
- 456  *sol_SCEQ_RBC_lab.pc=5;
- 457  *sol_SCEQ_RBC_lab.pw=4000;
- 458  *
- 459  *Put sol_SCEQ_RBC_lab;
- 460  *
- 461  *loop(p,
- 462  *  loop(tt$(ord(tt)<=T_STAR),
- 463  *    put tt.tl::4;
- 464  *    loop(r,
- 465  *      put lab_path(r, *, tt, p)::6;
- 466  *    );
- 467  *    put /;
- 468  *  );
- 469  *);
- 470  *
- 471  *File sol_SCEQ_RBC_err /sol_SCEQ_RBC_err.csv/;
- 472  *sol_SCEQ_RBC_err.pc=5;
- 473  *sol_SCEQ_RBC_err.pw=4000;
- 474   
- 475  *Put sol_SCEQ_RBC_err;
- 476  *
- 477  *loop(tt$(ord(tt)<=T_STAR),
- 478  *    put tt.tl::4;
- 479  *    loop(r,
- 480  *      put errs(r, i, tt)::6;
- 481  *    );
- 482  *    put /;
- 483  *);
- 484   
- 485  * display the running time in minutes
- 486  scalar elapsed;
- 487  elapsed = (jnow - starttime)*24*60;
- 488  display elapsed;
- 489   
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 2
+ 288   
+ 289  *********************************************
+ 290  * run SCEQ
+ 291   
+ 292  parameter
+ 293      con_path(r, i, tt, p) simulated consumption paths
+ 294      inv_sec_path(r, j, tt, p) simulated investment paths
+ 295      lab_path(r, i, tt, p) simulated labor supply paths
+ 296      kap_path(r, i, tt, p) simulated capital paths
+ 297      lam_path(r, i, tt, p) shadow prices for capital transition
+ 298      mu_path(i, tt, p) shadow prices for budget constraint
+ 299  ;
+ 300   
+ 301  con_path(r, i, tt, p) = 1;
+ 302  inv_sec_path(r, j, tt, p) = 1;
+ 303  lab_path(r, i, tt, p) = 1;
+ 304  kap_path(r, i, tt, p) = 1;
+ 305  lam_path(r, i, tt, p) = 1;
+ 306  mu_path(i, tt, p) = 1;
+ 307   
+ 308  set niter / 1 * 10 /;
+ 309   
+ 310  kap_path(r, i, '1', p) = KAP0(r, i);
+ 311   
+ 312  *==============================================================================
+ 313  *-----------solve the pre-tipping path
+ 314  loop(p $ (ord(p) = 1),
+ 315  *-----------iterate over time periods, tt, of interest
+ 316  *-----------(last period for error checking)
+ 317    loop(tt $ (ord(tt) <= T_STAR + 1),
+ 318  * starting period
+ 319      s = ord(tt);
+ 320   
+ 321  * optimization step
+ 322   
+ 323  * fix the state variable at s
+ 324      kap.fx(r, i, tt) = kap_path(r, i, tt, p);
+ 325   
+ 326  * if tipping event has not happened by the beginning of the current period
+ 327      probs(t) $ (s <= ord(t)) = (1 - PROB1) ** (ord(t) - s);
+ 328      E_shk(r, i, t) $ (s <= ord(t)) = ZETA2 + probs(t) * (ZETA1 - ZETA2);
+ 329      loop(niter,
+ 330          solve busc using nlp maximizing obj;
+ 331          if((busc.MODELSTAT <= 2 and busc.SOLVESTAT = 1),
+ 332              break;
+ 333          );
+ 334      );
+ 335      abort$(busc.MODELSTAT > 2 or busc.SOLVESTAT <> 1) "FAILED in solving!";
+ 336   
+ 337      con_path(r, i, tt, p) = con.L(r, i, tt);
+ 338      inv_sec_path(r, j, tt, p) = inv_sec.L(r, j, tt);
+ 339      lab_path(r, i, tt, p) = lab.L(r, i, tt);
+ 340      lam_path(r, i, tt, p) = dynamics_eq.m(r, i, tt);
+ 341      mu_path(i, tt, p) = market_clearing_eq.m(i, tt);
+ 342   
+ 343  * simulation step
+ 344      kap_path(r, j, tt + 1, p) = (1 - delta) * kap_path(r, j, tt, p)
+ 345        + inv_sec_path(r, j, tt, p);
+ 346    );
+ 347   
+ 348  * relax the fixed constraints on the state variables
+ 349    kap.lo(r, i, t) = 0.001;
+ 350    kap.up(r, i, t) = 1000;
+ 351  );
+ 352   
+ 353  *==============================================================================
+ 354  * solve the tipped paths
+ 355   
+ 356  loop(p $ (ord(p) > 1),
+ 357  * starting period is also the period that the tipped event happens
+ 358      s = ord(p);
+ 359   
+ 360  *-----------fix the state variable at s: the tipping event happens at s, but
+ 361  *-----------the capital at s has not been impacted
+ 362      kap.fx(r, i, tt) $ (ord(tt) = s) = kap_path(r, i, tt,'a');
+ 363   
+ 364      loop(niter,
+ 365          solve busc_tipped using nlp maximizing obj;
+ 366          if((busc_tipped.MODELSTAT <= 2 and busc_tipped.SOLVESTAT = 1),
+ 367              break;
+ 368          );
+ 369      );
+ 370      abort$(busc_tipped.MODELSTAT > 2 or busc_tipped.SOLVESTAT <> 1)
+ 371        "FAILED in solving!"
+ 372      ;
+ 373      con_path(r, i, tt, p) = con.L(r, i, tt);
+ 374      inv_sec_path(r, j, tt, p) = inv_sec.L(r, j, tt);
+ 375      lab_path(r, i, tt, p) = lab.L(r, i, tt);
+ 376      kap_path(r, i, tt, p) = kap.L(r, i, tt);
+ 377      lam_path(r, i, tt, p) = dynamics_eq.m(r, i, tt);
+ 378      mu_path(i, tt, p) = market_clearing_eq.m(i, tt);
+ 379   
+ 380  * relax the fixed constraints on the state variables
+ 381      kap.lo(r, i, t) = 0.001;
+ 382      kap.up(r, i, t) = 1000;
+ 383  );
+ 384  *==============================================================================
+ 385  display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
+ 386  display inv_sec_path;
+ 387  *==============================================================================
+ 388  * compute Euler errors at the pre-tipping path
+ 389   
+ 390  *parameter integrand(r, i, tt, p)
+ 391  *    errs(r, i, tt);
+ 392  *
+ 393  *integrand(r, i, tt,'1')$(ord(tt)<=T_STAR+1) = lam_path(r, i, tt,'1')*(1-delta) +
+ 394  *    mu_path(tt,'1') * ( A*alpha*((kap_path(r, i, tt,'1')/lab_path(r, i, tt,'1'))**(alpha-1)) -
+ 395  *    phi/2*sqr(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta) +
+ 396  *    phi*(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta)*inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1') );
+ 397  *integrand(r, i, tt, p)$(ord(p)>1 and ord(tt)<=T_STAR+1) = lam_path(r, i, tt, p)*(1-delta) +
+ 398  *    mu_path(tt, p) * ( A*alpha*((kap_path(r, i, tt, p)/lab_path(r, i, tt, p))**(alpha-1)) -
+ 399  *    phi/2*sqr(inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p)-delta) +
+ 400  *    phi*(inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p)-delta)*inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p) );
+ 401  *
+ 402  *errs(r, i, tt)$(ord(tt)<=T_STAR) = abs(1 - beta*( (1-PROB1)*integrand(r, i, tt+1,'1') +
+ 403  *    PROB1*sum(p$(ord(p)=ord(tt)+1),integrand(r, i, tt+1, p)) ) / lam_path(r, i, tt,'1'));
+ 404   
+ 405  ************************
+ 406  * Output solutions
+ 407   
+ 408  *File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
+ 409  *sol_SCEQ_RBC_con.pc=5;
+ 410  *sol_SCEQ_RBC_con.pw=4000;
+ 411  *
+ 412  *Put sol_SCEQ_RBC_con;
+ 413  *
+ 414  *loop(p,
+ 415  *  loop(tt$(ord(tt)<=T_STAR),
+ 416  *    put tt.tl::4;
+ 417  *        loop(r,
+ 418  *          put con_path(r, *, tt, p)::6;
+ 419  *          );
+ 420  *    put /;
+ 421  *  );
+ 422  *);
+ 423  *
+ 424  *File sol_SCEQ_RBC_kap /sol_SCEQ_RBC_kap.csv/;
+ 425  *sol_SCEQ_RBC_kap.pc=5;
+ 426  *sol_SCEQ_RBC_kap.pw=4000;
+ 427  *
+ 428  *Put sol_SCEQ_RBC_kap;
+ 429  *
+ 430  *loop(p,
+ 431  *  loop(tt$(ord(tt)<=T_STAR),
+ 432  *    put tt.tl::4;
+ 433  *    loop(r,
+ 434  *      put kap_path(r, *, tt, p)::6;
+ 435  *    );
+ 436  *    put /;
+ 437  *  );
+ 438  *);
+ 439  *
+ 440  *File sol_SCEQ_RBC_inv /sol_SCEQ_RBC_inv.csv/;
+ 441  *sol_SCEQ_RBC_inv.pc=5;
+ 442  *sol_SCEQ_RBC_inv.pw=4000;
+ 443  *
+ 444  *Put sol_SCEQ_RBC_inv;
+ 445  *
+ 446  *loop(p,
+ 447  *  loop(tt$(ord(tt)<=T_STAR),
+ 448  *    put tt.tl::4;
+ 449  *    loop(r,
+ 450  *      put inv_path(r, *, tt, p)::6;
+ 451  *    );
+ 452  *    put /;
+ 453  *  );
+ 454  *);
+ 455  *
+ 456  *File sol_SCEQ_RBC_lab /sol_SCEQ_RBC_lab.csv/;
+ 457  *sol_SCEQ_RBC_lab.pc=5;
+ 458  *sol_SCEQ_RBC_lab.pw=4000;
+ 459  *
+ 460  *Put sol_SCEQ_RBC_lab;
+ 461  *
+ 462  *loop(p,
+ 463  *  loop(tt$(ord(tt)<=T_STAR),
+ 464  *    put tt.tl::4;
+ 465  *    loop(r,
+ 466  *      put lab_path(r, *, tt, p)::6;
+ 467  *    );
+ 468  *    put /;
+ 469  *  );
+ 470  *);
+ 471  *
+ 472  *File sol_SCEQ_RBC_err /sol_SCEQ_RBC_err.csv/;
+ 473  *sol_SCEQ_RBC_err.pc=5;
+ 474  *sol_SCEQ_RBC_err.pw=4000;
+ 475   
+ 476  *Put sol_SCEQ_RBC_err;
+ 477  *
+ 478  *loop(tt$(ord(tt)<=T_STAR),
+ 479  *    put tt.tl::4;
+ 480  *    loop(r,
+ 481  *      put errs(r, i, tt)::6;
+ 482  *    );
+ 483  *    put /;
+ 484  *);
+ 485   
+ 486  * display the running time in minutes
+ 487  scalar elapsed;
+ 488  elapsed = (jnow - starttime)*24*60;
+ 489  display elapsed;
+ 490   
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 2
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 Include File Summary
 
@@ -504,62 +505,62 @@ Include File Summary
 
 
 COMPILATION TIME     =        0.002 SECONDS      3 MB  38.1.0 a1a3b545 DEX-DEG
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 3
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 3
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 E x e c u t i o n
 
 
-----    111 PARAMETER A                    =        0.138  technology parameter
+----    102 PARAMETER A                    =        0.138  technology parameter
             PARAMETER B                    =        7.271  relative weight of consumption and leisure
             PARAMETER ETA_HAT              =        3.000  utility parameter
 
-----    111 PARAMETER KAP0  initial capital
+----    102 PARAMETER KAP0  initial capital
 
-            1           2           3
+              1           2           3
 
-1       1.000       1.000       1.000
-2       1.000       1.000       1.000
+Aus       1.000       1.000       1.000
+Qld       1.000       1.000       1.000
 
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 4
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 4
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
+Model Statistics    SOLVE busc Using NLP From line 330
 
 
-LOOPS                                    p   1
+LOOPS                                    p   a
                                         tt   1
                                      niter   1
 
 
 MODEL STATISTICS
 
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727  24 projected
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  30 projected
+NON ZERO ELEMENTS         1,891     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
 
 
 GENERATION TIME      =        0.004 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
+               L O O P S                  p a
                                          tt 1
                                       niter 1
 
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 5
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 5
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
+Solution Report     SOLVE busc Using NLP From line 330
 
 
                S O L V E      S U M M A R Y
 
      MODEL   busc                OBJECTIVE  obj
      TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
+     SOLVER  CONOPT              FROM LINE  330
 
 **** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -17.8561
 
- RESOURCE USAGE, LIMIT          0.020     10000.000
- ITERATION COUNT, LIMIT       178         10000
+ RESOURCE USAGE, LIMIT          0.221     10000.000
+ ITERATION COUNT, LIMIT       292         10000
  EVALUATION ERRORS              0             0
 --- *** This solver runs with a demo license. No commercial use.
  
@@ -570,80 +571,1035 @@ Solution Report     SOLVE busc Using NLP From line 329
                     DK-2880 Bagsvaerd, Denmark
  
  
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
+    The model has 907 variables and 496 constraints
+    with 1891 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
  
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
- 
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
  
  
- CONOPT time Total                            0.015 seconds
-   of which: Function evaluations             0.008 = 53.3%
-             1st Derivative evaluations       0.001 =  6.7%
+ ** Optimal solution. Reduced gradient less than tolerance.
  
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
+ 
+ CONOPT time Total                            0.217 seconds
+   of which: Function evaluations             0.079 = 36.4%
+             1st Derivative evaluations       0.021 =  9.7%
+             2nd Derivative evaluations       0.022 = 10.1%
+             Directional 2nd Derivative       0.012 =  5.5%
+ 
 
 
 **** REPORT SUMMARY :        0     NONOPT
-                            23 INFEASIBLE (INFES)
-                    SUM    1.8520009E+9
-                    MAX    1.7509172E+9
-                    MEAN   8.0521778E+7
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           247  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 6
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 6
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
+Model Statistics    SOLVE busc Using NLP From line 330
 
 
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   2
+LOOPS                                    p   a
+                                        tt   2
+                                     niter   1
 
 
 MODEL STATISTICS
 
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,889     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
 
 
 GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 2
+               L O O P S                  p a
+                                         tt 2
+                                      niter 1
 
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 7
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 7
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
+Solution Report     SOLVE busc Using NLP From line 330
 
 
                S O L V E      S U M M A R Y
 
      MODEL   busc                OBJECTIVE  obj
      TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
+     SOLVER  CONOPT              FROM LINE  330
 
 **** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -15.2666
 
- RESOURCE USAGE, LIMIT          0.007     10000.000
+ RESOURCE USAGE, LIMIT          0.018     10000.000
+ ITERATION COUNT, LIMIT        27         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1889 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.013 seconds
+   of which: Function evaluations             0.000 =  0.0%
+             1st Derivative evaluations       0.002 = 15.4%
+             2nd Derivative evaluations       0.001 =  7.7%
+             Directional 2nd Derivative       0.001 =  7.7%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 8
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc Using NLP From line 330
+
+
+LOOPS                                    p   a
+                                        tt   3
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,887     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p a
+                                         tt 3
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 9
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc Using NLP From line 330
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc                OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  330
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -14.2868
+
+ RESOURCE USAGE, LIMIT          0.023     10000.000
+ ITERATION COUNT, LIMIT        38         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1887 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.018 seconds
+   of which: Function evaluations             0.004 = 22.2%
+             1st Derivative evaluations       0.002 = 11.1%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.002 = 11.1%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 10
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc Using NLP From line 330
+
+
+LOOPS                                    p   a
+                                        tt   4
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,885     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.004 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p a
+                                         tt 4
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 11
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc Using NLP From line 330
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc                OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  330
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -13.2852
+
+ RESOURCE USAGE, LIMIT          0.021     10000.000
+ ITERATION COUNT, LIMIT        31         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1885 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.016 seconds
+   of which: Function evaluations             0.001 =  6.3%
+             1st Derivative evaluations       0.002 = 12.5%
+             2nd Derivative evaluations       0.001 =  6.2%
+             Directional 2nd Derivative       0.002 = 12.5%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 12
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc Using NLP From line 330
+
+
+LOOPS                                    p   a
+                                        tt   5
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,883     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p a
+                                         tt 5
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 13
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc Using NLP From line 330
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc                OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  330
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -12.2614
+
+ RESOURCE USAGE, LIMIT          0.024     10000.000
+ ITERATION COUNT, LIMIT        49         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1883 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.019 seconds
+   of which: Function evaluations             0.003 = 15.8%
+             1st Derivative evaluations       0.002 = 10.5%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.002 = 10.5%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 14
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc Using NLP From line 330
+
+
+LOOPS                                    p   a
+                                        tt   6
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,881     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p a
+                                         tt 6
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 15
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc Using NLP From line 330
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc                OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  330
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -11.2151
+
+ RESOURCE USAGE, LIMIT          0.022     10000.000
+ ITERATION COUNT, LIMIT        39         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1881 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.017 seconds
+   of which: Function evaluations             0.007 = 41.2%
+             1st Derivative evaluations       0.001 =  5.9%
+             2nd Derivative evaluations       0.001 =  5.9%
+             Directional 2nd Derivative       0.000 =  0.0%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 16
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc Using NLP From line 330
+
+
+LOOPS                                    p   a
+                                        tt   7
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,879     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.005 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p a
+                                         tt 7
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 17
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc Using NLP From line 330
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc                OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  330
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -10.1460
+
+ RESOURCE USAGE, LIMIT          0.021     10000.000
+ ITERATION COUNT, LIMIT        29         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1879 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.016 seconds
+   of which: Function evaluations             0.002 = 12.5%
+             1st Derivative evaluations       0.002 = 12.5%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.001 =  6.3%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 18
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc Using NLP From line 330
+
+
+LOOPS                                    p   a
+                                        tt   8
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,877     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.004 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p a
+                                         tt 8
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 19
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc Using NLP From line 330
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc                OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  330
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE               -9.0538
+
+ RESOURCE USAGE, LIMIT          0.020     10000.000
+ ITERATION COUNT, LIMIT        30         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1877 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.015 seconds
+   of which: Function evaluations             0.003 = 20.0%
+             1st Derivative evaluations       0.002 = 13.3%
+             2nd Derivative evaluations       0.001 =  6.7%
+             Directional 2nd Derivative       0.000 =  0.0%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 20
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc Using NLP From line 330
+
+
+LOOPS                                    p   a
+                                        tt   9
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,875     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p a
+                                         tt 9
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 21
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc Using NLP From line 330
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc                OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  330
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE               -7.9381
+
+ RESOURCE USAGE, LIMIT          0.018     10000.000
+ ITERATION COUNT, LIMIT        28         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1875 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.013 seconds
+   of which: Function evaluations             0.002 = 15.4%
+             1st Derivative evaluations       0.000 =  0.0%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.001 =  7.7%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 22
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc Using NLP From line 330
+
+
+LOOPS                                    p   a
+                                        tt   10
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907  2 projected
+NON ZERO ELEMENTS         1,873     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.002 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p a
+                                         tt 10
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 23
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc Using NLP From line 330
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc                OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  330
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE               -6.7986
+
+ RESOURCE USAGE, LIMIT          0.019     10000.000
+ ITERATION COUNT, LIMIT        29         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1873 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.015 seconds
+   of which: Function evaluations             0.006 = 40.0%
+             1st Derivative evaluations       0.002 = 13.3%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.001 =  6.7%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 24
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
+
+
+LOOPS                                    p   b
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,889     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p b
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 25
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc_tipped Using NLP From line 365
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc_tipped         OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  365
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -27.2861
+
+ RESOURCE USAGE, LIMIT          0.043     10000.000
+ ITERATION COUNT, LIMIT        87         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1889 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.038 seconds
+   of which: Function evaluations             0.007 = 18.4%
+             1st Derivative evaluations       0.005 = 13.2%
+             2nd Derivative evaluations       0.003 =  7.9%
+             Directional 2nd Derivative       0.002 =  5.3%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 26
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
+
+
+LOOPS                                    p   c
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,887     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.004 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p c
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 27
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc_tipped Using NLP From line 365
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc_tipped         OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  365
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -25.5768
+
+ RESOURCE USAGE, LIMIT          0.016     10000.000
+ ITERATION COUNT, LIMIT        17         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1887 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.011 seconds
+   of which: Function evaluations             0.001 =  9.1%
+             1st Derivative evaluations       0.002 = 18.2%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.001 =  9.1%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 28
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
+
+
+LOOPS                                    p   d
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,885     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p d
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 29
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc_tipped Using NLP From line 365
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc_tipped         OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  365
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -23.8213
+
+ RESOURCE USAGE, LIMIT          0.017     10000.000
+ ITERATION COUNT, LIMIT        17         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1885 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.012 seconds
+   of which: Function evaluations             0.002 = 16.7%
+             1st Derivative evaluations       0.002 = 16.7%
+             2nd Derivative evaluations       0.001 =  8.3%
+             Directional 2nd Derivative       0.002 = 16.7%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 30
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
+
+
+LOOPS                                    p   e
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,883     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p e
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 31
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc_tipped Using NLP From line 365
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc_tipped         OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  365
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -22.0188
+
+ RESOURCE USAGE, LIMIT          0.015     10000.000
+ ITERATION COUNT, LIMIT        17         10000
+ EVALUATION ERRORS              0             0
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+    The model has 907 variables and 496 constraints
+    with 1883 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
+ 
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+ 
+ CONOPT time Total                            0.011 seconds
+   of which: Function evaluations             0.001 =  9.1%
+             1st Derivative evaluations       0.001 =  9.1%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.002 = 18.2%
+ 
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 32
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
+
+
+LOOPS                                    p   f
+                                     niter   1
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,881     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
+
+
+GENERATION TIME      =        0.002 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+               L O O P S                  p f
+                                      niter 1
+
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 33
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE busc_tipped Using NLP From line 365
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   busc_tipped         OBJECTIVE  obj
+     TYPE    NLP                 DIRECTION  MAXIMIZE
+     SOLVER  CONOPT              FROM LINE  365
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -20.1682
+
+ RESOURCE USAGE, LIMIT          0.015     10000.000
  ITERATION COUNT, LIMIT        15         10000
  EVALUATION ERRORS              0             0
 --- *** This solver runs with a demo license. No commercial use.
@@ -655,89 +1611,69 @@ Solution Report     SOLVE busc Using NLP From line 329
                     DK-2880 Bagsvaerd, Denmark
  
  
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
+    The model has 907 variables and 496 constraints
+    with 1881 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
  
  
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
+ ** Optimal solution. Reduced gradient less than tolerance.
  
  
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
+ CONOPT time Total                            0.011 seconds
+   of which: Function evaluations             0.000 =  0.0%
+             1st Derivative evaluations       0.002 = 18.2%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.001 =  9.1%
  
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.003 seconds
-   of which: Function evaluations             0.002 = 66.7%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
 
 
 **** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           214  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 8
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 34
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
 
 
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   3
+LOOPS                                    p   g
+                                     niter   1
 
 
 MODEL STATISTICS
 
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,879     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
 
 
 GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 3
+               L O O P S                  p g
+                                      niter 1
 
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 9
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 35
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
+Solution Report     SOLVE busc_tipped Using NLP From line 365
 
 
                S O L V E      S U M M A R Y
 
-     MODEL   busc                OBJECTIVE  obj
+     MODEL   busc_tipped         OBJECTIVE  obj
      TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
+     SOLVER  CONOPT              FROM LINE  365
 
 **** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -18.2687
 
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         2         10000
+ RESOURCE USAGE, LIMIT          0.016     10000.000
+ ITERATION COUNT, LIMIT        15         10000
  EVALUATION ERRORS              0             0
 --- *** This solver runs with a demo license. No commercial use.
  
@@ -748,89 +1684,69 @@ Solution Report     SOLVE busc Using NLP From line 329
                     DK-2880 Bagsvaerd, Denmark
  
  
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
+    The model has 907 variables and 496 constraints
+    with 1879 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
  
  
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
+ ** Optimal solution. Reduced gradient less than tolerance.
  
  
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
+ CONOPT time Total                            0.011 seconds
+   of which: Function evaluations             0.003 = 27.3%
+             1st Derivative evaluations       0.001 =  9.1%
+             2nd Derivative evaluations       0.001 =  9.1%
+             Directional 2nd Derivative       0.001 =  9.1%
  
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
 
 
 **** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           201  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 10
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 36
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
 
 
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   4
+LOOPS                                    p   h
+                                     niter   1
 
 
 MODEL STATISTICS
 
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,877     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
 
 
 GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 4
+               L O O P S                  p h
+                                      niter 1
 
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 11
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 37
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
+Solution Report     SOLVE busc_tipped Using NLP From line 365
 
 
                S O L V E      S U M M A R Y
 
-     MODEL   busc                OBJECTIVE  obj
+     MODEL   busc_tipped         OBJECTIVE  obj
      TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
+     SOLVER  CONOPT              FROM LINE  365
 
 **** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -16.3194
 
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         2         10000
+ RESOURCE USAGE, LIMIT          0.017     10000.000
+ ITERATION COUNT, LIMIT        15         10000
  EVALUATION ERRORS              0             0
 --- *** This solver runs with a demo license. No commercial use.
  
@@ -841,89 +1757,69 @@ Solution Report     SOLVE busc Using NLP From line 329
                     DK-2880 Bagsvaerd, Denmark
  
  
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
+    The model has 907 variables and 496 constraints
+    with 1877 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
  
  
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
+ ** Optimal solution. Reduced gradient less than tolerance.
  
  
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
+ CONOPT time Total                            0.013 seconds
+   of which: Function evaluations             0.002 = 15.4%
+             1st Derivative evaluations       0.002 = 15.4%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.001 =  7.7%
  
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.001 = 50.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
 
 
 **** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           201  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 12
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 38
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
 
 
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   5
+LOOPS                                    p   i
+                                     niter   1
 
 
 MODEL STATISTICS
 
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,875     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
 
 
 GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 5
+               L O O P S                  p i
+                                      niter 1
 
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 13
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 39
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
+Solution Report     SOLVE busc_tipped Using NLP From line 365
 
 
                S O L V E      S U M M A R Y
 
-     MODEL   busc                OBJECTIVE  obj
+     MODEL   busc_tipped         OBJECTIVE  obj
      TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
+     SOLVER  CONOPT              FROM LINE  365
 
 **** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -14.3191
 
- RESOURCE USAGE, LIMIT          0.007     10000.000
- ITERATION COUNT, LIMIT         2         10000
+ RESOURCE USAGE, LIMIT          0.018     10000.000
+ ITERATION COUNT, LIMIT        16         10000
  EVALUATION ERRORS              0             0
 --- *** This solver runs with a demo license. No commercial use.
  
@@ -934,182 +1830,69 @@ Solution Report     SOLVE busc Using NLP From line 329
                     DK-2880 Bagsvaerd, Denmark
  
  
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
+    The model has 907 variables and 496 constraints
+    with 1875 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
  
  
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
+ ** Optimal solution. Reduced gradient less than tolerance.
  
  
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
- 
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.003 seconds
-   of which: Function evaluations             0.000 =  0.0%
+ CONOPT time Total                            0.012 seconds
+   of which: Function evaluations             0.004 = 33.3%
              1st Derivative evaluations       0.000 =  0.0%
+             2nd Derivative evaluations       0.001 =  8.3%
+             Directional 2nd Derivative       0.000 =  0.0%
  
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
 
 
 **** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           201  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 14
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 40
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
+Model Statistics    SOLVE busc_tipped Using NLP From line 365
 
 
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   6
+LOOPS                                    p   j
+                                     niter   1
 
 
 MODEL STATISTICS
 
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
-
-
-GENERATION TIME      =        0.002 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 6
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 15
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         2         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
- 
- 
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
- 
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.001 = 50.0%
- 
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           201  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 16
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
-
-
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   7
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
+BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          496
+BLOCKS OF VARIABLES          11     SINGLE VARIABLES          907
+NON ZERO ELEMENTS         1,873     NON LINEAR N-Z            690
+CODE LENGTH               3,751     CONSTANT POOL              25
 
 
 GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 7
+               L O O P S                  p j
+                                      niter 1
 
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 17
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 41
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
+Solution Report     SOLVE busc_tipped Using NLP From line 365
 
 
                S O L V E      S U M M A R Y
 
-     MODEL   busc                OBJECTIVE  obj
+     MODEL   busc_tipped         OBJECTIVE  obj
      TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
+     SOLVER  CONOPT              FROM LINE  365
 
 **** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
+**** MODEL STATUS      2 Locally Optimal
+**** OBJECTIVE VALUE              -12.2671
 
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         2         10000
+ RESOURCE USAGE, LIMIT          0.021     10000.000
+ ITERATION COUNT, LIMIT        28         10000
  EVALUATION ERRORS              0             0
 --- *** This solver runs with a demo license. No commercial use.
  
@@ -1120,338 +1903,330 @@ Solution Report     SOLVE busc Using NLP From line 329
                     DK-2880 Bagsvaerd, Denmark
  
  
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
+    The model has 907 variables and 496 constraints
+    with 1873 Jacobian elements, 690 of which are nonlinear.
+    The Hessian of the Lagrangian has 600 elements on the diagonal,
+    540 elements below the diagonal, and 600 nonlinear variables.
+ 
+                   Pre-triangular equations:   90
+                   Post-triangular equations:  91
+                   Definitional equations:     90
  
  
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
+ ** Optimal solution. Reduced gradient less than tolerance.
  
  
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
+ CONOPT time Total                            0.017 seconds
+   of which: Function evaluations             0.004 = 23.5%
+             1st Derivative evaluations       0.001 =  5.9%
+             2nd Derivative evaluations       0.000 =  0.0%
+             Directional 2nd Derivative       0.001 =  5.9%
  
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.001 = 50.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
 
 
 **** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           201  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 18
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
-
-
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   8
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
-
-
-GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 8
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 19
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         2         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
- 
- 
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
- 
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           201  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 20
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
-
-
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   9
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
-
-
-GENERATION TIME      =        0.003 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 9
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 21
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
-
- RESOURCE USAGE, LIMIT          0.007     10000.000
- ITERATION COUNT, LIMIT         2         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
- 
- 
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
- 
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           201  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 22
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Model Statistics    SOLVE busc Using NLP From line 329
-
-
-LOOPS                                    p   1
-                                        tt   1
-                                     niter   10
-
-
-MODEL STATISTICS
-
-BLOCKS OF EQUATIONS           9     SINGLE EQUATIONS          397
-BLOCKS OF VARIABLES          11     SINGLE VARIABLES          727
-NON ZERO ELEMENTS         1,657     NON LINEAR N-Z            696
-CODE LENGTH               3,793     CONSTANT POOL              25
-
-
-GENERATION TIME      =        0.002 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
-               L O O P S                  p 1
-                                         tt 1
-                                      niter 10
-
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 23
-G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
-Solution Report     SOLVE busc Using NLP From line 329
-
-
-               S O L V E      S U M M A R Y
-
-     MODEL   busc                OBJECTIVE  obj
-     TYPE    NLP                 DIRECTION  MAXIMIZE
-     SOLVER  CONOPT              FROM LINE  329
-
-**** SOLVER STATUS     1 Normal Completion
-**** MODEL STATUS      5 Locally Infeasible
-**** OBJECTIVE VALUE     -10000000000.0000
-
- RESOURCE USAGE, LIMIT          0.006     10000.000
- ITERATION COUNT, LIMIT         2         10000
- EVALUATION ERRORS              0             0
---- *** This solver runs with a demo license. No commercial use.
- 
- 
-    C O N O P T 3   version 3.17K
-    Copyright (C)   ARKI Consulting and Development A/S
-                    Bagsvaerdvej 246 A
-                    DK-2880 Bagsvaerd, Denmark
- 
- 
- ** Warning ** 2 variables were initialized close to the internal
-               infinity = 1.000000E+10. Were moved to 9.900000E+09.
- 
- 
-    The model has 727 variables and 397 constraints
-    with 1657 Jacobian elements, 696 of which are nonlinear.
-    The Hessian of the Lagrangian has 486 elements on the diagonal,
-    504 elements below the diagonal, and 486 nonlinear variables.
- 
- ** Function or derivative evaluation error or overflow while evaluating
-    definitional constraints. Initial point restored and Lmusdf changed to 0.
- 
- 
-                   Pre-triangular equations:   0
-                   Post-triangular equations:  49
-                   Definitional equations:     144
- 
- 
- ** Infeasible solution. A free variable exceeds the allowable range.
-    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
- 
-    The allowable range can be changed with option:
- 
-    Rtmaxv=x.xxe+xx
- 
- 
- CONOPT time Total                            0.002 seconds
-   of which: Function evaluations             0.000 =  0.0%
-             1st Derivative evaluations       0.000 =  0.0%
- 
-
-**** ERRORS/WARNINGS IN VARIABLE inv(2,3,3,12)
-     1 error(s): Free variable becomes too large
-
-
-**** REPORT SUMMARY :        0     NONOPT
-                             5 INFEASIBLE (INFES)
-                    SUM    1.8529515E+9
-                    MAX    1.7511997E+9
-                    MEAN   3.7059029E+8
-                             2  UNBOUNDED (UNBND)
-                             1     ERRORS ( ****)
-                           201  PROJECTED
-GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 14:21:39 Page 24
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+                             0     ERRORS
+                             1  PROJECTED
+GAMS 38.1.0  a1a3b545 Jan 31, 2022          DEX-DEG x86 64bit/Mac OS X - 03/29/22 21:02:25 Page 42
 G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
 E x e c u t i o n
 
 
-----    334 FAILED in solving!
-**** Exec Error at line 334: Execution halted: abort$1 'FAILED in solving!'
+----    385 VARIABLE con.L  consumption
+
+                1           2           3           4           5           6           7           8           9          10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30
+
+Aus.1       1.324       0.395       0.393       0.391       0.389       0.387       0.386       0.384       0.382       0.380       0.379       0.377       0.375       0.373       1.558       0.001       0.391       0.418       0.436       0.435       0.435       0.435       0.434       0.574       0.113       0.113       0.113       0.113       0.113       0.113
+Aus.2       1.324       5.983       5.952       5.921       5.891       5.862       5.834       5.806       5.779       5.754       5.728       5.702       5.670       5.638       1.559       0.001       0.001       0.431       0.457       0.454       0.452       0.449       0.447       0.659       0.113       0.113       0.113       0.113       0.113       0.113
+Aus.3       1.995       0.395       0.393       0.391       0.389       0.387       0.386       0.384       0.382       0.380       0.379       0.377       0.375       0.373       2.815       0.485       0.481       0.507       0.517       0.514       0.497       0.493       0.490       0.744       0.113       0.113       0.113       0.113       0.113       0.113
+Qld.1       0.936       0.279       0.278       0.276       0.275       0.274       0.273       0.271       0.270       0.269       0.268       0.266       0.265       0.264       1.102       0.113       0.113       0.113       0.113       0.113       0.113       0.113       0.113       0.001       0.113       0.113       0.113       0.113       0.113       0.113
+Qld.2       0.936       4.231       4.209       4.187       4.166       4.145       4.125       4.105       4.087       4.068       4.050       4.032       4.009       3.987       1.102       0.113       0.113       0.113       0.113       0.113       0.113       0.113       0.113       0.001       0.113       0.113       0.113       0.113       0.113       0.113
+Qld.3       1.411       0.279       0.278       0.276       0.275       0.274       0.273       0.271       0.270       0.269       0.268       0.266       0.265       0.264       1.990       0.113       0.113       0.113       0.113       0.113       0.113       0.113       0.113       0.001       0.113       0.113       0.113       0.113       0.113       0.113
 
 
-EXECUTION TIME       =        0.316 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
+----    385 VARIABLE inv.L  investment
+
+INDEX 1 = Aus
+
+              1           2           3           4           5           6           7           8           9          10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30
+
+1.1       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+1.2       2.134       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+1.3       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.048       0.045       0.041       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+2.1       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+2.2       2.134       0.045       0.044       0.042       0.041       0.039       0.037       0.035       0.033       0.030       0.026       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+2.3       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.486       0.208       0.068       0.041       0.041       0.041       0.042       0.042       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+3.1       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+3.2       2.515       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.036       0.036       0.036       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+3.3       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.066       0.062       0.056       0.045       0.046       0.046       0.047       0.047       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+
+INDEX 1 = Qld
+
+              1           2           3           4           5           6           7           8           9          10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30
+
+1.1       0.658       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+1.2       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.433       0.046       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+1.3       4.243       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+2.1       0.658       0.047       0.045       0.043       0.042       0.040       0.038       0.035       0.032       0.029       0.025       0.023       0.023       0.023       0.023       0.035       0.035       0.036       0.036       0.036       0.036       0.037       0.037       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+2.2       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.048       0.327       0.040       0.040       0.040       0.041       0.041       0.042       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+2.3       4.243       0.047       0.045       0.044       0.042       0.041       0.039       0.036       0.034       0.031       0.027       0.023       0.023       0.023       0.023       0.031       0.031       0.032       0.032       0.032       0.032       0.032       0.032       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+3.1       0.775       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.039       0.039       0.040       0.040       0.040       0.041       0.041       0.041       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+3.2       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.054       0.063       0.044       0.045       0.045       0.046       0.046       0.047       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+3.3       5.000       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.034       0.034       0.034       0.034       0.035       0.035       0.035       0.035       0.023       0.025       0.025       0.025       0.025       0.025       0.025
+
+
+----    385 VARIABLE inv_sec.L  kapital aggregate (across sectors)
+
+                1           2           3           4           5           6           7           8           9          10          11          12          13          14          15          16          17          18          19          20          21          22          23          24
+
+Aus.1       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+Aus.2       2.305       0.026       0.026       0.026       0.026       0.026       0.026       0.025       0.025       0.024       0.024       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.027       0.027       0.027       0.022
+Aus.3       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.077       0.071       0.055       0.037       0.037       0.037       0.037       0.038       0.022
+Qld.1       0.711       0.027       0.026       0.026       0.026       0.026       0.026       0.025       0.025       0.024       0.023       0.022       0.022       0.022       0.022       0.033       0.033       0.034       0.034       0.034       0.034       0.034       0.035       0.022
+Qld.2       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.058       0.073       0.036       0.036       0.037       0.037       0.037       0.037       0.022
+Qld.3       4.583       0.027       0.026       0.026       0.026       0.026       0.026       0.025       0.025       0.025       0.024       0.023       0.022       0.022       0.022       0.030       0.030       0.030       0.031       0.031       0.031       0.031       0.031       0.022
+
+
+----    385 VARIABLE kap.L  kapital stock
+
+                1           2           3           4           5           6           7           8           9          10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30
+
+Aus.1       1.000       0.997       0.995       0.993       0.990       0.988       0.986       0.984       0.982       0.980       0.978       0.976       0.974       0.972       0.970       0.968       0.967       0.965       0.963       0.962       0.960       0.959       0.957       0.956       0.954       1.000       1.000       1.000       1.000       1.000
+Aus.2       1.000       3.280       3.225       3.172       3.120       3.070       3.020       2.971       2.924       2.877       2.830       2.783       2.736       2.690       2.645       2.601       2.559       2.517       2.477       2.437       2.399       2.366       2.334       2.303       2.268       1.000       1.000       1.000       1.000       1.000
+Aus.3       1.000       0.997       0.995       0.993       0.990       0.988       0.986       0.984       0.982       0.980       0.978       0.976       0.974       0.972       0.970       0.968       1.021       1.067       1.095       1.105       1.114       1.123       1.133       1.142       1.136       1.000       1.000       1.000       1.000       1.000
+Qld.1       1.000       1.686       1.671       1.657       1.643       1.629       1.615       1.602       1.588       1.575       1.560       1.544       1.528       1.512       1.497       1.482       1.478       1.475       1.471       1.468       1.465       1.463       1.461       1.459       1.445       1.000       1.000       1.000       1.000       1.000
+Qld.2       1.000       0.997       0.995       0.993       0.990       0.988       0.986       0.984       0.982       0.980       0.978       0.976       0.974       0.972       0.970       0.968       1.002       1.050       1.060       1.070       1.080       1.090       1.100       1.110       1.105       1.000       1.000       1.000       1.000       1.000
+Qld.3       1.000       5.558       5.446       5.337       5.231       5.128       5.027       4.928       4.832       4.738       4.644       4.551       4.460       4.371       4.284       4.200       4.125       4.052       3.981       3.912       3.845       3.780       3.717       3.655       3.586       1.000       1.000       1.000       1.000       1.000
+
+
+----    385 VARIABLE lab.L  labor supply
+
+                1           2           3           4           5           6           7           8           9          10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30
+
+Aus.1     543.700       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001     255.483      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.597      10.000      10.000      10.000      10.000      10.000      10.000
+Aus.2     543.700    1000.000    1000.000    1000.000    1000.000    1000.000    1000.000    1000.000    1000.000    1000.000    1000.000    1000.000    1000.000    1000.000     156.069      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.846      10.000      10.000      10.000      10.000      10.000      10.000
+Aus.3       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.712      10.000      10.000      10.000      10.000      10.000      10.000
+Qld.1       0.001      30.544      30.499      30.454      30.408      30.362      30.316      30.269      30.223      30.178      30.144      30.117      30.096      30.075       0.001      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.678      10.000      10.000      10.000      10.000      10.000      10.000
+Qld.2       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.651      10.000      10.000      10.000      10.000      10.000      10.000
+Qld.3     764.472      16.972      17.043      17.115      17.187      17.259      17.330      17.401      17.473      17.543      17.614      17.684      17.757      17.831     287.792      10.000      10.000      10.000      10.000      10.000      10.000      10.000      10.000      11.069      10.000      10.000      10.000      10.000      10.000      10.000
+
+
+----    385 VARIABLE out.L  output
+
+                1           2           3           4           5           6           7           8           9          10          11          12          13          14          15          16          17          18          19          20          21          22          23          24
+
+Aus.1       9.361       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       5.587       0.637       0.636       0.636       0.636       0.635       0.635       0.635       0.634       0.659
+Aus.2       9.361      20.838      20.723      20.610      20.498      20.387      20.278      20.170      20.063      19.957      19.847      19.738      19.627      19.517       5.592       0.882       0.878       0.873       0.868       0.864       0.859       0.855       0.851       0.895
+Aus.3       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.637       0.648       0.657       0.663       0.665       0.667       0.669       0.671       0.704
+Qld.1       0.001       1.616       1.609       1.603       1.597       1.591       1.585       1.579       1.573       1.567       1.561       1.555       1.549       1.543       0.002       0.733       0.732       0.732       0.731       0.731       0.730       0.730       0.729       0.762
+Qld.2       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.001       0.637       0.644       0.654       0.656       0.658       0.660       0.662       0.664       0.695
+Qld.3      11.762       1.616       1.609       1.603       1.597       1.591       1.585       1.579       1.573       1.567       1.561       1.555       1.549       1.543       9.879       1.033       1.027       1.021       1.015       1.010       1.004       0.998       0.993       1.057
+
+
+----    385 VARIABLE adj.L  kapital adjustment costs
+
+                      ( ALL       0.000 )
+
+
+----    386 PARAMETER inv_sec_path  simulated investment paths
+
+INDEX 1 = Aus
+
+               a           b           c           d           e           f           g           h           i           j
+
+1.1        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.2        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.3        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.4        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.5        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.6        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.7        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.8        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.9        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.10       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.11       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.12       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.13       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.14       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.15       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.16       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.17       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.18       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.19       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.20       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.21       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.22       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.23       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.24       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.25       1.000
+1.26       1.000
+1.27       1.000
+1.28       1.000
+1.29       1.000
+1.30       1.000
+2.1        2.305       2.305       2.305       2.305       2.305       2.305       2.305       2.305       2.305       2.305
+2.2        0.028       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+2.3        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+2.4        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+2.5        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+2.6        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+2.7        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+2.8        0.027       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025
+2.9        0.027       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025
+2.10       0.026       0.024       0.024       0.024       0.024       0.024       0.024       0.024       0.024       0.024
+2.11       1.000       0.024       0.024       0.024       0.024       0.024       0.024       0.024       0.024       0.024
+2.12       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.13       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.14       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.15       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.16       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.17       1.000       0.025       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.18       1.000       0.025       0.025       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.19       1.000       0.025       0.025       0.025       0.022       0.022       0.022       0.022       0.022       0.022
+2.20       1.000       0.025       0.025       0.025       0.025       0.022       0.022       0.022       0.022       0.022
+2.21       1.000       0.025       0.025       0.025       0.025       0.025       0.022       0.022       0.022       0.027
+2.22       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.022       0.022       0.027
+2.23       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.022       0.027
+2.24       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.022
+2.25       1.000
+2.26       1.000
+2.27       1.000
+2.28       1.000
+2.29       1.000
+2.30       1.000
+3.1        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.2        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.3        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.4        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.5        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.6        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.7        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.8        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.9        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.10       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.11       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.12       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.13       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.14       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.15       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.16       1.000       0.036       0.036       0.036       0.036       0.036       0.036       0.036       0.036       0.077
+3.17       1.000       0.031       0.031       0.031       0.031       0.031       0.031       0.031       0.031       0.071
+3.18       1.000       0.030       0.030       0.030       0.030       0.030       0.030       0.030       0.030       0.055
+3.19       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.037
+3.20       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.037
+3.21       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.037
+3.22       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.037
+3.23       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.038
+3.24       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.022
+3.25       1.000
+3.26       1.000
+3.27       1.000
+3.28       1.000
+3.29       1.000
+3.30       1.000
+
+INDEX 1 = Qld
+
+               a           b           c           d           e           f           g           h           i           j
+
+1.1        0.711       0.711       0.711       0.711       0.711       0.711       0.711       0.711       0.711       0.711
+1.2        0.028       0.027       0.027       0.027       0.027       0.027       0.027       0.027       0.027       0.027
+1.3        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+1.4        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+1.5        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+1.6        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+1.7        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+1.8        0.027       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025
+1.9        0.026       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025
+1.10       0.026       0.024       0.024       0.024       0.024       0.024       0.024       0.024       0.024       0.024
+1.11       1.000       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023
+1.12       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.13       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.14       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.15       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+1.16       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.033
+1.17       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.033
+1.18       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.034
+1.19       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.034
+1.20       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.034
+1.21       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.034
+1.22       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.034
+1.23       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.035
+1.24       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.022
+1.25       1.000
+1.26       1.000
+1.27       1.000
+1.28       1.000
+1.29       1.000
+1.30       1.000
+2.1        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.2        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.3        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.4        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.5        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.6        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.7        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.8        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.9        0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.10       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.11       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.12       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.13       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.14       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.15       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+2.16       1.000       0.030       0.030       0.030       0.030       0.030       0.030       0.030       0.030       0.058
+2.17       1.000       0.037       0.034       0.034       0.034       0.034       0.034       0.034       0.034       0.073
+2.18       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.036
+2.19       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.036
+2.20       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.037
+2.21       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.037
+2.22       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.037
+2.23       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.037
+2.24       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.022
+2.25       1.000
+2.26       1.000
+2.27       1.000
+2.28       1.000
+2.29       1.000
+2.30       1.000
+3.1        4.583       4.583       4.583       4.583       4.583       4.583       4.583       4.583       4.583       4.583
+3.2        0.028       0.027       0.027       0.027       0.027       0.027       0.027       0.027       0.027       0.027
+3.3        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+3.4        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+3.5        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+3.6        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+3.7        0.027       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026       0.026
+3.8        0.027       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025
+3.9        0.027       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025
+3.10       0.026       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025
+3.11       1.000       0.024       0.024       0.024       0.024       0.024       0.024       0.024       0.024       0.024
+3.12       1.000       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023       0.023
+3.13       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.14       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.15       1.000       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022       0.022
+3.16       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.030
+3.17       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.030
+3.18       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.030
+3.19       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.031
+3.20       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.031
+3.21       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.031
+3.22       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.031
+3.23       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.031
+3.24       1.000       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.025       0.022
+3.25       1.000
+3.26       1.000
+3.27       1.000
+3.28       1.000
+3.29       1.000
+3.30       1.000
+
+
+----    489 PARAMETER elapsed              =        0.018  
+
+
+EXECUTION TIME       =        1.097 SECONDS      5 MB  38.1.0 a1a3b545 DEX-DEG
 
 
 USER: GAMS Demo license for Patrick OCallaghan       G220215|0002CO-GEN
@@ -1462,5 +2237,3 @@ USER: GAMS Demo license for Patrick OCallaghan       G220215|0002CO-GEN
 
 Input      /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
 Output     /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.lst
-
-**** USER ERROR(S) ENCOUNTERED

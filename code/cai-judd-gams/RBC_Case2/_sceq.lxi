@@ -1,29 +1,55 @@
 B 3 C o m p i l a t i o n
-B 497 Include File Summary
-B 509 E x e c u t i o n
-I 511 A
-I 512 B
-I 513 ETA_HAT
-I 514 KAP0
-B 525 Model Statistics    SOLVE busc Using NLP From line 329
-B 548 Solution Report     SOLVE busc Using NLP From line 329
-B 610 Model Statistics    SOLVE busc Using NLP From line 329
-B 633 Solution Report     SOLVE busc Using NLP From line 329
-B 703 Model Statistics    SOLVE busc Using NLP From line 329
-B 726 Solution Report     SOLVE busc Using NLP From line 329
-B 796 Model Statistics    SOLVE busc Using NLP From line 329
-B 819 Solution Report     SOLVE busc Using NLP From line 329
-B 889 Model Statistics    SOLVE busc Using NLP From line 329
-B 912 Solution Report     SOLVE busc Using NLP From line 329
-B 982 Model Statistics    SOLVE busc Using NLP From line 329
-B 1005 Solution Report     SOLVE busc Using NLP From line 329
-B 1075 Model Statistics    SOLVE busc Using NLP From line 329
-B 1098 Solution Report     SOLVE busc Using NLP From line 329
-B 1168 Model Statistics    SOLVE busc Using NLP From line 329
-B 1191 Solution Report     SOLVE busc Using NLP From line 329
-B 1261 Model Statistics    SOLVE busc Using NLP From line 329
-B 1284 Solution Report     SOLVE busc Using NLP From line 329
-B 1354 Model Statistics    SOLVE busc Using NLP From line 329
-B 1377 Solution Report     SOLVE busc Using NLP From line 329
-B 1447 E x e c u t i o n
-I 1449 "FAILED in ..."
+B 498 Include File Summary
+B 510 E x e c u t i o n
+I 512 A
+I 513 B
+I 514 ETA_HAT
+I 515 KAP0
+B 526 Model Statistics    SOLVE busc Using NLP From line 330
+B 549 Solution Report     SOLVE busc Using NLP From line 330
+B 601 Model Statistics    SOLVE busc Using NLP From line 330
+B 624 Solution Report     SOLVE busc Using NLP From line 330
+B 676 Model Statistics    SOLVE busc Using NLP From line 330
+B 699 Solution Report     SOLVE busc Using NLP From line 330
+B 751 Model Statistics    SOLVE busc Using NLP From line 330
+B 774 Solution Report     SOLVE busc Using NLP From line 330
+B 826 Model Statistics    SOLVE busc Using NLP From line 330
+B 849 Solution Report     SOLVE busc Using NLP From line 330
+B 901 Model Statistics    SOLVE busc Using NLP From line 330
+B 924 Solution Report     SOLVE busc Using NLP From line 330
+B 976 Model Statistics    SOLVE busc Using NLP From line 330
+B 999 Solution Report     SOLVE busc Using NLP From line 330
+B 1051 Model Statistics    SOLVE busc Using NLP From line 330
+B 1074 Solution Report     SOLVE busc Using NLP From line 330
+B 1126 Model Statistics    SOLVE busc Using NLP From line 330
+B 1149 Solution Report     SOLVE busc Using NLP From line 330
+B 1201 Model Statistics    SOLVE busc Using NLP From line 330
+B 1224 Solution Report     SOLVE busc Using NLP From line 330
+B 1276 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1297 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1349 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1370 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1422 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1443 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1495 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1516 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1568 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1589 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1641 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1662 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1714 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1735 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1787 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1808 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1860 Model Statistics    SOLVE busc_tipped Using NLP From line 365
+B 1881 Solution Report     SOLVE busc_tipped Using NLP From line 365
+B 1934 E x e c u t i o n
+I 1934 con
+I 1947 inv
+I 1978 inv_sec
+I 1990 kap
+I 2002 lab
+I 2014 out
+I 2026 adj
+I 2031 inv_sec_path
+I 2225 elapsed

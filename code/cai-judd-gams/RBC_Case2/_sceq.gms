@@ -80,7 +80,7 @@ loop(p $ (ord(p) > 1),
 
 *-----------fix the state variable at s: the tipping event happens at s, but
 *-----------the capital at s has not been impacted 
-    kap.fx(r, i, tt) $ (ord(tt) = s) = kap_path(r, i, tt,'1');
+    kap.fx(r, i, tt) $ (ord(tt) = s) = kap_path(r, i, tt,'a');
     
     loop(niter,
         solve busc_tipped using nlp maximizing obj;
@@ -104,7 +104,7 @@ loop(p $ (ord(p) > 1),
 );
 *==============================================================================
 display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
-display con_path;
+display inv_sec_path;
 *==============================================================================
 * compute Euler errors at the pre-tipping path
 

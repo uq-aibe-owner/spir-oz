@@ -10,7 +10,7 @@ starttime = jnow;
 *==============================================================================
 *-----------sets
 *==============================================================================
-set r regions /1*2/;
+set r regions /Aus, Qld/;
 alias(rr, r)
 ;
 set j sectors /1*3/;
@@ -18,18 +18,9 @@ alias(i, j)
 ;
 *-----------number of different paths + 1 (the extra one is for error checking
 *-----------at the last period of interest)
-set p /1*10/;
+set p /a, b, c, d, e, f, g, h, i, j /;
+*set p /a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r /;
 
-*==============================================================================
-*-----------derived set for timeline that transcends LFWD and T_STAR
-*==============================================================================
-set t time /1 * 70/;
-alias(tt,t);
-*-----------
-parameter
-  probs(t)                probability of jump of TFP
-  E_shk(r, i, t)           expected shock (exogenous)
-;
 *==============================================================================
 *-----------basic economic parameters
 *==============================================================================
@@ -44,7 +35,7 @@ parameters
     ETA_HAT                  utility parameter
     A                        technology parameter
     B                        relative weight of consumption and leisure
-    LFWD                     look-forward parameter / 12/
+    LFWD                     look-forward parameter / 15/
     s                        starting period for each look forward
     T_STAR                    number of periods of interest 
     REG_WGHT(r)              regional weights (eg population)
@@ -59,7 +50,7 @@ parameters
     kmin                     smallest capital    / 0.1 /
     kmax                     largest capital     / 10 /
     ZETA1                    TFP before shock   / 1 /
-    ZETA2                    TFP after shock   / 0.95 /
+    ZETA2                    TFP after shock   / 0.5 /
     PROB1                    one period probability of jump of TFP / 0.01 /
     TL_CON_SHR               tail consumption share (of output) / 0.45 /
     CON_SHR(i)               consumption share for each sector
@@ -69,7 +60,7 @@ parameters
 *-----------derived economic parameters
 *==============================================================================
 T_STAR = card(p) - 1;
-T_ALL = 70;
+T_ALL = card(p) + LFWD;
 A = (1 - (1 - DELTA) * BETA) / (ALPHA * BETA);
 GAMMA_HAT = 1 - (1 / GAMMA);
 B = (1 - ALPHA) * A * (A - DELTA) ** (-1 / GAMMA);
@@ -83,9 +74,9 @@ loop(r,
   REG_WGHT(r) = 1 / ord(r);
 );
 loop(i,
-  CON_SHR(i) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
-  LAB_SHR(i) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
-  INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) - 1)) / 2);
+  CON_SHR(i) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
+  LAB_SHR(i) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
+  INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
 *-----------alternative, less symmetric parametrisation for INV_SHR
 * loop(j,
 *   INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) - 1)) / 2) 
@@ -104,6 +95,16 @@ display A, B, ETA_HAT, KAP0;
 *-----------the following won't work as s is a parameter not a set
 *interval(s) = yes$(s < ord(t) and ord(t) < LFWD + s)
 
+*==============================================================================
+*-----------derived set for timeline that transcends LFWD and T_STAR
+*==============================================================================
+set t time / 1 * 30 /;
+alias(tt,t);
+*-----------
+parameter
+  probs(t)                probability of jump of TFP
+  E_shk(r, i, t)           expected shock (exogenous)
+;
 *==============================================================================
 *-----------basic (economic) variables
 *==============================================================================
@@ -142,7 +143,7 @@ con_sec.lo(r, t) = 0.001;
 *============================================================================== 
 s = 1;
 inv.L(r, i, j, t) = DELTA;
-kap.L(r, i, t) = 1e+1;
+kap.L(r, i, t) = 1e+0;
 lab.L(r, i, t) = 1e+1;
 con.L(r, i, t) = A-DELTA;
 *==============================================================================
@@ -181,7 +182,8 @@ inv_sec_eq(r, j, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
 ;
 adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
   adj(r, i, t)
-    =e= (PHI_ADJ/2) * kap(r, i, t) * sqr(kap(r, i, t + 1) / kap(r, i, t) - 1)
+    =e= 0
+* (PHI_ADJ/2) * kap(r, i, t) * sqr(kap(r, i, t + 1) / kap(r, i, t) - 1)
 ;
 out_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
   out(r, i, t) =e= A * kap(r, i, t) ** ALPHA * lab(r, i, t) ** (1 - ALPHA)
@@ -228,8 +230,7 @@ tail_utility_eq(r, t) $ (ord(t) = LFWD + s)..
   utility(r, t) =e= 
 *-----------in the consumption part, a fixed share of output is consumed
     (prod(i, 
-      CON_SHR(i)
-      * (TL_CON_SHR * A * kap(r, i, t)) ** ALPHA)) ** GAMMA_HAT / GAMMA_HAT 
+      (TL_CON_SHR * A * kap(r, i, t)) ** CON_SHR(i)) ** ALPHA) ** GAMMA_HAT / GAMMA_HAT 
 *-----------and the labour part:
     - B / (1 - BETA)
 ;
