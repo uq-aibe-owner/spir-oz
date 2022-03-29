@@ -1,0 +1,421 @@
+
+--- Job _sceq.gms Start 03/29/22 14:18:33 38.1.0 a1a3b545 DEX-DEG x86 64bit/Mac OS X
+--- Applying:
+    /Library/Frameworks/GAMS.framework/Versions/38/Resources/gmsprmun.txt
+--- GAMS Parameters defined
+    Input /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/_sceq.gms
+    PageSize 0
+    ScrDir /Users/patrickocal_mchome/Documents/_uq-aibe/spir-oz/code/cai-judd-gams/RBC_Case2/225a/
+    SysDir /Library/Frameworks/GAMS.framework/Versions/38/Resources/
+    LogOption 3
+    ErrMsg 1
+    ErrorLog 99
+    IDE 1
+    LstTitleLeftAligned 1
+Licensee: GAMS Demo license for Patrick OCallaghan       G220215|0002CO-GEN
+          University of Queensland, Australia                      DL060418
+          /Users/patrickocal_mchome/Library/Application Support/GAMS/gamslice.txt
+          p.ocallaghan@uq.edu.au, Patrick OCallaghan                       
+          Demo license for demonstration and instructional purposes only
+Processor information: 1 socket(s), 6 core(s), and 6 thread(s) available
+GAMS 38.1.0   Copyright (C) 1987-2022 GAMS Development. All rights reserved
+--- Starting compilation
+--- _sceq.gms(8) 2 Mb
+--- . _sceq_common.gms(278) 3 Mb
+--- _sceq.gms(211) 3 Mb
+--- Starting execution: elapsed 0:00:00.006
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 1
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.015
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        2.6701749419E+04 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.6899931504E+02 (After pre-processing)
+      2   0        9.5839345269E+01 (After scaling)
+     10   0     1  9.4300770018E+01               0.0E+00      T  T
+     20   0     1  9.4300770018E+01               0.0E+00      T  T
+     30   0     1  9.4300770018E+01               0.0E+00      T  T
+     40   0     1  9.4300770018E+01               0.0E+00      T  T
+     50   0     1  9.4300770018E+01               0.0E+00      T  T
+     60   0     1  9.4300770018E+01               0.0E+00      T  T
+     70   0     1  9.4300770018E+01               0.0E+00      T  T
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+     80   0     1  5.9683389004E+01               4.9E-03      T  T
+     90   0     1  5.5009670227E+01               0.0E+00      T  T
+    100   0     1  4.1836574747E+01               2.7E-01      T  T
+    110   0     3  4.6897123337E+01               1.3E-03      T  T
+    120   0     8  4.4307676114E+01               4.0E-04      T  T
+    130   0     9  4.2521652049E+01               1.6E-02      T  T
+    140   0     9  4.0047721665E+01               1.9E-03      T  T
+    150   0     9  4.6067683800E+00               1.5E-01      T  T
+    160   0     9  8.7960254307E-01               1.0E+00      F  T
+    170   0     9  8.4872293915E-01               1.0E+00      F  T
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.078
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 2
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.081
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9520009033E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        8.5650518847E-01 (After pre-processing)
+      2   0        8.5650518847E-01 (After scaling)
+     10   0     0  6.3214372818E-05               1.0E+00      F  T
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.108
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 3
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.111
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9529514717E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.4992450134E-07 (After pre-processing)
+      2   0        2.4992450051E-07 (After scaling)
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.139
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 4
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.143
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9529514717E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.4992450134E-07 (After pre-processing)
+      2   0        2.4992450051E-07 (After scaling)
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.173
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 5
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.176
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9529514717E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.4992450134E-07 (After pre-processing)
+      2   0        2.4992450051E-07 (After scaling)
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.201
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 6
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.204
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9529514717E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.4992450134E-07 (After pre-processing)
+      2   0        2.4992450051E-07 (After scaling)
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.234
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 7
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.237
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9529514717E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.4992450134E-07 (After pre-processing)
+      2   0        2.4992450051E-07 (After scaling)
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.264
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 8
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.267
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9529514717E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.4992450134E-07 (After pre-processing)
+      2   0        2.4992450051E-07 (After scaling)
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.298
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 9
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.301
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9529514717E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.4992450134E-07 (After pre-processing)
+      2   0        2.4992450051E-07 (After scaling)
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.326
+--- _sceq.gms(313) 5 Mb
+--- Generating NLP model busc
+--- _sceq.gms(329) 7 Mb
+--- LOOPS p = 1
+---       tt = 1
+---       niter = 10
+---   397 rows  727 columns  1,657 non-zeroes
+---   3,793 nl-code  696 nl-non-zeroes
+--- _sceq.gms(329) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:00.329
+
+CONOPT 3         38.1.0 a1a3b545 Jan 31, 2022          DEG x86 64bit/Mac OS X 
+
+--- *** This solver runs with a demo license. No commercial use.
+ 
+ 
+    C O N O P T 3   version 3.17K
+    Copyright (C)   ARKI Consulting and Development A/S
+                    Bagsvaerdvej 246 A
+                    DK-2880 Bagsvaerd, Denmark
+ 
+ 
+   Iter Phase Ninf   Infeasibility   RGmax    NSB   Step InItr MX OK
+      0   0        1.9529514717E+09 (Input point)
+ 
+                   Pre-triangular equations:   0
+                   Post-triangular equations:  49
+                   Definitional equations:     144
+ 
+      1   0        2.4992450134E-07 (After pre-processing)
+      2   0        2.4992450051E-07 (After scaling)
+ 
+ ** Infeasible solution. A free variable exceeds the allowable range.
+    Current value is -1.18E+10 and current upper bound (Rtmaxv) is 1.00E+10
+ 
+--- Reading solution for model busc
+--- Executing after solve: elapsed 0:00:00.354
+--- _sceq.gms(313) 5 Mb
+*** Error at line 334: Execution halted: abort$1 'FAILED in solving!'
+--- _sceq.gms(313) 5 Mb 1 Error
+*** Status: Execution error(s)
+--- Job _sceq.gms Stop 03/29/22 14:18:33 elapsed 0:00:00.355
