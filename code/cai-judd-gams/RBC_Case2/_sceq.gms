@@ -82,32 +82,56 @@ loop(p $ (ord(p) > 1),
     kap_path(r, i, tt, p) = kap.L(r, i, tt);
     lam_path(r, i, tt, p) = dynamics_eq.m(r, i, tt);
     mu_path(i, tt, p) = market_clearing_eq.m(i, tt);
-);
+  );
 );
 *==============================================================================
+
 display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
 display inv_sec_path;
+
 *==============================================================================
-* compute Euler errors at the pre-tipping path
+*-----------compute Euler errors at the pre-tipping path
+*==============================================================================
 
-*parameter integrand(r, i, tt, p)
-*    errs(r, i, tt);
-*
-*integrand(r, i, tt,'1')$(ord(tt)<=T_STAR+1) = lam_path(r, i, tt,'1')*(1-delta) + 
-*    mu_path(tt,'1') * ( A*alpha*((kap_path(r, i, tt,'1')/lab_path(r, i, tt,'1'))**(alpha-1)) -
-*    phi/2*sqr(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta) +
-*    phi*(inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1')-delta)*inv_path(r, i, tt,'1')/kap_path(r, i, tt,'1') );
-*integrand(r, i, tt, p)$(ord(p)>1 and ord(tt)<=T_STAR+1) = lam_path(r, i, tt, p)*(1-delta) + 
-*    mu_path(tt, p) * ( A*alpha*((kap_path(r, i, tt, p)/lab_path(r, i, tt, p))**(alpha-1)) -
-*    phi/2*sqr(inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p)-delta) +
-*    phi*(inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p)-delta)*inv_path(r, i, j, tt, p)/kap_path(r, i, tt, p) );
-*   
-*errs(r, i, tt)$(ord(tt)<=T_STAR) = abs(1 - beta*( (1-PROB1)*integrand(r, i, tt+1,'1') +
-*    PROB1*sum(p$(ord(p)=ord(tt)+1),integrand(r, i, tt+1, p)) ) / lam_path(r, i, tt,'1'));
+parameters 
+  integrand(r, i, tt, p)
+  errs(r, i, tt)
+;
+
+* integrand(r, i, tt, p) $ (ord(tt) <= T_STAR + 1)
+*   = lam_path(r, i, tt, p) * (1 - delta) + mu_path(tt, p) 
+*     * (A * ALPHA
+*     * ((kap_path(r, i, tt, p) / lab_path(r, i, tt, p)) ** (ALPHA - 1))
+*     - PHI_ADJ / 2 * sqr(inv_path(r, i, tt, p) / kap_path(r, i, tt, p) - delta)
+*     + PHI_ADJ*(inv_path(r, i, tt, p) / kap_path(r, i, tt, p) - delta)
+*     * inv_path(r, i, tt,  p) / kap_path(r, i, tt, p)
+*     )
+* ;
+integrand(r, i, tt, p) $ (ord(tt) <= T_STAR + 1) 
+  = lam_path(r, i, tt, p) * (1 - delta) 
+    + mu_path(i, tt, p) * (
+      A * ALPHA
+        * (kap_path(r, i, tt, p) / lab_path(r, i, tt, p)) ** (ALPHA - 1)
+      - PHI_ADJ / 2
+        * sqr(kap_path(r, i, tt + 1, p) / kap_path(r, i, tt, p) - 1)
+      + PHI_ADJ
+        * (kap_path(r, i, tt + 1, p) / kap_path(r, i, tt, p) - 1)
+        * kap_path(r, i, tt + 1, p) / kap_path(r, i, tt, p)
+    )
+;
+   
+errs(r, i, tt) $ (ord(tt) <= T_STAR)
+  = abs(1
+    - BETA * (
+      (1 - PROB1) * integrand(r, i, tt + 1, 'a')
+      + PROB1 * sum(p $ (ord(p) = ord(tt) + 1), integrand(r, i, tt + 1, p))
+    ) / lam_path(r, i, tt,'a')
+  )
+;
     
-************************
-* Output solutions 
-
+*==============================================================================
+*-----------Export solutions to file 
+*==============================================================================
 *File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
 *sol_SCEQ_RBC_con.pc=5;
 *sol_SCEQ_RBC_con.pw=4000;

@@ -76,13 +76,13 @@ loop(r,
 loop(i,
   CON_SHR(i) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
   LAB_SHR(i) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
-  INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
+*  INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) + 1)) / 2);
 *-----------alternative, less symmetric parametrisation for INV_SHR
-* loop(j,
-*   INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) - 1)) / 2) 
-*    / (ord(j) / ((card(j) * (card(j) - 1)) / 2))
-* ;
-* );
+  loop(j,
+    INV_SHR(i, j) = ord(i) / ((card(i) * (card(i) + 1)) / 2) 
+     / (ord(j) / ((card(j) * (card(j) + 1)) / 2))
+  ;
+  );
 );
 *-----------
 INV_MIN = 0.9 * DELTA;
@@ -248,8 +248,9 @@ option reslim = 10000;
 option iterlim = 10000;
 option solprint = off;
 *-----------which solver to use, comment out one of the following:
-*option nlp = ipopt;
-option nlp = conopt;
+option nlp = ipopt;
+*option nlp = knitro;
+*option nlp = conopt;
 
 *==============================================================================
 *-----------instantiate models with corresponding equations
