@@ -132,37 +132,42 @@ errs(r, i, tt) $ (ord(tt) <= T_STAR)
 *==============================================================================
 *-----------Export solutions to file 
 *==============================================================================
-*File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
-*sol_SCEQ_RBC_con.pc=5;
-*sol_SCEQ_RBC_con.pw=4000;
-*
-*Put sol_SCEQ_RBC_con;
-*
-*loop(p,
-*  loop(tt$(ord(tt)<=T_STAR),
-*    put tt.tl::4;    
-*        loop(r,
-*          put con_path(r, *, tt, p)::6;
-*          );
-*    put /;
-*  );
-*);
-*
-*File sol_SCEQ_RBC_kap /sol_SCEQ_RBC_kap.csv/;
-*sol_SCEQ_RBC_kap.pc=5;
-*sol_SCEQ_RBC_kap.pw=4000;
-*
-*Put sol_SCEQ_RBC_kap;
-*
-*loop(p,
-*  loop(tt$(ord(tt)<=T_STAR),
-*    put tt.tl::4;
-*    loop(r,
-*      put kap_path(r, *, tt, p)::6;
-*    );    
-*    put /;
-*  );
-*);
+
+File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
+sol_SCEQ_RBC_con.pc=5;
+sol_SCEQ_RBC_con.pw=4000;
+
+Put sol_SCEQ_RBC_con;
+
+loop(p,
+  loop(tt$(ord(tt)<=Tstar),
+    put tt.tl::4;    
+    loop(r,
+      loop(i,
+        put con_path(r, i, tt, p)::6;
+      );
+    );
+    put /;
+  );
+);
+
+File sol_SCEQ_RBC_kap /sol_SCEQ_RBC_kap.csv/;
+sol_SCEQ_RBC_kap.pc=5;
+sol_SCEQ_RBC_kap.pw=4000;
+
+Put sol_SCEQ_RBC_kap;
+
+loop(p,
+  loop(tt$(ord(tt)<=Tstar),
+    put tt.tl::4;
+    loop(r,
+      loop(i,
+        put kap_path(r, i, tt, p)::6;
+      ) ;
+    );    
+    put /;
+  );
+);
 *
 *File sol_SCEQ_RBC_inv /sol_SCEQ_RBC_inv.csv/;
 *sol_SCEQ_RBC_inv.pc=5;
@@ -171,47 +176,52 @@ errs(r, i, tt) $ (ord(tt) <= T_STAR)
 *Put sol_SCEQ_RBC_inv;
 *
 *loop(p,
-*  loop(tt$(ord(tt)<=T_STAR),
+*  loop(tt$(ord(tt)<=Tstar),
 *    put tt.tl::4;
 *    loop(r,
-*      put inv_path(r, *, tt, p)::6;
-*    );    
+*      loop(i,
+*        put inv_path(r, i, tt, p)::6;
+*      );
+*    );
 *    put /;
 *  );
 *);
 *
-*File sol_SCEQ_RBC_lab /sol_SCEQ_RBC_lab.csv/;
-*sol_SCEQ_RBC_lab.pc=5;
-*sol_SCEQ_RBC_lab.pw=4000;
-*
-*Put sol_SCEQ_RBC_lab;
-*
-*loop(p,
-*  loop(tt$(ord(tt)<=T_STAR),
-*    put tt.tl::4;
-*    loop(r,
-*      put lab_path(r, *, tt, p)::6;
-*    );    
-*    put /;
-*  );
-*);
-*
+File sol_SCEQ_RBC_lab /sol_SCEQ_RBC_lab.csv/;
+sol_SCEQ_RBC_lab.pc=5;
+sol_SCEQ_RBC_lab.pw=4000;
+
+Put sol_SCEQ_RBC_lab;
+
+loop(p,
+  loop(tt$(ord(tt)<=Tstar),
+    put tt.tl::4;
+    loop(r,
+      loop(i,
+        put lab_path(r, i, tt, p)::6;
+      );
+    );    
+    put /;
+  );
+);
+
 *File sol_SCEQ_RBC_err /sol_SCEQ_RBC_err.csv/;
 *sol_SCEQ_RBC_err.pc=5;
 *sol_SCEQ_RBC_err.pw=4000;
-
+*
 *Put sol_SCEQ_RBC_err;
 *
-*loop(tt$(ord(tt)<=T_STAR),
+*loop(tt$(ord(tt)<=Tstar),
 *    put tt.tl::4;
 *    loop(r,
-*      put errs(r, i, tt)::6;
+*      loop(i,
+*        put errs(r, i, tt)::6;
+*      );
 *    ); 
 *    put /;
 *);
-
+*
 * display the running time in minutes
 scalar elapsed;
 elapsed = (jnow - starttime)*24*60;
 display elapsed;
-
