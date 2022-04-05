@@ -86,9 +86,26 @@ loop(p $ (ord(p) > 1),
 );
 *==============================================================================
 
-display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
-display inv_sec_path;
+*display con.L, inv.L, inv_sec.L, kap.L, lab.L, out.L, adj.L;
+*display inv_sec_path;
 
+parameter
+jac_id(r, i, j, ii, jj, t)  check on Jacobi identity
+;
+jac_id(r, i, j, ii, jj, t) $ (ord(t) <= T_STAR + 1)
+  = inv.L(r, i, j, t) / INV_SHR(i, j)
+    - (inv.L(r, i, ii, t) / INV_SHR(i, ii))
+      / (inv.L(r, jj, ii, t) / INV_SHR(jj, ii))
+      * (inv.L(r, jj, j, t) / INV_SHR(jj, j))
+;
+
+parameter max_jac_id maximum of jac_id;
+
+max_jac_id = 
+  smax((r, i, j, ii, jj, t), 
+    jac_id(r, i, j, ii, jj, t) $ (ord(t) <= T_STAR + 1))
+;
+display max_jac_id;
 *==============================================================================
 *-----------compute Euler errors at the pre-tipping path
 *==============================================================================
@@ -132,42 +149,46 @@ errs(r, i, tt) $ (ord(tt) <= T_STAR)
 *==============================================================================
 *-----------Export solutions to file 
 *==============================================================================
+option savepoint=2
 
-File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
-sol_SCEQ_RBC_con.pc=5;
-sol_SCEQ_RBC_con.pw=4000;
+$gdxOut errs
 
-Put sol_SCEQ_RBC_con;
 
-loop(p,
-  loop(tt$(ord(tt)<=Tstar),
-    put tt.tl::4;    
-    loop(r,
-      loop(i,
-        put con_path(r, i, tt, p)::6;
-      );
-    );
-    put /;
-  );
-);
+*File sol_SCEQ_RBC_con /sol_SCEQ_RBC_con.csv/;
+*sol_SCEQ_RBC_con.pc=5;
+*sol_SCEQ_RBC_con.pw=4000;
 
-File sol_SCEQ_RBC_kap /sol_SCEQ_RBC_kap.csv/;
-sol_SCEQ_RBC_kap.pc=5;
-sol_SCEQ_RBC_kap.pw=4000;
+*Put sol_SCEQ_RBC_con;
 
-Put sol_SCEQ_RBC_kap;
+*loop(p,
+*  loop(tt $ (ord(tt) <= Tstar),
+*    put tt.tl::4;    
+*    loop(r,
+*      loop(i,
+*        put con_path(r, i, tt, p)::6;
+*      );
+*    );
+*    put /;
+*  );
+*);
 
-loop(p,
-  loop(tt$(ord(tt)<=Tstar),
-    put tt.tl::4;
-    loop(r,
-      loop(i,
-        put kap_path(r, i, tt, p)::6;
-      ) ;
-    );    
-    put /;
-  );
-);
+*File sol_SCEQ_RBC_kap /sol_SCEQ_RBC_kap.csv/;
+*sol_SCEQ_RBC_kap.pc=5;
+*sol_SCEQ_RBC_kap.pw=4000;
+
+*Put sol_SCEQ_RBC_kap;
+
+*loop(p,
+*  loop(tt$(ord(tt)<=Tstar),
+*    put tt.tl::4;
+*    loop(r,
+*      loop(i,
+*        put kap_path(r, i, tt, p)::6;
+*      ) ;
+*    );    
+*    put /;
+*  );
+*);	
 *
 *File sol_SCEQ_RBC_inv /sol_SCEQ_RBC_inv.csv/;
 *sol_SCEQ_RBC_inv.pc=5;
@@ -187,23 +208,23 @@ loop(p,
 *  );
 *);
 *
-File sol_SCEQ_RBC_lab /sol_SCEQ_RBC_lab.csv/;
-sol_SCEQ_RBC_lab.pc=5;
-sol_SCEQ_RBC_lab.pw=4000;
-
-Put sol_SCEQ_RBC_lab;
-
-loop(p,
-  loop(tt$(ord(tt)<=Tstar),
-    put tt.tl::4;
-    loop(r,
-      loop(i,
-        put lab_path(r, i, tt, p)::6;
-      );
-    );    
-    put /;
-  );
-);
+*File sol_SCEQ_RBC_lab /sol_SCEQ_RBC_lab.csv/;
+*sol_SCEQ_RBC_lab.pc=5;
+*sol_SCEQ_RBC_lab.pw=4000;
+*
+*Put sol_SCEQ_RBC_lab;
+*
+*loop(p,
+*  loop(tt$(ord(tt)<=Tstar),
+*    put tt.tl::4;
+*    loop(r,
+*      loop(i,
+*        put lab_path(r, i, tt, p)::6;
+*      );
+*    );    
+*    put /;
+*  );
+*);
 
 *File sol_SCEQ_RBC_err /sol_SCEQ_RBC_err.csv/;
 *sol_SCEQ_RBC_err.pc=5;

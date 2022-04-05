@@ -33,7 +33,7 @@ obj_jit = jit(objective)
 con_eq_jit = jit(eq_constraints)
 #con_ineq_jit = jit(ineq_constraints)
 
-#--------------- build and jit "objective" derivatives 
+#--------------- build and jit "objective" derivatives
 obj_grad = jit(grad(obj_jit))
 obj_hess = jit(jacrev(jacfwd(obj_jit)))
 #--------------- build and jit "eq_constraints" derivatives
@@ -75,11 +75,13 @@ res = minimize_ipopt(
              #'warm_start_same_structure': 'yes',
              'timing_statistics': 'yes',
              'print_timing_statistics': 'yes',
+             'linear_solver' : 'ma57',
+             'hsllib' : 'libcoinhsl.dylib',
              }
 )
 
 # --------------- print solution, etc.
-print("the results dict is ", res) 
+print("the results dict is ", res)
 x_sol = res["x"]
 print("sol=", x_sol)
 diff_x_sol = np.zeros(len(x_sol) - 1)

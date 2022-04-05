@@ -107,10 +107,18 @@ loop(npath$(ord(npath)>1),
 parameter integrand(j,tt,npath)
     errs(j,tt);
 
-integrand(j,tt,'1')$(ord(tt)<=Tstar+1) = lampath(j,tt,'1')*(1-delta) + 
-    mupath(tt,'1') * ( A*alpha*((Kpath(j,tt,'1')/Lpath(j,tt,'1'))**(alpha-1)) -
-    phi/2*sqr(Ipath(j,tt,'1')/Kpath(j,tt,'1')-delta) +
-    phi*(Ipath(j,tt,'1')/Kpath(j,tt,'1')-delta)*Ipath(j,tt,'1')/Kpath(j,tt,'1') );
+integrand(j, tt, '1') $ (ord(tt) <= Tstar + 1) 
+  = lampath(j, tt, '1') * (1 - delta) 
+    + mupath(tt, '1') * (
+    A * alpha 
+      * ((Kpath(j, tt, '1') / Lpath(j, tt, '1')) ** (alpha - 1)) 
+    - phi / 2 
+      * sqr(Ipath(j, tt, '1') / Kpath(j, tt, '1') - delta)
+    + phi
+      * (Ipath(j, tt, '1') / Kpath(j, tt, '1') - delta) 
+      * Ipath(j, tt, '1') / Kpath(j, tt, '1')
+    )
+;
 integrand(j,tt,npath)$(ord(npath)>1 and ord(tt)<=Tstar+1) = lampath(j,tt,npath)*(1-delta) + 
     mupath(tt,npath) * ( A*alpha*((Kpath(j,tt,npath)/Lpath(j,tt,npath))**(alpha-1)) -
     phi/2*sqr(Ipath(j,tt,npath)/Kpath(j,tt,npath)-delta) +

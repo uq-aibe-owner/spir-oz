@@ -13,8 +13,10 @@ starttime = jnow;
 set r regions /Aus, Qld/;
 alias(rr, r)
 ;
-set j sectors /1*3/;
+set j sectors /1*6/;
 alias(i, j)
+alias(ii, j)
+alias(jj, j)
 ;
 *-----------number of different paths + 1 (the extra one is for error checking
 *-----------at the last period of interest)
@@ -110,12 +112,12 @@ parameter
 *==============================================================================
 Variables
     obj                       objective criterion
-    inv(r, i, j, t)           investment
     utility(r, t)             instantaneous utility
 ;
 *------------------------------------------------------------------------------
 Positive variables
 
+    inv(r, i, j, t)           investment
     con(r, i, t)              consumption
     kap(r, i, t)              kapital stock
     lab(r, i, t)              labor supply
@@ -153,16 +155,17 @@ con.L(r, i, t) = A-DELTA;
 Equations
 *-----------declarations for intermediate-variables
     con_sec_eq(r, t)           consumption aggregate (across sectors)
-    inv_sec_eq(r, j, t)           kapital aggregate (across sectors)
+    inv_sec_eq(r, j, t)        kapital aggregate (across sectors)
     lab_sec_eq(r, t)           labour aggregate (across sectors)
     adj_eq(r, i, t)            kapital adjustment costs
     out_eq(r, i, t)            output 
     utility_eq(r, t)           the utility function
-    tail_utility_eq(r, t)       the tail utility function
+    tail_utility_eq(r, t)      the tail utility function
     obj_eq                     Objective function
 *-----------canonical equations
-    dynamics_eq(r, i, t)        Law of Motion for Capital Stock
-    market_clearing_eq(i, t)            budget constraint before jump
+    dynamics_eq(r, i, t)                   Law of Motion for Capital Stock
+    market_clearing_eq(i, t)               budget constraint before jump
+    jacobi_identities(r, i, j, t, ii)  optimal investment distribution
 *-----------other states
     tipped_market_clearing_eq(i, t)      budget constraint after jump
 ;
@@ -174,7 +177,7 @@ con_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
   con_sec(r, t) =e= prod(i, con(r, i, t) ** CON_SHR(i))
 ;
 lab_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
-  lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
+  lab_sec(r, t) =e= sum(i, LAB_SHR(i) * lab(r, i, t))
 ;
 inv_sec_eq(r, j, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
   inv_sec(r, j, t)
@@ -186,6 +189,16 @@ adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
 ;
 out_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
   out(r, i, t) =e= A * kap(r, i, t) ** ALPHA * lab(r, i, t) ** (1 - ALPHA)
+;
+jacobi_identities(r, i, j, t, ii) $ (
+  (s <= ord(t) and ord(t) < LFWD + s)
+  and (1 < ord(j) and ord(i) <> ord(j))
+  )..
+    inv(r, i, j, t)
+      =e= (inv(r, i, ii, t) / INV_SHR(i, ii))
+        / (inv(r, ii, ii, t) / INV_SHR(ii, ii))
+        * (inv(r, ii, j, t) / INV_SHR(ii, j))
+        * INV_SHR(i, j)
 ;
 *------------------------------------------------------------------------------
 *-----------canonical equations
@@ -248,10 +261,13 @@ option reslim = 10000;
 option iterlim = 10000;
 option solprint = off;
 *-----------which solver to use, comment out one of the following:
-option nlp = ipopt;
+*option nlp = ipopt;
+option nlp = ipopth;
+*option nlp = bonminh;
+*linear_solver = pardisomkl;
 *option nlp = knitro;
-*option nlp = conopt;
-
+option nlp = conopt;
+*option nlp = pardiso;
 *==============================================================================
 *-----------instantiate models with corresponding equations
 model busc /
