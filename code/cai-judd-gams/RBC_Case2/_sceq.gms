@@ -1,12 +1,6 @@
-** This is a code of SCEQ to solve a multi-country real business cycle problem
-*
-* If using material from this code, the user should cite the following paper:
-* Cai, Y., and K.L. Judd (2021). A Simple but Powerful Simulated Certainty Equivalent
-*   Approximation Method for Dynamic Stochastic Problems. Working Paper.
-
 *==============================================================================
-*-----------This is the AIM (Australian Inter* Model, where * stands for
-*-----------regional, sectoral, generational and state-of-the-world). It is 
+*-----------This is NAIM (the New Australian Inter-* Model). Where * stands for
+*-----------regional, sectoral, generational and state-of-the-world. It is 
 *-----------an adaptation of Cai--Judd (2021) to include multiple sectors among
 *-----------among other things.
 *==============================================================================
@@ -86,7 +80,7 @@ RHO_INV = 1 / RHO;
 
 *-----------set the seed for the random number generator that we use in weights
 execseed = 12345
-*-----------the following is the vector of population weights: 
+*-----------vector of population weights: 
 *-----------it enters the objective function and determines demand
 loop(r,
   REG_WGHT(r) = 1 / ord(r);
@@ -178,8 +172,8 @@ con_sec.L(r, t) =
   prod(i, con.L(r, i, t) ** CON_SHR(i))
 *  sum(i, CON_SHR(i) * con.L(r, i, t) ** RHO)
 ;
-lab_sec.L(r, t) = sum(i, LAB_SHR(i) * lab.L(r, i, t) ** RHO);
-inv_sec.L(r, j, t) = sum(i, INV_SHR(i, j) * inv.L(r, i, j, t) ** RHO);
+lab_sec.L(r, t) = sum(i, LAB_SHR(i) * lab.L(r, i, t) ** RHO) ** RHO_INV;
+inv_sec.L(r, j, t) = sum(i, INV_SHR(i, j) * inv.L(r, i, j, t) ** RHO) ** RHO_INV;
 adj.L(r, i, t) = 0;
 out.L(r, i, t) = A * kap.L(r, i, t) ** ALPHA * lab.L(r, i, t) ** (1 - ALPHA);
 *==============================================================================
@@ -217,8 +211,8 @@ lab_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
 *  lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
 ;
 inv_sec_eq(r, j, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
-  inv_sec(r, j, t) =e= prod(i, inv(r, i, j, t) ** INV_SHR(i, j))
-*  inv_sec(r, j, t) =e= sum(i, INV_SHR(i, j) * inv(r, i, j, t) ** RHO)
+*  inv_sec(r, j, t) =e= prod(i, inv(r, i, j, t) ** INV_SHR(i, j))
+  inv_sec(r, j, t) =e= sum(i, INV_SHR(i, j) * inv(r, i, j, t) ** RHO) ** RHO_INV
 ;
 adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
   adj(r, i, t)
@@ -274,18 +268,18 @@ utility_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
 *-----------the labour part:
 *    - 1 * lab_sec(r, t) ** RHO_INV
 *    - B * lab_sec(r, t) ** ETA_HAT / ETA_HAT
-    + lab_sec(r, t)
+    - lab_sec(r, t)
 ;
 tail_utility_eq(r, t) $ (ord(t) = LFWD + s)..
 *-----------tail/continuation utility, where tail labour is normalised to one:
   utility(r, t) =e= 1e-4
 *-----------in the consumption part, a fixed share of output is consumed
-*    + prod(i, TL_CON_SHR * kap(r, i, t) ** ALPHA) / (1 - BETA)
+    + prod(i, TL_CON_SHR * kap(r, i, t) ** ALPHA) / (1 - BETA)
 *    + sum(i, 
 *        CON_SHR(i) 
 *          * (TL_CON_SHR * (A * kap(r, i, t)) ** ALPHA) ** RHO)
 *-----------and the labour part:
-*    - B / (1 - BETA)
+    - B / (1 - BETA)
 ;
 *------------------------------------------------------------------------------
 *-----------the objective function
@@ -302,13 +296,14 @@ option reslim = 1e+4;
 option iterlim = 1e+4;
 option solprint = off;
 *-----------which solver to use, comment out one of the following:
-*option nlp = ipopt;
 *option nlp = conopt;
 *option nlp = bonminh;
 *linear_solver = pardisomkl;
-*option nlp = knitro;
 option nlp = conopt;
+*option nlp = knitro;
 *option nlp = pardiso;
+*option nlp = ipopth;
+*option nlp = minos;
 *==============================================================================
 *-----------instantiate models with corresponding equations
 model busc /
