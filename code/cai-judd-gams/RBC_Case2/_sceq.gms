@@ -172,8 +172,8 @@ con_sec.L(r, t) =
   prod(i, con.L(r, i, t) ** CON_SHR(i))
 *  sum(i, CON_SHR(i) * con.L(r, i, t) ** RHO)
 ;
-lab_sec.L(r, t) = sum(i, LAB_SHR(i) * lab.L(r, i, t) ** RHO) ** RHO_INV;
-inv_sec.L(r, j, t) = sum(i, INV_SHR(i, j) * inv.L(r, i, j, t) ** RHO) ** RHO_INV;
+lab_sec.L(r, t) = sum(i, LAB_SHR(i) * lab.L(r, i, t) ** RHO);
+inv_sec.L(r, j, t) = sum(i, INV_SHR(i, j) * inv.L(r, i, j, t) ** RHO);
 adj.L(r, i, t) = 0;
 out.L(r, i, t) = A * kap.L(r, i, t) ** ALPHA * lab.L(r, i, t) ** (1 - ALPHA);
 *==============================================================================
@@ -211,8 +211,8 @@ lab_sec_eq(r, t) $ (s <= ord(t) and ord(t) < LFWD + s)..
 *  lab_sec(r, t) =e= prod(i, lab(r, i, t) ** LAB_SHR(i))
 ;
 inv_sec_eq(r, j, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
-*  inv_sec(r, j, t) =e= prod(i, inv(r, i, j, t) ** INV_SHR(i, j))
-  inv_sec(r, j, t) =e= sum(i, INV_SHR(i, j) * inv(r, i, j, t) ** RHO) ** RHO_INV
+  inv_sec(r, j, t) =e= prod(i, inv(r, i, j, t) ** INV_SHR(i, j))
+*  inv_sec(r, j, t) =e= sum(i, INV_SHR(i, j) * inv(r, i, j, t) ** RHO)
 ;
 adj_eq(r, i, t) $ (s <= ord(t) and ord(t) < LFWD + s).. 
   adj(r, i, t)
